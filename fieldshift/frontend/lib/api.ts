@@ -3,7 +3,7 @@
  * errores normalizados y paso automático a datos de ejemplo si el servidor no responde.
  */
 import type {
-  AlertsResult, ApiEnvelope, ApiResult, CalendarRequest, HuertaPanel, CalendarTimeline, ClimateSummary, ClimateSummaryRequest, CompareRequest, CompareResult, Crop, FieldCreate, FieldOut,
+  AlertsResult, ApiEnvelope, ApiResult, CalendarRequest, FieldSoilMoisture, HuertaPanel, ProvincesOut, ZoneAt, ZoneSuitability, ZonesOut, CalendarTimeline, ClimateSummary, ClimateSummaryRequest, CompareRequest, CompareResult, Crop, FieldCreate, FieldOut,
   ResponseMeta, ScenarioInput, ScenarioResult, SoilMoistureRequest, SoilMoistureSummary, TerrainRequest, TerrainSummary, VegetationRequest, VegetationSummary,
 } from "@/types/api";
 import { API_URL, DEMO_FALLBACK, REQUEST_TIMEOUT_MS } from "./config";
@@ -249,6 +249,32 @@ export const api = {
           () => demo.demoAlerts(fieldId, profile),
         );
     return withBrowserForecast(r, enrichAlerts);
+  },
+
+  async provinces(o: Opts = {}): Promise<ApiResult<ProvincesOut>> {
+    return call(() => request<ProvincesOut>("/regions/provinces", o), demo.demoProvinces);
+  },
+
+  async zones(provinceId: string, o: Opts = {}): Promise<ApiResult<ZonesOut>> {
+    return call(() => request<ZonesOut>(`/regions/${encodeURIComponent(provinceId)}/zones`, o), () => demo.demoZones(provinceId));
+  },
+
+  async suitability(zoneId: string, o: Opts = {}): Promise<ApiResult<ZoneSuitability>> {
+    return call(() => request<ZoneSuitability>(`/crops/suitability?zone_id=${encodeURIComponent(zoneId)}`, o), () => demo.demoSuitability(zoneId));
+  },
+
+  /** Zona, transición y cultivos más aptos en la ubicación del campo. */
+  async zoneAt(fieldId: string, lat: number, lon: number, o: Opts = {}): Promise<ApiResult<ZoneAt>> {
+    if (isLocalId(fieldId)) return viaDemo(() => demo.demoZoneAt(fieldId));
+    return call(() => request<ZoneAt>(`/zones/at?lat=${lat}&lon=${lon}`, o), () => demo.demoZoneAt(fieldId));
+  },
+
+  async fieldSoilMoisture(fieldId: string, o: Opts = {}): Promise<ApiResult<FieldSoilMoisture>> {
+    if (isLocalId(fieldId)) return viaDemo(() => demo.demoFieldSoilMoisture(fieldId));
+    return call(
+      () => request<FieldSoilMoisture>(`/fields/${encodeURIComponent(fieldId)}/soil-moisture`, o),
+      () => demo.demoFieldSoilMoisture(fieldId),
+    );
   },
 
   async terrain(req: TerrainRequest, o: Opts = {}): Promise<ApiResult<TerrainSummary>> {

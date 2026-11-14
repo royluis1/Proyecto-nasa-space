@@ -6,6 +6,7 @@ import { useCampo } from "@/components/campo/campo-provider";
 import { FieldForm } from "@/components/field/field-form";
 import { PriorityControls } from "@/components/field/priority-controls";
 import { PageHeader } from "@/components/page-header";
+import { AutoProfileCard } from "@/components/zones/auto-profile-card";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,6 +63,8 @@ export default function PerfilPage() {
           <p>{field.sample_note} Si lo editás, los cambios se pierden al reiniciar el servidor.</p>
         </Alert>
       )}
+
+      <AutoProfileCard field={field} />
 
       <section aria-labelledby="prioridades" className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
         <Card>

@@ -31,6 +31,8 @@ from app.services.repository import Repository  # noqa: E402
 from app.services.satellite.provider import SatelliteProvider  # noqa: E402
 from app.services.satellite.service import SatelliteService  # noqa: E402
 from app.services.terrain.service import TerrainProvider, terrain_for_field  # noqa: E402
+from app.services.regions.repository import RegionRepository  # noqa: E402
+from app.services.soil_moisture_field import field_soil_moisture  # noqa: E402
 from app.utils.exceptions import UpstreamError  # noqa: E402
 
 OUT = ROOT / "frontend" / "lib" / "demo" / "data"
@@ -56,13 +58,23 @@ def main() -> None:
     repo = Repository(s.data_dir)
     power = PowerService(failing, PowerCache(Path(tempfile.mkdtemp()), 24), SampleProvider(s.nasa_samples_dir / s.power_sample_file),
                          files=PowerFileProvider([s.nasa_samples_dir / n for n in s.power_fallback_files]))
-    samples = {"SPL4SMGP_rootzone": s.nasa_samples_dir / s.smap_sample_file, "MOD13Q1": s.nasa_samples_dir / s.ndvi_sample_file}
+    samples = {"SPL4SMGP_rootzone": s.nasa_samples_dir / s.smap_sample_file, "MOD13Q1": s.nasa_samples_dir / s.ndvi_sample_file,
+               "SPL3SMP_E": s.nasa_samples_dir / "smap_l3_sample_san_luis.csv"}
     satellite = SatelliteService(repo, SatelliteProvider(Path(tempfile.mkdtemp()), samples))
     terrain = TerrainProvider(Path(tempfile.mkdtemp()), s.nasa_samples_dir / s.srtm_sample_file)  # sin credenciales: muestra
     service = RotationService(repo, power, s.power_base_url, satellite, terrain)
 
     write("fields.json", [dump(f) for f in repo.list_fields()])
     write("crops.json", [dump(c) for c in repo.list_crops()])
+    regions = RegionRepository(s.nasa_samples_dir, repo.crops)
+    meta = regions.provinces["fieldshift"]
+    write("provinces.json", {"source": meta["source"], "license": meta["license"], "note": meta.get("note"),
+                             "generated_at": meta.get("generated_at"), "features": regions.provinces_out()})
+    zones = regions.zones_out("san-luis")
+    write("zones-san-luis.json", dump(zones))
+    for zf in zones.zones:
+        zid = zf["properties"]["zone_id"]
+        write(f"suitability-{zid}.json", dump(regions.suitability(zid)))
     write("scenario-presets.json", [{"scenario": dump(p.scenario), "group": p.group, "help": p.help} for p in PRESETS])
     for field in repo.list_fields():
         fid = field.id
@@ -82,6 +94,8 @@ def main() -> None:
         write(f"huerta-{fid}.json", dump(ews.huerta(field_id=fid)))
         for profile in ("huerta", "agricultor"):
             write(f"alerts-{fid}-{profile}.json", dump(ews.alerts(profile, field_id=fid)))
+        write(f"zone-at-{fid}.json", dump(regions.zone_at(field.location.lat, field.location.lon)))
+        write(f"soil-moisture-field-{fid}.json", dump(field_soil_moisture(satellite, fid)))
         relief, _ = terrain_for_field(terrain, field)
         write(f"terrain-{fid}.json", dump(relief))
         results = []

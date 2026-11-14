@@ -72,6 +72,7 @@ Si cambia la API, corré `npm run gen:api`: los tipos de `types/api.ts` salen de
 | `/campo/[id]/calendario` | Calendario de 2 a 4 campañas: etapas, cobertura, suelo desnudo, riesgo de calor y de agua, recomendaciones |
 | `/campo/[id]/escenarios` | 12 escenarios con impacto inmediato y qué rotación resiste mejor |
 | `/campo/[id]/reporte` | Plan para el técnico: PDF, CSV, JSON e impresión |
+| `/zonas` | Mapa de zonas climáticas: Argentina por provincias, zonas de San Luis (color, patrón y rótulo), aptitud por cultivo y detalle de cada zona |
 | `/metodologia` | Metodología, fuentes y glosario |
 
 ## Estructura
@@ -133,7 +134,7 @@ La lógica de comparación está en `lib/dashboard.ts` (aportes, favorece/penali
 
 ## Tests
 
-`npm test` corre 120 tests de la lógica: prioridades, ranking en vivo, geometría del mapa, GeoJSON, calendario por campañas, escenarios y resistencia, reporte (CSV y PDF), exportación, comparación del dashboard, traducción de términos, datos de ejemplo y el cliente de API (reintentos, errores, paso a modo demostración, recuperación). Las pruebas de pantalla se hicieron con un navegador real (Playwright) contra el backend y sin él.
+`npm test` corre 149 tests de la lógica: prioridades, ranking en vivo, geometría del mapa, GeoJSON, calendario por campañas, escenarios y resistencia, reporte (CSV y PDF), exportación, comparación del dashboard, traducción de términos, datos de ejemplo y el cliente de API (reintentos, errores, paso a modo demostración, recuperación). Las pruebas de pantalla se hicieron con un navegador real (Playwright) contra el backend y sin él.
 
 ## Limitaciones conocidas
 

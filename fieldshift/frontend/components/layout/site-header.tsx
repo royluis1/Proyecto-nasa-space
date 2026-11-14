@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { BookOpen, Home, MapPinned, Sprout } from "lucide-react";
+import { BookOpen, Home, Map, MapPinned, Sprout } from "lucide-react";
 import { ProfileChip } from "./profile-chip";
 import { ThemeToggle } from "./theme-toggle";
 
 const links = [
   { href: "/", label: "Inicio", icon: Home },
   { href: "/campos", label: "Mis campos", icon: MapPinned },
+  { href: "/zonas", label: "Mapa de zonas", icon: Map },
   { href: "/metodologia", label: "Metodología y fuentes", icon: BookOpen },
 ];
 

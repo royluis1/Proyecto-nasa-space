@@ -95,3 +95,13 @@
 .leaflet-container .leaflet-control-attribution a {
   text-decoration: underline;
 }
+
+/* Rótulos de las zonas en el mapa (texto además del color y el patrón) */
+.leaflet-tooltip.fs-zone-label {
+  background: rgba(255, 255, 255, 0.92);
+  color: #0e1712;
+  border: 1px solid #33433a;
+  font-weight: 700;
+  font-size: 0.8rem;
+  box-shadow: none;
+}

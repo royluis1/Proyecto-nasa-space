@@ -9,6 +9,7 @@ import {
 } from "@/components/charts/diagnostic-charts";
 import { TodaySatellite } from "@/components/map/today-satellite";
 import { PageHeader } from "@/components/page-header";
+import { SoilMoistureIndicator } from "@/components/zones/soil-moisture-indicator";
 import { LabelBadge, OriginBadge, RiskLevelBadge } from "@/components/provenance/badges";
 import { TraceInfo } from "@/components/provenance/trace-info";
 import { SourceLine } from "@/components/provenance/source-line";
@@ -233,6 +234,8 @@ export default function DiagnosticoPage() {
           <CardDescription>Agua en la zona de raíces (hasta 1 m). Un píxel de 9 km: sirve como contexto de la zona, no del lote.</CardDescription>
         </CardHeader>
         <CardContent>
+          <SoilMoistureIndicator fieldId={fieldId} />
+          <h3 className="mt-8 text-lg font-semibold">Historia de la zona de raíces (SMAP L4)</h3>
           <AsyncBlock state={soil} what="la humedad del suelo">{(r) => <SoilMoistureSection r={r} />}</AsyncBlock>
         </CardContent>
       </Card>

@@ -4,7 +4,7 @@
  */
 import type {
   ApiEnvelope, CalendarRequest, CalendarTimeline, ClimateSummary, CompareResult, Crop, FieldOut, ResponseMeta, Rotation,
-  AlertsResult, HuertaPanel, ScenarioInput, ScenarioResult, SoilMoistureSummary, TerrainSummary, VegetationSummary,
+  AlertsResult, FieldSoilMoisture, HuertaPanel, ProvincesOut, ZoneAt, ZoneSuitability, ZonesOut, ScenarioInput, ScenarioResult, SoilMoistureSummary, TerrainSummary, VegetationSummary,
 } from "@/types/api";
 import { isBaseline, sameEffect } from "../scenarios";
 import { DEMO_NOTICE, DISCLAIMER } from "../content";
@@ -136,6 +136,37 @@ export async function demoAlerts(fieldId: string, profile: "huerta" | "agriculto
   const local = isLocalId(fieldId) ? getLocalField(fieldId) : null;
   const at = local ? { latitude: local.location.lat, longitude: local.location.lon } : {};
   return env({ ...data, ...at }, [...(note ? [note] : []), NO_FORECAST, ...data.warnings]);
+}
+
+export async function demoProvinces(): Promise<ApiEnvelope<ProvincesOut>> {
+  return env(await load<ProvincesOut>("provinces"));
+}
+
+export async function demoZones(provinceId: string): Promise<ApiEnvelope<ZonesOut>> {
+  if (provinceId === "san-luis") {
+    const z = await load<ZonesOut>("zones-san-luis");
+    return env(z, z.warning ? [z.warning] : []);
+  }
+  const prov = (await load<ProvincesOut>("provinces")).features.find((f) => (f.properties as { id: string }).id === provinceId);
+  const name = prov ? String((prov.properties as { name: string }).name) : provinceId;
+  return env({ province_id: provinceId, province_name: name, available: false, warning: "Zonificación disponible próximamente para esta provincia.", zones: [], cells: [] });
+}
+
+export async function demoSuitability(zoneId: string): Promise<ApiEnvelope<ZoneSuitability>> {
+  return env(await load<ZoneSuitability>(`suitability-${zoneId}`), ["Aptitud orientativa por reglas: no es una recomendación de siembra."]);
+}
+
+/** Zona de un campo sin conexión: la de su campo de ejemplo más cercano (se avisa). */
+export async function demoZoneAt(fieldId: string): Promise<ApiEnvelope<ZoneAt>> {
+  const { id, note } = await exampleIdFor(fieldId);
+  const z = await load<ZoneAt>(`zone-at-${id}`);
+  return env(z, [...(note ? [note] : []), ...(z.note ? [z.note] : [])]);
+}
+
+export async function demoFieldSoilMoisture(fieldId: string): Promise<ApiEnvelope<FieldSoilMoisture>> {
+  const { id, note } = await exampleIdFor(fieldId);
+  const d = await load<FieldSoilMoisture>(`soil-moisture-field-${id}`);
+  return env({ ...d, field_id: fieldId }, [...(note ? [note] : []), ...d.warnings]);
 }
 
 export async function demoTerrain(fieldId: string): Promise<ApiEnvelope<TerrainSummary>> {

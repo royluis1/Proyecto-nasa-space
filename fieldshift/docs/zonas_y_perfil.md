@@ -72,13 +72,28 @@ Si está en transición:
 | `POST /fields` (y `PUT /fields/{id}`) | Datos del campo | El campo con `auto_profile`: suelo estimado (con fuente, 250 m, "estimado"), qué datos se completaron, zona, transición, cultivos más aptos y avisos | 422 datos inválidos | SoilGrids, zonas |
 | `GET /fields/{field_id}/soil-moisture?recent_days=60` | — | L3 y L4: última observación, serie reciente, promedio del mes frente al mismo mes de otros años, anomalía y lectura en palabras, etiqueta observado/modelado y limitaciones | 404 lote inexistente; 503 si no hay ningún dato | SMAP (AppEEARS, CSV o muestra) |
 
+## En la app (frontend)
+
+| Dónde | Qué muestra |
+|---|---|
+| **Mapa de zonas** (`/zonas`, en el encabezado) | Mapa de Argentina por provincias. Al tocar una provincia (o elegirla en el selector), el mapa hace zoom y muestra sus zonas. Si no tiene, dice "zonificación disponible próximamente" |
+| | Cada zona tiene **color, patrón y rótulo**: puntos para árida, rayas diagonales para semiárida, cuadriculado para subhúmeda seca y rayas horizontales para húmeda. La leyenda está en texto |
+| | **Selector de cultivo**: las zonas se pintan y se rotulan por su aptitud ("Semiárida: Maíz baja"): liso = alta, rayado = media, cuadriculado = baja |
+| | Opción para ver las **celdas de NASA POWER**, que son la resolución real del dato |
+| | Una tabla con los mismos datos, como alternativa accesible al mapa |
+| | Al elegir una zona: su clima, la aptitud de cada cultivo con motivos y riesgos, lo que la zona no captura, fuente, origen y fecha de cálculo |
+| **Perfil del campo** (`/campo/[id]/perfil`) | Tarjeta **"Perfil automático de tu campo"**: el suelo que se usa (y si es estimado, cargado o de laboratorio), la estimación con su fuente, la zona, el aviso de **transición** con motivos, opciones a evaluar y aptitud en la otra zona, los cultivos más aptos y los avisos (por ejemplo, "No se estimó el suelo") |
+| **Diagnóstico** (`/campo/[id]/diagnostico`) | **"Humedad del suelo satelital (contexto regional)"**: SMAP L3 (observado) y L4 (modelado) con la última observación disponible, la lectura frente a lo normal del mes y la serie reciente. Aclara que no es tiempo real ni un sensor en el lote |
+
+Sin conexión con el servidor, todo esto funciona con los datos de ejemplo de `frontend/lib/demo/data/`. Un campo guardado solo en el navegador usa la zona del campo de ejemplo más cercano, y lo avisa.
+
 ## Sensores propios (preparado, sin implementar)
 
 `backend/app/services/soil_moisture_sources.py` define la interfaz `SoilMoistureSource` y `SensorReading` (ubicación y profundidad de cada sensor). No hay endpoint ni almacenamiento todavía. El endpoint de humedad lo aclara en `sensors`.
 
 ## Pruebas
 
-`backend/app/tests/test_zones_profile.py` cubre:
+`frontend/tests/zones.test.ts` cubre los estilos (nunca solo color), la aptitud por cultivo en el mapa y los datos de ejemplo. `backend/app/tests/test_zones_profile.py` cubre:
 
 - clasificación con datos sintéticos;
 - punto dentro y fuera de zonas y provincias;

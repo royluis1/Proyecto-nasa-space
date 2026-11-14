@@ -35,7 +35,7 @@ fieldshift/
 | Frontend y mapa | Hecho: [frontend/README.md](frontend/README.md) |
 | Dashboard comparativo | Hecho: `/campo/[id]/dashboard` |
 | Calendario, escenarios y reporte | Hecho: [guía de uso](docs/calendario_escenarios_reporte.md) |
-| Zonas climáticas, perfil automático del campo y humedad satelital | Parte A (backend) hecha: [zonas_y_perfil.md](docs/zonas_y_perfil.md). Zonas de San Luis de MUESTRA hasta correr el script con NASA POWER |
+| Zonas climáticas, perfil automático del campo y humedad satelital | Hecho (backend y frontend): [zonas_y_perfil.md](docs/zonas_y_perfil.md). Zonas de San Luis de MUESTRA hasta correr el script con NASA POWER |
 | Perfiles Huerta y Agricultor, pronóstico y alerta temprana | Hecho: [perfiles_y_alertas.md](docs/perfiles_y_alertas.md). GPM/IMERG, Landsat y ECOSTRESS, próximamente |
 
 El plan completo está en [docs/plan.md](docs/plan.md).
