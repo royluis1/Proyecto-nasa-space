@@ -80,3 +80,8 @@
   color: hsl(40 20% 94%);
   border-color: hsl(150 10% 26%);
 }
+
+/* Los enlaces de la atribución del mapa se distinguen por el subrayado, no solo por el color */
+.leaflet-container .leaflet-control-attribution a {
+  text-decoration: underline;
+}

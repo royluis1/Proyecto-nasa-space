@@ -1,0 +1,191 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ExternalLink } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
+import { LabelBadge } from "@/components/provenance/badges";
+import { Alert } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DISCLAIMER } from "@/lib/content";
+import { COMPONENTS, COMPONENT_ORDER, AGGREGATION_NOTE } from "@/lib/format";
+import { GROUPS, PRIORITY_META, type GroupKey } from "@/lib/priorities";
+import type { DataLabel } from "@/types/api";
+
+export const metadata: Metadata = { title: "Metodología y fuentes" };
+
+const DOCS = "https://github.com/royluis1/Proyecto-nasa-space/blob/main/fieldshift/docs";
+
+const SOURCES: { name: string; label: DataLabel; what: string; res: string; use: string; limits: string }[] = [
+  {
+    name: "NASA POWER",
+    label: "modelado",
+    what: "Clima diario: lluvia, temperaturas, humedad del aire, viento y radiación.",
+    res: "Una celda de unos 50 km, todos los días desde 1981.",
+    use: "Lluvia, calor, heladas, años secos y la demanda de agua de la atmósfera (evapotranspiración).",
+    limits: "Describe la zona, no tu lote. Es un reanálisis: un modelo que combina observaciones. No reemplaza un pluviómetro propio.",
+  },
+  {
+    name: "NASA SMAP (humedad del suelo)",
+    label: "modelado",
+    what: "Cuánta agua hay en el suelo. Usamos el producto de zona de raíces (hasta 1 m), que es modelado; el de la superficie (5 cm) se mide directamente.",
+    res: "Píxeles de 9 km, datos cada 3 horas desde 2015.",
+    use: "Si la humedad reciente está por debajo o por encima de lo normal, qué tan seguido hay sequías y el estrés hídrico relativo.",
+    limits: "Un píxel de 9 km son unas 8.000 hectáreas: sirve como contexto de la zona, no como la humedad de tu lote.",
+  },
+  {
+    name: "NASA MODIS (NDVI)",
+    label: "observado",
+    what: "El “verdor” de la vegetación visto desde el satélite.",
+    res: "Píxeles de 250 m, un dato cada 16 días desde el año 2000.",
+    use: "Cobertura vegetal, períodos de barbecho, tendencia de la biomasa y comparación entre campañas.",
+    limits: "En lotes de menos de unas 25 ha mezcla a los vecinos. Las nubes dejan huecos. Mide verdor, no materia orgánica del suelo.",
+  },
+  {
+    name: "FAO (Kc, Ky, agua útil) y USDA (lluvia efectiva)",
+    label: "estimado",
+    what: "Tablas y fórmulas publicadas para estimar cuánta agua necesita cada cultivo y cuánta de la lluvia aprovecha.",
+    res: "No aplica.",
+    use: "Demanda de agua de cada cultivo, caída del rendimiento por falta de agua y reserva de agua del suelo según su textura.",
+    limits: "Son valores estándar: no consideran tu variedad, tu fecha de siembra ni tu manejo. Algunos valores hay que verificarlos contra las tablas originales.",
+  },
+  {
+    name: "Catálogo de cultivos de FieldShift",
+    label: "supuesto",
+    what: "Características de 16 cultivos y coberturas de San Luis: tolerancia a sequía y calor, raíces, aporte de materia orgánica, ingreso relativo, plagas.",
+    res: "No aplica.",
+    use: "Todo el puntaje de suelo, riesgo, ingreso y sostenibilidad.",
+    limits: "Son categorías (bajo, medio, alto) cargadas de forma provisoria: hay que validarlas con INTA y con agrónomos de la zona.",
+  },
+  {
+    name: "Lo que cargás vos",
+    label: "estimado",
+    what: "Tipo de suelo, profundidad, materia orgánica, pendiente, riego e historial de cultivos.",
+    res: "Tu lote.",
+    use: "Reserva de agua, erosión, antecesores y monocultivo.",
+    limits: "Es tan bueno como lo que sepas del lote. Un análisis de suelo de laboratorio mejora mucho la confianza.",
+  },
+];
+
+const GLOSSARY: [string, string][] = [
+  ["Evapotranspiración (ET₀)", "Los milímetros de agua que la atmósfera “pide” por día en un pasto bien regado: lo que se evapora del suelo y transpiran las plantas. Si pide más de lo que llueve, hay déficit de agua."],
+  ["Estrés hídrico", "Cuando un cultivo no recibe toda el agua que necesita. En la app es el porcentaje de la demanda que la lluvia y el agua guardada en el suelo no llegan a cubrir."],
+  ["Humedad del suelo (SMAP)", "Cuánta agua hay en el suelo según un satélite de la NASA. Se compara con lo normal para la misma época: si está 20 % por debajo, el suelo está más seco que casi siempre."],
+  ["NDVI", "Un número de 0 a 1 que indica cuánto verde hay: cerca de 0 es suelo desnudo, 0,3 o menos es barbecho o rastrojo, y más de 0,7 es un cultivo en pleno desarrollo."],
+  ["Barbecho", "Período en que el lote queda sin cultivo. Sirve para juntar agua, pero deja el suelo expuesto al viento."],
+  ["Reanálisis", "Un modelo del clima que se corrige con observaciones de estaciones y satélites. Rellena los lugares donde no hay estación."],
+  ["Índice de aridez", "Lluvia anual dividida por la demanda de agua de la atmósfera. Menos de 0,5 es zona semiárida; menos de 0,2, árida."],
+  ["Coeficiente de variación", "Qué tanto cambia la lluvia de un año a otro. Si es alto, un año seco es más probable."],
+];
+
+export default function MetodologiaPage() {
+  return (
+    <div className="max-w-4xl space-y-10">
+      <PageHeader title="Metodología y fuentes" description="Cómo funciona FieldShift, de dónde salen los datos y qué todavía hay que validar." />
+
+      <Alert tone="warning" title="Antes de leer"><p>{DISCLAIMER}</p></Alert>
+
+      <section aria-labelledby="que-hace" className="space-y-3">
+        <h2 id="que-hace" className="text-2xl font-semibold">Qué hace FieldShift</h2>
+        <ol className="list-decimal space-y-2 pl-6 text-lg">
+          <li>Toma el clima, la humedad del suelo y la vegetación de la zona de tu campo.</li>
+          <li>Arma al menos tres rotaciones: tu rotación actual, una conservadora, una diversificada, una que ahorra agua, una que cuida el suelo, una de mayor ingreso y una mixta.</li>
+          <li>Calcula mes por mes cuánta agua necesita cada rotación y cuánta tiene.</li>
+          <li>Le pone puntaje a cada una en cinco aspectos y los combina según lo que vos priorices.</li>
+          <li>Te explica el resultado, los riesgos y qué conviene validar con un profesional.</li>
+        </ol>
+      </section>
+
+      <section aria-labelledby="puntaje" className="space-y-4">
+        <h2 id="puntaje" className="text-2xl font-semibold">Cómo se calcula el puntaje</h2>
+        <p className="text-lg">Cada rotación recibe cinco puntajes de 0 a 100. El total es la suma de cada uno multiplicado por el peso que le diste:</p>
+        <p className="rounded-lg bg-muted p-4 font-mono text-base">Total = peso agua × A + peso suelo × S + peso riesgo × R + peso ingreso × I + peso sostenibilidad × E</p>
+        <ul className="grid gap-3 sm:grid-cols-2">
+          {COMPONENT_ORDER.map((k) => (
+            <li key={k}>
+              <Card className="h-full">
+                <CardHeader className="pb-1"><CardTitle className="text-lg">{k} · {COMPONENTS[k].name}</CardTitle></CardHeader>
+                <CardContent><p>{COMPONENTS[k].help}</p></CardContent>
+              </Card>
+            </li>
+          ))}
+        </ul>
+        <p>Cada puntaje suma y resta puntos por motivos concretos (por ejemplo, “monocultivo: −10” o “cobertura todo el año: +40”) y la pantalla de detalle de cada rotación muestra todos esos motivos.</p>
+        <p>El <strong>rango probable</strong> es lo que podría variar el puntaje si llueve 15 % más o menos, y suma un margen según la confianza en los datos.</p>
+      </section>
+
+      <section aria-labelledby="prioridades" className="space-y-3">
+        <h2 id="prioridades" className="text-2xl font-semibold">Tus 11 prioridades y los 5 componentes</h2>
+        <p>{AGGREGATION_NOTE} Estos son los grupos:</p>
+        <ul className="space-y-2">
+          {(Object.keys(GROUPS) as GroupKey[]).map((g) => (
+            <li key={g} className="rounded-lg border p-3">
+              <strong className="capitalize">{g === "water" ? "Agua (A)" : g === "soil" ? "Suelo (S)" : g === "risk" ? "Riesgo climático (R)" : g === "income" ? "Ingreso (I)" : "Sostenibilidad (E)"}</strong>
+              <span>: {GROUPS[g].map((k) => PRIORITY_META[k].label).join(", ")}.</span>
+            </li>
+          ))}
+        </ul>
+        <p className="text-sm text-muted-foreground">“Producir forraje” y “reducir las plagas” todavía no tienen un puntaje propio: hoy suman a Ingreso y a Sostenibilidad respectivamente.</p>
+      </section>
+
+      <section aria-labelledby="etiquetas" className="space-y-3">
+        <h2 id="etiquetas" className="text-2xl font-semibold">Qué significa cada etiqueta</h2>
+        <ul className="space-y-2">
+          {(["observado", "modelado", "estimado", "supuesto"] as const).map((l) => (
+            <li key={l} className="flex flex-wrap items-center gap-3"><LabelBadge label={l} />
+              <span>{l === "observado" ? "Lo midió un satélite o un instrumento." : l === "modelado" ? "Sale de un modelo que combina observaciones." : l === "estimado" ? "Lo calculó FieldShift a partir de otros datos." : "Es un valor asumido, sin dato medido: hay que validarlo."}</span>
+            </li>
+          ))}
+        </ul>
+        <p>Además, cada bloque de datos indica su origen: <Badge variant="cultivo">DATO NASA EN VIVO</Badge> <Badge variant="agua">DATO CACHEADO</Badge> <Badge variant="tierra">DATO DE MUESTRA</Badge> <Badge variant="alerta">DATOS DE EJEMPLO (SIN CONEXIÓN)</Badge>. Los de muestra y los de ejemplo son <strong>simulados</strong>: sirven para probar la app, no para decidir.</p>
+      </section>
+
+      <section aria-labelledby="fuentes" className="space-y-4">
+        <h2 id="fuentes" className="text-2xl font-semibold">Fuentes de datos</h2>
+        {SOURCES.map((s) => (
+          <Card key={s.name}>
+            <CardHeader>
+              <div className="flex flex-wrap items-center gap-2"><CardTitle className="text-xl">{s.name}</CardTitle><LabelBadge label={s.label} /></div>
+              <CardDescription>{s.what}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-1.5">
+              <p><strong>Resolución:</strong> {s.res}</p>
+              <p><strong>Para qué lo usamos:</strong> {s.use}</p>
+              <p><strong>Límites:</strong> {s.limits}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </section>
+
+      <section aria-labelledby="glosario" className="space-y-3">
+        <h2 id="glosario" className="text-2xl font-semibold">Glosario sin vueltas</h2>
+        <dl className="space-y-3">
+          {GLOSSARY.map(([t, d]) => (
+            <div key={t} className="rounded-lg border p-3"><dt className="font-semibold">{t}</dt><dd className="text-muted-foreground">{d}</dd></div>
+          ))}
+        </dl>
+      </section>
+
+      <section aria-labelledby="limites" className="space-y-3">
+        <h2 id="limites" className="text-2xl font-semibold">Lo que todavía no sabemos</h2>
+        <ul className="list-disc space-y-2 pl-6 text-lg">
+          <li>El clima y los datos satelitales describen una zona, no tu lote.</li>
+          <li>El ingreso es un índice relativo: no usa precios, costos ni fletes.</li>
+          <li>Los atributos de los cultivos son provisorios y deben validarse con INTA y agrónomos locales.</li>
+          <li>Sin conexión, o sin las credenciales de la NASA, la app usa datos simulados y lo avisa.</li>
+          <li>Los escenarios son pruebas de sensibilidad, no pronósticos.</li>
+          <li>La erosión se estima con el tiempo que el suelo queda sin cultivo y la época de viento; no hay datos de viento de tu lote.</li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="mas" className="space-y-2">
+        <h2 id="mas" className="text-2xl font-semibold">Más detalle técnico</h2>
+        <ul className="space-y-1">
+          <li><a className="inline-flex items-center gap-1 text-primary underline" href={`${DOCS}/scoring.md`} target="_blank" rel="noreferrer">Cómo se calcula cada puntaje <ExternalLink aria-hidden className="size-4" /></a></li>
+          <li><a className="inline-flex items-center gap-1 text-primary underline" href={`${DOCS}/satellite.md`} target="_blank" rel="noreferrer">SMAP y MODIS: productos, métricas y limitaciones <ExternalLink aria-hidden className="size-4" /></a></li>
+          <li><a className="inline-flex items-center gap-1 text-primary underline" href={`${DOCS}/assumptions.md`} target="_blank" rel="noreferrer">Todos los supuestos <ExternalLink aria-hidden className="size-4" /></a></li>
+        </ul>
+        <p><Link href="/campos" className="text-primary underline">Volver a elegir mi campo</Link></p>
+      </section>
+    </div>
+  );
+}

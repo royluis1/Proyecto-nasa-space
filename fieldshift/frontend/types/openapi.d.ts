@@ -83,7 +83,11 @@ export interface paths {
          * @description Devuelve el lote con su ubicación, perfil de suelo y rotación actual.
          */
         get: operations["get_field_fields__field_id__get"];
-        put?: never;
+        /**
+         * Actualizar un lote
+         * @description Reemplaza los datos del lote. Los cambios se guardan en memoria (se pierden al reiniciar).
+         */
+        put: operations["update_field_fields__field_id__put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -2484,6 +2488,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_field_fields__field_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                field_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FieldCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_FieldOut_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description El lote no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

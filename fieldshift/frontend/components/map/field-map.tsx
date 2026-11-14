@@ -1,0 +1,335 @@
+"use client";
+
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import { Check, Eraser, FileUp, Hexagon, Map as MapIcon, MapPin, Navigation, Satellite, Search, Undo2 } from "lucide-react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { CircleMarker, MapContainer, Marker, Polygon, Polyline, TileLayer, Tooltip, useMap, useMapEvents } from "react-leaflet";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { searchPlaces, type Place } from "@/lib/geocode";
+import { closeRing, parseCoordinates, parseGeoJson, ringAreaHa, ringCentroid, type LngLat } from "@/lib/geometry";
+import { num } from "@/lib/format";
+import { cn } from "@/lib/utils";
+
+export interface MapPoint {
+  lat: number;
+  lon: number;
+}
+export interface OtherField {
+  id: string;
+  name: string;
+  lat: number;
+  lon: number;
+}
+
+interface FieldMapProps {
+  /** "edit": marcar punto y polígono. "overview": solo ver y elegir entre campos existentes. */
+  mode?: "edit" | "overview";
+  point?: MapPoint | null;
+  polygon?: LngLat[] | null;
+  onPointChange?: (p: MapPoint) => void;
+  onPolygonChange?: (ring: LngLat[] | null) => void;
+  others?: OtherField[];
+  selectedId?: string | null;
+  onSelectOther?: (id: string) => void;
+  className?: string;
+}
+
+const SAN_LUIS: [number, number] = [-33.7, -65.8];
+const MAX_GEOJSON_BYTES = 2_000_000;
+
+const TILES = {
+  mapa: { url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", attribution: "© colaboradores de OpenStreetMap" },
+  satelite: {
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attribution: "Imágenes © Esri, Maxar, Earthstar Geographics y la comunidad GIS",
+  },
+} as const;
+
+const pinHtml = (color: string) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="34" height="44" viewBox="0 0 34 44" aria-hidden="true"><path d="M17 1C8.7 1 2 7.5 2 15.6 2 26 17 43 17 43s15-17 15-27.4C32 7.5 25.3 1 17 1z" fill="${color}" stroke="#fff" stroke-width="2.5"/><circle cx="17" cy="15.5" r="5.5" fill="#fff"/></svg>`;
+const makePin = (color: string) => L.divIcon({ className: "", html: pinHtml(color), iconSize: [34, 44], iconAnchor: [17, 43], tooltipAnchor: [0, -38] });
+const PIN_SELECTED = makePin("#2f6f40");
+const PIN_OTHER = makePin("#8a6234");
+
+function ClickHandler({ mode, drawing, onPoint, onVertex }: { mode: string; drawing: boolean; onPoint: (p: MapPoint) => void; onVertex: (v: LngLat) => void }) {
+  useMapEvents({
+    click(e) {
+      if (mode !== "edit") return;
+      if (drawing) onVertex([e.latlng.lng, e.latlng.lat]);
+      else onPoint({ lat: e.latlng.lat, lon: e.latlng.lng });
+    },
+  });
+  return null;
+}
+
+/** Enter en un campo de texto ejecuta la acción sin enviar el formulario del campo que contiene al mapa. */
+const onEnter = (fn: () => void | Promise<void>) => (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    void fn();
+  }
+};
+
+type Move = { kind: "fly"; lat: number; lon: number; nonce: number } | { kind: "fit"; ring: LngLat[]; nonce: number } | null;
+
+function Mover({ move }: { move: Move }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!move) return;
+    if (move.kind === "fly") map.flyTo([move.lat, move.lon], Math.max(map.getZoom(), 14), { duration: 0.8 });
+    else map.fitBounds(L.latLngBounds(move.ring.map(([lon, lat]) => [lat, lon] as [number, number])), { maxZoom: 17, padding: [24, 24] });
+  }, [move, map]);
+  return null;
+}
+
+/** Una vez montado, deja que Leaflet recalcule el tamaño (evita el mapa gris si el contenedor cambia de tamaño). */
+function SizeFix() {
+  const map = useMap();
+  useEffect(() => {
+    const t = setTimeout(() => map.invalidateSize(), 250);
+    return () => clearTimeout(t);
+  }, [map]);
+  return null;
+}
+
+export default function FieldMap({
+  mode = "edit", point = null, polygon = null, onPointChange, onPolygonChange, others = [], selectedId = null, onSelectOther, className,
+}: FieldMapProps) {
+  const uid = useId();
+  const [base, setBase] = useState<"mapa" | "satelite">("mapa");
+  const [drawing, setDrawing] = useState(false);
+  const [draft, setDraft] = useState<LngLat[]>([]);
+  const [move, setMove] = useState<Move>(null);
+  const nonce = useRef(0);
+
+  const [query, setQuery] = useState("");
+  const [places, setPlaces] = useState<Place[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searchMsg, setSearchMsg] = useState<string | null>(null);
+  const [coords, setCoords] = useState("");
+  const [coordsMsg, setCoordsMsg] = useState<string | null>(null);
+  const [fileMsg, setFileMsg] = useState<string | null>(null);
+
+  const initial = useMemo(() => {
+    const first = others[0];
+    const c: [number, number] = point ? [point.lat, point.lon] : first ? [first.lat, first.lon] : SAN_LUIS;
+    return { center: c, zoom: point ? 13 : mode === "overview" ? 8 : 7 };
+    // solo la vista inicial: los cambios posteriores se mueven con `move`
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fly = (lat: number, lon: number) => setMove({ kind: "fly", lat, lon, nonce: ++nonce.current });
+  const fit = (ring: LngLat[]) => setMove({ kind: "fit", ring, nonce: ++nonce.current });
+  const setPoint = (p: MapPoint) => onPointChange?.({ lat: Math.round(p.lat * 1e4) / 1e4, lon: Math.round(p.lon * 1e4) / 1e4 });
+
+  function applyPolygon(ring: LngLat[]) {
+    const closed = closeRing(ring);
+    onPolygonChange?.(closed);
+    setPoint(ringCentroid(closed));
+    fit(closed);
+  }
+
+  function finishDraft() {
+    if (draft.length < 3) return;
+    applyPolygon(draft);
+    setDraft([]);
+    setDrawing(false);
+  }
+
+  async function runSearch() {
+    const q = query.trim();
+    if (!q) return;
+    setSearchMsg(null);
+    setPlaces([]);
+    const asCoords = parseCoordinates(q);
+    if (asCoords) {
+      setPoint(asCoords);
+      fly(asCoords.lat, asCoords.lon);
+      return;
+    }
+    setSearching(true);
+    try {
+      const found = await searchPlaces(q);
+      setPlaces(found);
+      if (found.length === 0) setSearchMsg("No encontré ese lugar en Argentina. Probá con otro nombre o ingresá las coordenadas.");
+    } catch {
+      setSearchMsg("No se pudo buscar el lugar (sin conexión o servicio no disponible). Podés marcar el punto en el mapa o ingresar las coordenadas.");
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  function goToCoords() {
+    const c = parseCoordinates(coords);
+    if (!c) {
+      setCoordsMsg("No entendí las coordenadas. Escribí latitud y longitud, por ejemplo: -33.85, -65.20");
+      return;
+    }
+    setCoordsMsg(null);
+    setPoint(c);
+    fly(c.lat, c.lon);
+  }
+
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setFileMsg(null);
+    if (file.size > MAX_GEOJSON_BYTES) {
+      setFileMsg("El archivo es muy grande (máximo 2 MB).");
+      return;
+    }
+    try {
+      applyPolygon(parseGeoJson(await file.text()));
+    } catch (err) {
+      setFileMsg(err instanceof Error ? err.message : "No se pudo leer el archivo.");
+    }
+  }
+
+  const ring = polygon && polygon.length >= 4 ? polygon : null;
+  const areaHa = ring ? ringAreaHa(ring) : 0;
+  const tone = base === "satelite" ? "#ffe066" : "#2f6f40";
+  const editing = mode === "edit";
+
+  return (
+    <div className={cn("space-y-3", className)}>
+      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Tipo de mapa">
+        <Button type="button" size="sm" variant={base === "mapa" ? "default" : "outline"} aria-pressed={base === "mapa"} onClick={() => setBase("mapa")}>
+          <MapIcon aria-hidden /> Mapa
+        </Button>
+        <Button type="button" size="sm" variant={base === "satelite" ? "default" : "outline"} aria-pressed={base === "satelite"} onClick={() => setBase("satelite")}>
+          <Satellite aria-hidden /> Satélite
+        </Button>
+        {editing && (
+          <>
+            <span className="mx-1 hidden h-6 w-px bg-border sm:block" aria-hidden />
+            {!drawing ? (
+              <Button type="button" size="sm" variant="outline" onClick={() => { setDrawing(true); setDraft([]); }}>
+                <Hexagon aria-hidden /> Dibujar polígono
+              </Button>
+            ) : (
+              <>
+                <Button type="button" size="sm" onClick={finishDraft} disabled={draft.length < 3}>
+                  <Check aria-hidden /> Terminar ({draft.length} vértices)
+                </Button>
+                <Button type="button" size="sm" variant="outline" onClick={() => setDraft((d) => d.slice(0, -1))} disabled={draft.length === 0}>
+                  <Undo2 aria-hidden /> Deshacer vértice
+                </Button>
+                <Button type="button" size="sm" variant="ghost" onClick={() => { setDrawing(false); setDraft([]); }}>
+                  Cancelar
+                </Button>
+              </>
+            )}
+            {ring && !drawing && (
+              <Button type="button" size="sm" variant="ghost" onClick={() => onPolygonChange?.(null)}>
+                <Eraser aria-hidden /> Borrar polígono
+              </Button>
+            )}
+            <Button type="button" size="sm" variant="outline" asChild>
+              <label className="cursor-pointer">
+                <FileUp aria-hidden /> Cargar GeoJSON
+                <input type="file" accept=".geojson,.json,application/geo+json,application/json" className="sr-only" onChange={onFile} aria-label="Cargar polígono desde un archivo GeoJSON" />
+              </label>
+            </Button>
+          </>
+        )}
+      </div>
+
+      {editing && (
+        <div className="grid gap-3 md:grid-cols-2">
+          {/* Sin <form>: este mapa vive dentro del formulario del campo y los formularios no se pueden anidar. */}
+          <div className="space-y-1.5" role="search">
+            <Label htmlFor={`${uid}-q`}>Buscar un lugar por nombre</Label>
+            <div className="flex gap-2">
+              <Input id={`${uid}-q`} value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={onEnter(runSearch)} placeholder="Ej.: Villa Mercedes, San Luis" autoComplete="off" />
+              <Button type="button" variant="secondary" onClick={() => void runSearch()} disabled={searching || !query.trim()}>
+                <Search aria-hidden /> {searching ? "Buscando…" : "Buscar"}
+              </Button>
+            </div>
+            {searchMsg && <p role="status" className="text-sm text-muted-foreground">{searchMsg}</p>}
+            {places.length > 0 && (
+              <ul className="divide-y rounded-md border bg-card" aria-label="Resultados de la búsqueda">
+                {places.map((p) => (
+                  <li key={`${p.lat},${p.lon}`}>
+                    <button type="button" className="w-full px-3 py-2 text-left text-sm hover:bg-accent" onClick={() => { setPoint(p); fly(p.lat, p.lon); setPlaces([]); }}>
+                      {p.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor={`${uid}-c`}>Ingresar coordenadas</Label>
+            <div className="flex gap-2">
+              <Input id={`${uid}-c`} value={coords} onChange={(e) => setCoords(e.target.value)} onKeyDown={onEnter(goToCoords)} placeholder="-33.85, -65.20" inputMode="decimal" autoComplete="off" />
+              <Button type="button" variant="secondary" onClick={goToCoords} disabled={!coords.trim()}>
+                <Navigation aria-hidden /> Ir
+              </Button>
+            </div>
+            {coordsMsg && <p role="alert" className="text-sm text-destructive">{coordsMsg}</p>}
+          </div>
+        </div>
+      )}
+      {fileMsg && <p role="alert" className="text-sm text-destructive">{fileMsg}</p>}
+
+      <div
+        role="group"
+        aria-label={editing ? "Mapa interactivo: hacé clic para marcar el campo. También podés usar las coordenadas." : "Mapa de campos"}
+        className="overflow-hidden rounded-lg border"
+      >
+        <MapContainer center={initial.center} zoom={initial.zoom} scrollWheelZoom className="z-0 h-[420px] w-full sm:h-[480px]">
+          <TileLayer key={base} url={TILES[base].url} attribution={TILES[base].attribution} maxZoom={19} />
+          <ClickHandler mode={mode} drawing={drawing} onPoint={setPoint} onVertex={(v) => setDraft((d) => [...d, v])} />
+          <Mover move={move} />
+          <SizeFix />
+          {ring && <Polygon positions={ring.map(([lon, lat]) => [lat, lon] as [number, number])} pathOptions={{ color: tone, weight: 3, fillOpacity: 0.2 }} />}
+          {draft.length > 0 && (
+            <>
+              <Polyline positions={draft.map(([lon, lat]) => [lat, lon] as [number, number])} pathOptions={{ color: tone, weight: 3, dashArray: "6 6" }} />
+              {draft.map(([lon, lat], i) => (
+                <CircleMarker key={`${i}-${lon}-${lat}`} center={[lat, lon]} radius={5} pathOptions={{ color: "#fff", fillColor: tone, fillOpacity: 1, weight: 2 }} />
+              ))}
+            </>
+          )}
+          {others.map((o) => (
+            <Marker
+              key={o.id}
+              position={[o.lat, o.lon]}
+              icon={o.id === selectedId ? PIN_SELECTED : PIN_OTHER}
+              eventHandlers={{ click: () => onSelectOther?.(o.id) }}
+              keyboard={false}
+            >
+              <Tooltip>{o.name}</Tooltip>
+            </Marker>
+          ))}
+          {editing && point && (
+            <Marker
+              position={[point.lat, point.lon]}
+              icon={PIN_SELECTED}
+              draggable
+              keyboard={false}
+              eventHandlers={{ dragend: (e) => { const p = (e.target as L.Marker).getLatLng(); setPoint({ lat: p.lat, lon: p.lng }); } }}
+            >
+              <Tooltip>Campo seleccionado (arrastralo para ajustar)</Tooltip>
+            </Marker>
+          )}
+        </MapContainer>
+      </div>
+
+      {editing && (
+        <p role="status" aria-live="polite" className="flex flex-wrap items-center gap-2 text-sm">
+          <MapPin aria-hidden className="size-4" />
+          {drawing
+            ? `Dibujando: hacé clic en cada esquina del lote (${draft.length} vértices) y después tocá “Terminar”.`
+            : point
+              ? `Punto seleccionado: ${num(point.lat, 4)}, ${num(point.lon, 4)}${ring ? ` · Polígono de ${num(areaHa, 1)} ha` : ""}`
+              : "Todavía no marcaste el campo: hacé clic en el mapa, buscá un lugar o ingresá las coordenadas."}
+        </p>
+      )}
+    </div>
+  );
+}

@@ -148,6 +148,77 @@
    }
   },
   "/fields/{field_id}": {
+   "put": {
+    "tags": [
+     "lotes"
+    ],
+    "summary": "Actualizar un lote",
+    "description": "Reemplaza los datos del lote. Los cambios se guardan en memoria (se pierden al reiniciar).",
+    "operationId": "update_field_fields__field_id__put",
+    "parameters": [
+     {
+      "name": "field_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Field Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/FieldCreate"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_FieldOut_"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "El lote no existe.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "400": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      },
+      "description": "Bad Request"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      },
+      "description": "Unprocessable Content"
+     }
+    }
+   },
    "get": {
     "tags": [
      "lotes"

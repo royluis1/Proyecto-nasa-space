@@ -57,10 +57,22 @@ class Repository:
     def list_fields(self) -> list[FieldOut]:
         return list(self.fields.values())
 
-    def create_field(self, data: FieldCreate) -> FieldOut:
+    def _check_crops(self, data: FieldCreate) -> None:
         unknown = sorted({*data.crop_history, *([data.current_crop] if data.current_crop else [])} - set(self.crops))
         if unknown:
             raise InvalidInputError(f"Cultivos desconocidos: {unknown}.", {"crop_ids": unknown})
+
+    def update_field(self, field_id: str, data: FieldCreate) -> FieldOut:
+        """Reemplaza los datos del lote (la rotación actual declarada se conserva)."""
+        current = self.get_field(field_id)
+        self._check_crops(data)
+        updated = FieldOut(id=field_id, current_rotation_id=current.current_rotation_id, sample_note=current.sample_note,
+                           **data.model_dump())
+        self.fields[field_id] = updated
+        return updated
+
+    def create_field(self, data: FieldCreate) -> FieldOut:
+        self._check_crops(data)
         field = FieldOut(id=f"lote-{uuid.uuid4().hex[:8]}", **data.model_dump())
         self.fields[field.id] = field
         return field

@@ -110,6 +110,10 @@ Cascada: **en vivo → caché (cualquier antigüedad, con advertencia) → muest
 - **Logs:** JSON con request_id, método, ruta, estado y duración. Nunca claves ni datos del productor.
 - **Trazabilidad:** cada valor lleva su procedencia y el reporte exportado incluye fuentes y supuestos.
 
+## Frontend
+
+Next.js (App Router) con TypeScript, Tailwind, componentes al estilo shadcn/ui, Leaflet y Recharts. Habla con la API REST con un cliente tipado a partir del OpenAPI del backend. Cada campo comparte un estado (`CampoProvider`) con sus prioridades y el ranking: al mover una prioridad el total se recalcula en el navegador (Σ peso × valor de cada componente) y se reconcilia con el servidor medio segundo después. Si el servidor no responde, usa datos de ejemplo generados con el propio motor y lo avisa. Detalle en [frontend/README.md](../frontend/README.md).
+
 ## Decisiones de stack
 
 - **PostGIS:** fuera de alcance para el hackathon. Persistencia en JSON/Parquet detrás de un repositorio, para poder reemplazarla.

@@ -45,6 +45,23 @@ def list_fields(repo: Repository = Depends(get_repository)) -> ApiResponse[list[
     )
 
 
+@router.put(
+    "/fields/{field_id}",
+    response_model=ApiResponse[FieldOut],
+    summary="Actualizar un lote",
+    responses={**NOT_FOUND, 400: {"model": ErrorResponse}, 422: {"model": ErrorResponse}},
+)
+def update_field(
+    field_id: str, data: FieldCreate = Body(), repo: Repository = Depends(get_repository)
+) -> ApiResponse[FieldOut]:
+    """Reemplaza los datos del lote. Los cambios se guardan en memoria (se pierden al reiniciar)."""
+    field = repo.update_field(field_id, data)
+    warnings = ["El lote se guarda en memoria: se pierde al reiniciar el servidor."]
+    if not is_in_san_luis(field.location.lat, field.location.lon):
+        warnings.append("La ubicación está fuera de San Luis: los supuestos agronómicos pueden no aplicar.")
+    return ApiResponse(data=field, meta=ResponseMeta(data_status=DataStatus.SAMPLE, warnings=warnings))
+
+
 @router.get("/fields/{field_id}", response_model=ApiResponse[FieldOut], summary="Obtener un lote", responses=NOT_FOUND)
 def get_field(field_id: str, repo: Repository = Depends(get_repository)) -> ApiResponse[FieldOut]:
     """Devuelve el lote con su ubicación, perfil de suelo y rotación actual."""

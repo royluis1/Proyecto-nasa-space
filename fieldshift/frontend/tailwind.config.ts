@@ -26,7 +26,7 @@ const config: Config = {
         agua: { 50: "#eef6fb", 100: "#d6e9f5", 500: "#2f7fb5", 600: "#236796", 700: "#1d5279", 900: "#11314a" },
       },
       borderRadius: { lg: "var(--radius)", md: "calc(var(--radius) - 2px)", sm: "calc(var(--radius) - 4px)" },
-      fontFamily: { sans: ["var(--font-sans)", "system-ui", "sans-serif"] },
+      fontFamily: { sans: ["ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"] },
     },
   },
   plugins: [animate],

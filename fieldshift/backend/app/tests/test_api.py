@@ -216,3 +216,24 @@ def test_crear_lote_invalido(client):
     assert_error(client.post("/fields", json={**base, "crop_history": ["papa"]}), 400, "INVALID_INPUT")
     abierto = {"type": "Polygon", "coordinates": [[[-65.41, -33.69], [-65.39, -33.69], [-65.39, -33.71], [-65.40, -33.70]]]}
     assert_error(client.post("/fields", json={**base, "boundary": abierto}), 422, "VALIDATION_ERROR")
+
+
+def test_actualizar_lote(client):
+    base = client.get("/fields/campo-este").json()["data"]
+    cambios = {
+        "name": "Campo Este (editado)", "location": base["location"], "area_ha": 640, "irrigated": True,
+        "current_crop": "maiz", "crop_history": ["soja", "maiz"], "drainage": "alto",
+    }
+    r = client.put("/fields/campo-este", json=cambios)
+    assert r.status_code == 200, r.text
+    data = r.json()["data"]
+    assert data["area_ha"] == 640 and data["irrigated"] is True and data["current_rotation_id"] == "campo-este-actual"
+    assert client.get("/fields/campo-este").json()["data"]["name"] == "Campo Este (editado)"
+    assert_error(client.put("/fields/nada", json=cambios), 404, "FIELD_NOT_FOUND")
+    assert_error(client.put("/fields/campo-este", json={**cambios, "current_crop": "papa"}), 400, "INVALID_INPUT")
+    assert_error(client.put("/fields/campo-este", json={**cambios, "area_ha": -1}), 422, "VALIDATION_ERROR")
+
+
+def test_cors_permite_put(client):
+    r = client.options("/fields/campo-este", headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "PUT"})
+    assert r.status_code == 200 and "PUT" in r.headers["access-control-allow-methods"]

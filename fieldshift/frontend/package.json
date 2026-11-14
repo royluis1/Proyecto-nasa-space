@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "gen:api": "cd ../backend && python -m app.export_openapi && cd ../frontend && openapi-typescript ../backend/openapi.json -o types/openapi.d.ts"
