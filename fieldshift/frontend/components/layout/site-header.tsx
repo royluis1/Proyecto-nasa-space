@@ -12,9 +12,9 @@ export function SiteHeader() {
   return (
     <header className="border-b bg-card print:hidden">
       <div className="container flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3">
-        <Link href="/" className="flex items-center gap-2 rounded-md text-xl font-bold text-primary">
-          <Sprout aria-hidden className="size-7" />
-          FieldShift
+        <Link href="/" className="flex items-center gap-2 rounded-md text-xl font-extrabold tracking-tight">
+          <Sprout aria-hidden className="size-7 text-primary" />
+          <span>Field<span className="text-primary">Shift</span></span>
         </Link>
         <nav aria-label="Principal" className="order-last flex w-full flex-wrap gap-1 sm:order-none sm:w-auto">
           {links.map(({ href, label, icon: Icon }) => (

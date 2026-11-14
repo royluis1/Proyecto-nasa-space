@@ -20,6 +20,10 @@ const config: Config = {
         destructive: { DEFAULT: "hsl(var(--destructive))", foreground: "hsl(var(--destructive-foreground))" },
         card: { DEFAULT: "hsl(var(--card))", foreground: "hsl(var(--card-foreground))" },
         popover: { DEFAULT: "hsl(var(--popover))", foreground: "hsl(var(--popover-foreground))" },
+        good: "hsl(var(--good))",
+        warn: "hsl(var(--warn))",
+        bad: "hsl(var(--bad))",
+        info: "hsl(var(--info))",
         // Paleta del dominio: verde (cultivo), tierra (suelo), azul (agua)
         cultivo: { 50: "#f0f7f1", 100: "#dcecdf", 500: "#3f8a52", 600: "#2f6f40", 700: "#255833", 900: "#16351f" },
         tierra: { 50: "#faf6f0", 100: "#f1e7d8", 300: "#d6b98f", 500: "#a87a44", 600: "#8a6234", 700: "#6b4b28", 900: "#3b2a17" },

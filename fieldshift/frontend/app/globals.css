@@ -23,29 +23,39 @@
     --border: 35 20% 85%;
     --input: 35 20% 80%;
     --ring: 203 62% 40%;
-    --radius: 0.75rem;
+    --radius: 1rem;
+    /* Semáforo para barras y aros (gráficos, no texto) */
+    --good: 134 50% 38%;
+    --warn: 38 92% 42%;
+    --bad: 7 72% 50%;
+    --info: 203 62% 40%;
   }
 
+  /* Modo oscuro: verde profundo (paleta del diseño de la portada) */
   .dark {
-    --background: 150 20% 8%;
-    --foreground: 40 20% 94%;
-    --card: 150 18% 11%;
-    --card-foreground: 40 20% 94%;
-    --popover: 150 18% 11%;
-    --popover-foreground: 40 20% 94%;
-    --primary: 140 42% 52%;
-    --primary-foreground: 150 30% 8%;
-    --secondary: 30 18% 18%;
-    --secondary-foreground: 40 25% 90%;
-    --muted: 150 12% 16%;
-    --muted-foreground: 40 12% 68%;
-    --accent: 203 40% 20%;
-    --accent-foreground: 203 60% 85%;
-    --destructive: 14 75% 62%;
-    --destructive-foreground: 150 30% 8%;
-    --border: 150 10% 22%;
-    --input: 150 10% 26%;
-    --ring: 203 60% 60%;
+    --background: 147 24% 7%;
+    --foreground: 100 27% 96%;
+    --card: 141 24% 11%;
+    --card-foreground: 100 27% 96%;
+    --popover: 141 24% 11%;
+    --popover-foreground: 100 27% 96%;
+    --primary: 134 57% 60%;
+    --primary-foreground: 140 60% 8%;
+    --secondary: 142 25% 15%;
+    --secondary-foreground: 100 27% 96%;
+    --muted: 142 25% 15%;
+    --muted-foreground: 134 13% 74%;
+    --accent: 142 25% 17%;
+    --accent-foreground: 100 27% 96%;
+    --destructive: 7 83% 66%;
+    --destructive-foreground: 140 60% 8%;
+    --border: 141 24% 22%;
+    --input: 141 24% 26%;
+    --ring: 209 100% 71%;
+    --good: 134 57% 60%;
+    --warn: 45 86% 62%;
+    --bad: 7 83% 66%;
+    --info: 209 100% 71%;
   }
 
   * {
@@ -72,7 +82,7 @@
 
 /* Leaflet: que el mapa respete el modo oscuro en los controles */
 .dark .leaflet-container {
-  background: #14201a;
+  background: #0e1712;
 }
 .dark .leaflet-control-zoom a,
 .dark .leaflet-bar a {
