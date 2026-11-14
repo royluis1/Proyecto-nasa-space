@@ -34,12 +34,14 @@ describe("zonas y perfil (datos de ejemplo)", () => {
     expect(p.features).toHaveLength(24);
     const withZones = p.features.filter((f) => (f.properties as { has_zones: boolean }).has_zones).map((f) => (f.properties as { id: string }).id);
     expect(withZones).toEqual(["san-luis"]);
-    expect(p.source).toMatch(/Natural Earth/);
+    expect(p.source).toMatch(/IGN/);
+    expect(p.license).toMatch(/27\.275/);
   });
-  it("zonas de San Luis rotuladas como muestra y el resto 'próximamente'", async () => {
+  it("zonas de San Luis calculadas con NASA POWER (o la muestra rotulada) y el resto 'próximamente'", async () => {
     const z = (await demoZones("san-luis")).data;
-    expect(z.available && z.origin === "sample").toBe(true);
-    expect(z.warning).toMatch(/DATO DE MUESTRA/);
+    expect(z.available).toBe(true);
+    if (z.origin === "sample") expect(z.warning).toMatch(/DATO DE MUESTRA/);
+    else expect(z.origin === "cached" && z.period === "2015-2025" && Boolean(z.generated_at)).toBe(true);
     expect(z.zones.every((f) => Array.isArray((f.properties as { suitability: unknown[] }).suitability))).toBe(true);
     const c = (await demoZones("cordoba")).data;
     expect(c.available).toBe(false);
@@ -58,7 +60,8 @@ describe("zonas y perfil (datos de ejemplo)", () => {
     expect(z.transition?.options).toHaveLength(4);
     expect(z.transition?.suitability_other.length).toBeGreaterThan(0);
     expect(z.top_crops.length).toBeGreaterThanOrEqual(3);
-    expect((await demoZoneAt("campo-centro")).data.transition?.is_transition).toBe(false);
+    const centro = (await demoZoneAt("campo-centro")).data.transition!;
+    expect(centro.is_transition ? centro.reasons.length > 0 : centro.message === null).toBe(true);
   });
   it("humedad satelital: L3 observado y L4 modelado, con última observación y sin 'tiempo real'", async () => {
     const m = (await demoFieldSoilMoisture("campo-este")).data;

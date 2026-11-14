@@ -13,10 +13,9 @@
 
 | Archivo | Qué es | Cómo se genera |
 |---|---|---|
-| `data/samples/provincias_argentina.geojson` | Provincias de **Natural Earth** (dominio público, 1:10m, simplificadas a ~1 km) | `python scripts/build_provinces.py` |
-| (reemplazo) | Provincias del **IGN** | Descargar la capa "Provincia" de ign.gob.ar y correr `python scripts/build_provinces.py --source ign --input provincias.geojson` |
+| `data/samples/provincias_argentina.geojson` | Provincias del **IGN** (capa `ign:provincia`, Ley 27.275 Art. 2), simplificadas a ~1 km | Bajar el GeoJSON del servicio WFS del IGN (URL en el script) y correr `python scripts/build_provinces.py --source ign --input provincias.geojson`. Sin IGN: `python scripts/build_provinces.py` (Natural Earth) |
 | `data/samples/zonas_san_luis_muestra.geojson` | **MUESTRA SIMULADA** de zonas (se ve "DATO DE MUESTRA") | `python scripts/build_zones.py --sample` |
-| `data/samples/zonas_san_luis.geojson` | Zonas reales con NASA POWER. Si está, tiene prioridad sobre la muestra | `python scripts/build_zones.py --live`: unos 40 pedidos, uno cada 2 s, con caché en `data/cache/zones/` para retomar |
+| `data/samples/zonas_san_luis.geojson` | **Zonas reales** con NASA POWER (2015-2025), calculadas el 14/11/2026: 4 zonas (árida 2 celdas, semiárida 27, subhúmeda seca 4, subhúmeda húmeda 6). Tienen prioridad sobre la muestra y se rotulan "DATO CACHEADO" con su fecha | `python scripts/build_zones.py --live`: unos 40 pedidos, uno cada 2 s, con caché en `data/cache/zones/` para retomar |
 | `data/samples/soil_sample_san_luis.json` | Suelo **simulado** de los 3 campos de ejemplo | A mano |
 | `data/samples/smap_l3_sample_san_luis.csv` | SMAP L3 **simulado** con el formato de AppEEARS | `python scripts/generate_smap_l3_sample.py` |
 

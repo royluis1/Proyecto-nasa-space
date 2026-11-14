@@ -143,17 +143,30 @@ def test_zonas_precalculadas_tienen_prioridad_sobre_la_muestra(folder, repo):
     live["fieldshift"]["origin"] = "live"
     (folder / "zonas_prueba.geojson").write_text(json.dumps(live))
     rr = RegionRepository(folder, repo.crops)
-    assert rr.zones_out("prueba").origin == DataStatus.LIVE
+    assert rr.zones_out("prueba").origin == DataStatus.CACHED
     assert rr.suitability("prueba-semiarido").crops[0].confidence == Confidence.MEDIA
 
 
-def test_zonas_de_muestra_de_san_luis(repo):
-    rr = RegionRepository(SAMPLES_DIR, repo.crops)
-    z = rr.zones_out("san-luis")
+def test_zonas_de_muestra_de_san_luis(repo, tmp_path):
+    import shutil
+
+    for name in ("provincias_argentina.geojson", "zonas_san_luis_muestra.geojson"):
+        shutil.copy(SAMPLES_DIR / name, tmp_path / name)  # solo la muestra: sin las zonas calculadas con POWER
+    z = RegionRepository(tmp_path, repo.crops).zones_out("san-luis")
     assert z.available and z.origin == DataStatus.SAMPLE and "DATO DE MUESTRA" in z.warning
     assert {f["properties"]["zone_class"] for f in z.zones} <= {"arido", "semiarido", "subhumedo_seco", "humedo"}
     assert all(f["properties"]["suitability"] for f in z.zones) and len(z.cells) > 20
     assert "NASA POWER" in z.title and "UNEP" in z.title
+
+
+def test_zonas_reales_de_san_luis_si_estan(repo):
+    if not (SAMPLES_DIR / "zonas_san_luis.geojson").exists():
+        pytest.skip("Todavía no se corrió scripts/build_zones.py --live")
+    z = RegionRepository(SAMPLES_DIR, repo.crops).zones_out("san-luis")
+    assert z.origin == DataStatus.CACHED and z.warning is None and z.period == "2015-2025" and z.generated_at
+    for cell in z.cells:
+        p = cell["properties"]
+        assert p["years"] >= 10 and 100 < p["precip_mm"] < 1500 and 900 < p["et0_mm"] < 2500  # el NO árido llega a ~2050 mm de ET0
 
 
 # ------------------------------------------------------------------ aptitud
@@ -310,7 +323,7 @@ def test_api_crear_campo_devuelve_el_perfil(client):
 def test_api_zonas_y_aptitud(client):
     assert client.get("/regions/provinces").json()["data"]["features"]
     z = client.get("/regions/san-luis/zones").json()
-    assert z["data"]["available"] and z["meta"]["data_status"] == "sample"
+    assert z["data"]["available"] and z["meta"]["data_status"] in ("cached", "sample")
     assert client.get("/regions/cordoba/zones").json()["data"]["available"] is False
     assert client.get("/regions/nada/zones").status_code == 404
     a = client.get("/zones/at", params={"lat": -33.85, "lon": -65.2}).json()["data"]

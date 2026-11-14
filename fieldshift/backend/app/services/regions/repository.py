@@ -74,7 +74,8 @@ class RegionRepository:
 
     @staticmethod
     def _origin(meta: dict) -> DataStatus:
-        return DataStatus.LIVE if meta.get("origin") == "live" else DataStatus.SAMPLE
+        # Calculadas con POWER y guardadas (con fecha de cálculo): son datos reales, pero no "en vivo".
+        return DataStatus.CACHED if meta.get("origin") == "live" else DataStatus.SAMPLE
 
     def confidence(self, meta: dict) -> Confidence:
         return Confidence.MEDIA if meta.get("origin") == "live" else Confidence.BAJA

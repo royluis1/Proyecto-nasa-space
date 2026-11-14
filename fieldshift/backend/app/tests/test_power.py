@@ -369,3 +369,18 @@ def test_resumen_climatico_con_el_csv_del_campo(tmp_path):
     assert s.source.origin == DataStatus.UPLOADED and s.source.provider == "NASA POWER"
     assert 400 < s.annual[0].precip_mm < 1200
     assert all(c.et0_mm and c.et0_mm > 0 for c in s.monthly_climatology)  # ET0 con la presión estimada
+
+
+def test_respuesta_real_de_power_grabada():
+    """Respuesta real de la API diaria de NASA POWER (2024-01-01 a 2024-01-10, -33,85 / -65,2), grabada el 14/11/2026."""
+    import json
+
+    from app.services.power.service import resolve_parameters
+
+    raw = json.loads((Path(__file__).parent / "fixtures" / "power_real_2024-01.json").read_text())
+    params = resolve_parameters(None)
+    r = parse_power_json(raw, params)
+    assert raw["header"]["fill_value"] == -999.0
+    assert len(r.df) == 10 and all(v == 0 for v in r.missing.values())
+    assert r.units["PRECTOTCORR"] == "mm/day" and r.units["PS"] == "kPa" and r.units["ALLSKY_SFC_SW_DWN"] == "MJ/m^2/day"
+    assert 15 < r.df["T2M"].mean() < 35 and 90 < r.df["PS"].mean() < 100

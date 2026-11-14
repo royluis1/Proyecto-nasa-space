@@ -8,6 +8,8 @@ Fuentes:
 Uso (desde fieldshift/, necesita shapely: pip install shapely):
     python scripts/build_provinces.py                                  # Natural Earth (descarga ~40 MB)
     python scripts/build_provinces.py --source ign --input provincias_ign.geojson
+    (GeoJSON del IGN: https://wms.ign.gob.ar/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature
+     &typeName=ign:provincia&outputFormat=application/json&srsName=EPSG:4326)
 """
 
 import argparse
@@ -18,7 +20,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-from shapely.geometry import mapping, shape
+from shapely.geometry import box, mapping, shape
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "samples" / "provincias_argentina.geojson"
@@ -31,9 +33,9 @@ SOURCES = {
         "note": "Respaldo hasta tener el archivo oficial del IGN. Escala 1:10.000.000: los bordes son aproximados.",
     },
     "ign": {
-        "name": "Instituto Geográfico Nacional (IGN), capa Provincia",
-        "license": "Ver la licencia publicada por el IGN (ign.gob.ar) al descargar el archivo",
-        "note": "Fuente oficial de la República Argentina.",
+        "name": "Instituto Geográfico Nacional (IGN), capa Provincia (servicio WFS wms.ign.gob.ar, ign:provincia)",
+        "license": "Reutilización y redistribución libres según el Artículo 2 de la Ley 27.275 (acceso a la información pública), como indica el servicio del IGN",
+        "note": "Fuente oficial de la República Argentina. Simplificado para el mapa; al sur de 60° S (sector antártico) se recorta solo para la vista.",
     },
 }
 
@@ -83,11 +85,12 @@ def main() -> None:
     ap.add_argument("--input", help="GeoJSON local (obligatorio para --source ign)")
     ap.add_argument("--tolerance", type=float, default=0.01, help="Simplificación en grados (0,01 ≈ 1 km)")
     ap.add_argument("--out", default=str(OUT))
+    ap.add_argument("--max-south", type=float, default=-60.0, help="Recorta al sur de esta latitud (solo para la vista del mapa)")
     a = ap.parse_args()
 
     feats = []
     for name, geom in sorted(load(a.source, a.input)):
-        g = shape(geom).simplify(a.tolerance, preserve_topology=True)
+        g = shape(geom).intersection(box(-180, a.max_south, 180, 0)).simplify(a.tolerance, preserve_topology=True)
         g = shape(json.loads(json.dumps(mapping(g)), parse_float=lambda x: round(float(x), 4)))
         feats.append({"type": "Feature", "properties": {"id": slug(name), "name": name}, "geometry": mapping(g)})
     src = SOURCES[a.source]
@@ -99,6 +102,7 @@ def main() -> None:
             "license": src["license"],
             "note": src["note"],
             "simplify_tolerance_deg": a.tolerance,
+            "clipped_south_of": a.max_south,
             "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         },
         "features": feats,
