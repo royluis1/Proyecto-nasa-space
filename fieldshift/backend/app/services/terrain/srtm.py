@@ -17,6 +17,21 @@ import numpy as np
 
 VOID = -32768
 M_PER_DEG_LAT = 111_320.0
+SMOOTH = 1  # media móvil de 3 x 3 antes de la pendiente: atenúa el ruido de SRTM (varios metros), que infla la pendiente en llanuras
+
+
+def smooth(z: np.ndarray, k: int = SMOOTH) -> np.ndarray:
+    """Media móvil (2k+1) x (2k+1); en los bordes de la ventana, NaN (se descartan)."""
+    if k == 0:
+        return z
+    n = 2 * k + 1
+    out = np.full(z.shape, np.nan)
+    acc = np.zeros((z.shape[0] - 2 * k, z.shape[1] - 2 * k))
+    for di in range(n):
+        for dj in range(n):
+            acc = acc + z[di : di + acc.shape[0], dj : dj + acc.shape[1]]
+    out[k:-k, k:-k] = acc / (n * n)
+    return out
 
 
 def tile_name(lat: float, lon: float) -> str:
@@ -103,13 +118,14 @@ def terrain_stats(
         row, col = (top - lat) / step, (lon - lon0) / step
         r0, r1 = row - radius_m / dy, row + radius_m / dy
         c0, c1 = col - radius_m / dx, col + radius_m / dx
-    i0, i1 = math.floor(r0) - 1, math.ceil(r1) + 1
-    j0, j1 = math.floor(c0) - 1, math.ceil(c1) + 1
+    pad = 1 + SMOOTH  # un píxel para Horn y los del suavizado
+    i0, i1 = math.floor(r0) - pad, math.ceil(r1) + pad
+    j0, j1 = math.floor(c0) - pad, math.ceil(c1) + pad
     clipped = i0 < 0 or j0 < 0 or i1 > n - 1 or j1 > n - 1
     i0, j0, i1, j1 = max(0, i0), max(0, j0), min(n - 1, i1), min(n - 1, j1)
     if i1 - i0 < 2 or j1 - j0 < 2:
         raise ValueError("La zona es demasiado chica o está fuera de la baldosa de SRTM.")
-    z = dem[i0 : i1 + 1, j0 : j1 + 1]
+    z = smooth(dem[i0 : i1 + 1, j0 : j1 + 1])
 
     # Horn (3x3) sobre el interior
     a, b, c = z[:-2, :-2], z[:-2, 1:-1], z[:-2, 2:]

@@ -29,6 +29,7 @@ SAMPLE_MAX_DEG = 1.0
 LIMITATIONS = [
     "SRTM es del año 2000: no ve cambios posteriores (terrazas, canales, caminos).",
     "Resolución de ~30 m: no detecta microrrelieve, bajos chicos ni surcos.",
+    "SRTM tiene un ruido de algunos metros: se suaviza con una media de 3 x 3 píxeles, pero en llanuras muy planas la pendiente puede salir algo más alta que la real.",
     "Es la superficie del radar: en montes o arboledas puede medir la copa y no el suelo.",
     "La pendiente informa sobre la erosión por agua; la erosión eólica, central en San Luis, depende sobre todo de la cobertura.",
 ]

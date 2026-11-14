@@ -17,6 +17,18 @@ FIELDSHIFT_EARTHDATA_TOKEN=
 
 Si quedan vacías, se usan `FIELDSHIFT_APPEEARS_USERNAME` y `_PASSWORD`, que son la misma cuenta. `GET /earthdata/status` dice si hay credenciales y de qué tipo, sin mostrarlas.
 
+## Verificado con la cuenta real (14/11/2026)
+
+- **AppEEARS:** el inicio de sesión funciona. Los nombres de capas de SMAP L3 y L4 y de MODIS NDVI coinciden con `products.py`.
+- **SRTMGL1:**
+  - la cadena LP DAAC → URS (con la cuenta) → LP DAAC → archivo funciona;
+  - el archivo se sirve desde `d1nklfio7vscoe.cloudfront.net`, que tiene que estar permitido en la red del servidor;
+  - baldosas S33W066, S34W066 y S34W067 descargadas (7 a 10 MB cada una);
+  - pendiente media (con suavizado de 3 x 3): Este 1,9 %, Centro 2,6 %, Conlara 2,5 %.
+- URS a veces responde 502 por un rato: el servidor vuelve a probar después del enfriamiento y, mientras tanto, usa la caché o la muestra.
+
+**En un entorno de Claude Code**, las credenciales las agrega el proxy de red (secretos de red de `urs.earthdata.nasa.gov` y `appeears.earthdatacloud.nasa.gov`). Para que el backend intente la descarga en vivo hay que poner valores de relleno en `FIELDSHIFT_EARTHDATA_USERNAME=proxy-injected` y `FIELDSHIFT_EARTHDATA_PASSWORD=proxy-injected`: el proxy los reemplaza por los reales. **En Render**, en cambio, se cargan el usuario y la contraseña reales como variables de entorno.
+
 ## Cómo funciona la descarga
 
 Sigue los ejemplos oficiales de Earthdata (`urllib` con `HTTPBasicAuthHandler` y `CookieJar`, o `requests.Session` con `rebuild_auth`). Está en `backend/app/services/earthdata/session.py`, con `httpx`.

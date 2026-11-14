@@ -102,7 +102,7 @@ Todo lo que no está respaldado por un dato observado o una fuente verificada se
 - ~~Estructura exacta del JSON de la API diaria~~: verificada el 14/11/2026 con una respuesta real, grabada como fixture (`backend/app/tests/fixtures/power_real_2024-01.json`).
 - Zona horaria de los datos diarios (la documentación habla de UTC y LST, pero no dice cuál es el valor por defecto para datos diarios) y unidad de radiación en la comunidad AG.
 - Nombres exactos de columnas del CSV de AppEEARS y si el NDVI viene escalado (el parser tolera ambos).
-- Formato de `/bundle/{task_id}` de AppEEARS y decodificación de la bandera de calidad de SPL3SMP_E.
+- Formato de `/bundle/{task_id}` de AppEEARS y decodificación de la bandera de calidad de SPL3SMP_E (el inicio de sesión y los nombres de capas ya se verificaron el 14/11/2026).
 - Referencias de INTA EEA San Luis sobre erosión eólica y cultivos de cobertura.
 - ~~Licencia del IGN~~: el servicio WFS declara reutilización libre según la Ley 27.275, Art. 2 (verificado el 14/11/2026).
 - ~~Formato de la API de SoilGrids~~: verificado con respuestas reales el 14/11/2026 (d_factor 10, arcilla/arena/limo en g/kg -> %, carbono orgánico en dg/kg -> g/kg).
