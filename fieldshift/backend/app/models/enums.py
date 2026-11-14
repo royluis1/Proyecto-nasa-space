@@ -19,6 +19,7 @@ class DataStatus(StrEnum):
     CACHED = "cached"  # caché local
     SAMPLE = "sample"  # datos de muestra incluidos en el repo
     MOCK = "mock"  # valor simulado: la lógica todavía no está implementada
+    UPLOADED = "uploaded"  # archivo cargado por el usuario (CSV de AppEEARS o convertido desde GeoTIFF)
 
     @property
     def origin_label(self) -> str:
@@ -31,6 +32,7 @@ _ORIGIN_LABELS = {
     DataStatus.CACHED: "DATO CACHEADO",
     DataStatus.SAMPLE: "DATO DE MUESTRA",
     DataStatus.MOCK: "VALOR SIMULADO",
+    DataStatus.UPLOADED: "DATO NASA CARGADO POR EL USUARIO",
 }
 
 

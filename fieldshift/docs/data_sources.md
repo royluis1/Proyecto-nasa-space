@@ -5,9 +5,9 @@
 | Fuente | Producto | Resolución | Uso en FieldShift | Etiqueta | Estado |
 |---|---|---|---|---|---|
 | NASA POWER | API diaria por punto (`https://power.larc.nasa.gov/api/temporal/daily/point`), comunidad AG: T2M, T2M_MAX, T2M_MIN, PRECTOTCORR, RH2M, WS2M, ALLSKY_SFC_SW_DWN, PS. Disponible desde 1981 hasta casi tiempo real; máximo 20 parámetros por pedido | Meteorología ~0.5° x 0.625° (MERRA-2 / GEOS FP-IT); solar ~1° (CERES) | Clima regional, ET₀, déficit, escenarios, monitor | modelado (reanálisis) | **Integrado**, con caché y fallback |
-| MODIS | MOD13A1 (NDVI, compuesto 16 días) | 500 m | Vigor, barbechos, suelo desnudo, tendencia | observado | CSV offline, pendiente |
-| SMAP | L3 (capa superficial ~5 cm) | ~9 km ⚠️ | Humedad superficial, contexto regional | observado | CSV offline, pendiente |
-| SMAP | L4 (zona de raíces) | ~9 km | Humedad en raíces, contexto regional | **modelado** | CSV offline, pendiente |
+| MODIS | **MOD13Q1 v6.1** (NDVI, compuesto 16 días); MYD13Q1 y MOD13A1 como alternativas | 250 m (500 m en A1) | Vigor, cobertura, barbechos, tendencia de biomasa, campañas | observado | **Integrado** (AppEEARS, CSV/GeoTIFF, muestra) |
+| SMAP | **SPL4SMGP v8** (zona de raíces 0-100 cm, por defecto) | 9 km, cada 3 h | Humedad en raíces, sequías, estrés hídrico | **modelado** | **Integrado** (AppEEARS, CSV, muestra) |
+| SMAP | SPL3SMP_E v6 (superficial ~5 cm) | 9 km, diaria con huecos | Humedad superficial | observado | Admitido (CSV o AppEEARS) |
 | SRTM | Elevación | ~30 m | Pendiente y riesgo relativo de erosión hídrica | observado | Precalculado, pendiente |
 
 ## Referencias del motor de rotaciones
@@ -23,8 +23,9 @@
 ## Limitaciones
 
 - POWER describe el **entorno regional**, no el lote.
-- SMAP L3 mide solo los primeros ~5 cm. L4 es un producto modelado. Ninguno es una medición del lote.
-- MODIS a 500 m sirve para lotes grandes; para lotes chicos la extensión es Landsat/HLS (30 m).
+- SMAP L3 mide solo los primeros ~5 cm. L4 es un producto modelado. Ninguno es una medición del lote (píxel de 9 km).
+- MODIS a 250 m sirve para lotes de más de ~25 ha; para lotes chicos la extensión es Landsat/HLS (30 m).
+- Detalle de productos, obtención, métricas y limitaciones: [satellite.md](satellite.md).
 - El carbono orgánico y la materia orgánica **no se miden desde satélite**.
 - SRTM solo informa sobre erosión hídrica; en San Luis la erosión eólica es central y no se observa con estos datos.
 - −999 en POWER = dato faltante.

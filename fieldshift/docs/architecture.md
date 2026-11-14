@@ -46,6 +46,7 @@ flowchart LR
 |---|---|
 | `api/` | Rutas HTTP finas: validan, llaman a servicios, envuelven la respuesta |
 | `services/` | Orquestación y acceso a datos (repositorio, clientes externos) |
+| `services/satellite/` | SMAP y MODIS NDVI: parser de CSV de AppEEARS, conector AppEEARS, cascada de respaldo y métricas (ver satellite.md) |
 | `services/engine/` | Motor de rotaciones: calendario, balance hídrico, generador, puntaje y explicaciones (ver scoring.md) |
 | `models/` | Enums, procedencia (`Provenance`, `Valued`), constantes |
 | `schemas/` | Contratos de request y response (Pydantic v2) |
@@ -78,7 +79,7 @@ Cascada: **en vivo → caché (cualquier antigüedad, con advertencia) → muest
 |---|---|
 | Location, Field, SoilProfile, Crop, Rotation, FarmerPriority, Scenario, ClimateSummary, RotationScore, Recommendation, RiskFlag, Assumption, DataSource | Implementadas como schemas |
 | Farm | Pendiente (hoy el lote tiene `farm_name`) |
-| SoilMoistureObservation (SMAP), VegetationIndex (NDVI) | Pendientes: fase de integración NASA |
+| SoilMoistureSummary (SMAP), VegetationSummary (NDVI), DataTrace | Implementadas (ver satellite.md) |
 | RotationPlan (rotación aplicada a un lote con calendario) | Cubierto por `Rotation` + calendario mensual del motor |
 | RotationTemplate, RotationProfile, RotationEvaluation, CompareResult | Implementadas (motor de rotaciones) |
 
@@ -94,7 +95,8 @@ Cascada: **en vivo → caché (cualquier antigüedad, con advertencia) → muest
 | `POST /rotations/compare`, `GET /rotations/{rotation_id}` | Hecho: motor de rotaciones con puntaje explicable |
 | `POST /scenarios` | Hecho: ranking por escenario (lluvia, temperatura, año seco, riego) |
 | `GET /export/report` | Hecho: JSON y CSV con ranking, explicaciones, fuentes y supuestos |
-| `GET /fields` (listar), humedad de suelo, NDVI, salud de suelo, alertas | Pendientes |
+| `POST /soil-moisture`, `POST /vegetation-index` | Hecho: AppEEARS asincrónico, CSV o GeoTIFF cargado, caché y muestra |
+| `GET /fields` (listar), salud de suelo, alertas | Pendientes |
 
 ## Reglas de calidad de datos
 

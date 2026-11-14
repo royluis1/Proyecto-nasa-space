@@ -5,12 +5,14 @@ from datetime import date
 
 from app.models.enums import DataStatus, RotationStrategy
 from app.schemas.rotation import CompareRequest, CompareResult, ScenarioInput
+from app.schemas.satellite import SoilMoistureRequest, VegetationRequest
 from app.services.climate_summary import build_summary, missing_warnings
 from app.services.engine.context import ClimateContext, climate_from_summary
 from app.services.engine.engine import EngineRequest, run
 from app.services.power.service import PowerService, resolve_parameters
 from app.services.repository import Repository
-from app.utils.exceptions import InvalidInputError, RotationNotFoundError
+from app.services.satellite.service import SatelliteService, soil_moisture_input, vegetation_input
+from app.utils.exceptions import InvalidInputError, NoDataError, RotationNotFoundError
 
 DEFAULT_CLIMATE_YEARS = 10
 
@@ -45,10 +47,13 @@ def load_climate(
 
 
 class RotationService:
-    def __init__(self, repo: Repository, power: PowerService, endpoint: str) -> None:
+    def __init__(
+        self, repo: Repository, power: PowerService, endpoint: str, satellite: "SatelliteService | None" = None
+    ) -> None:
         self.repo = repo
         self.power = power
         self.endpoint = endpoint
+        self.satellite = satellite
         self._climate: dict[tuple, ClimateBundle] = {}
 
     def climate_for(self, field_id: str, start_year: int | None = None, end_year: int | None = None) -> ClimateBundle:
@@ -77,6 +82,7 @@ class RotationService:
             if rot.id != field.current_rotation_id:
                 extra.append(rot)
         history = req.history if req.history is not None else field.crop_history
+        soil_moisture, vegetation, sat_warnings = self._satellite_inputs(req)
         engine_req = EngineRequest(
             field=field,
             climate=bundle.context,
@@ -88,11 +94,32 @@ class RotationService:
             history=list(history),
             current_crop=req.current_crop,
             strategies=req.strategies,
-            soil_moisture=req.soil_moisture,
-            vegetation=req.vegetation,
-            warnings=list(bundle.warnings),
+            soil_moisture=soil_moisture,
+            vegetation=vegetation,
+            warnings=[*bundle.warnings, *sat_warnings],
         )
         return run(engine_req, self.repo.crops, self.repo.templates), bundle
+
+    def _satellite_inputs(self, req: CompareRequest):
+        """SMAP y NDVI del lote: los del pedido o, si faltan, los del servicio satelital (con su respaldo)."""
+        sm, veg, warnings = req.soil_moisture, req.vegetation, []
+        if self.satellite is None or not req.use_satellite:
+            return sm, veg, warnings
+        if sm is None:
+            try:
+                summary, w = self.satellite.soil_moisture(SoilMoistureRequest(field_id=req.field_id))
+                sm = soil_moisture_input(summary)
+                warnings += [f"SMAP: {x}" for x in w]
+            except (NoDataError, InvalidInputError) as exc:
+                warnings.append(f"SMAP no disponible para el lote: {exc.message}")
+        if veg is None:
+            try:
+                summary, w = self.satellite.vegetation(VegetationRequest(field_id=req.field_id))
+                veg = vegetation_input(summary)
+                warnings += [f"NDVI: {x}" for x in w]
+            except (NoDataError, InvalidInputError) as exc:
+                warnings.append(f"NDVI no disponible para el lote: {exc.message}")
+        return sm, veg, warnings
 
     def evaluation(self, rotation_id: str):
         """Evaluación de una rotación (declarada o generada) con las prioridades guardadas del lote."""

@@ -57,10 +57,25 @@ Todo lo que no está respaldado por un dato observado o una fuente verificada se
 | Lluvia efectiva mensual USDA-SCS | Método publicado (FAO CROPWAT) |
 | Rangos de escenarios: lluvia −50 a +30 %, temperatura 0 a +3 °C | Supuestos de diseño, no proyecciones |
 
+## SMAP y NDVI
+
+| Supuesto | Estado |
+|---|---|
+| Sequía de humedad de suelo: mes con z <= -1 frente al mismo mes de otros años | Criterio estadístico (supuesto) |
+| Mes con baja humedad: por debajo del percentil 25 de todos los meses | Supuesto |
+| Estrés hídrico: percentil <= 20 y 10 % bajo lo normal (alto); <= 40 y 5 % (medio), últimos 90 días | Supuesto |
+| Lo esperable es ~16 % de meses con z <= -1; más que eso suma riesgo en R | Supuesto (distribución normal) |
+| NDVI de suelo desnudo 0,15 y de cobertura completa 0,85 (cobertura por Gutman e Ignatov, 1998) | ⚠️ calibrar con la serie del lote |
+| Barbecho: 2 o más compuestos seguidos con NDVI < 0,3 | Supuesto (umbral configurable) |
+| El NDVI marca como suelo desnudo también la implantación: se corrige lo declarado solo si la diferencia supera 20 puntos porcentuales | Supuesto |
+| Tendencia de biomasa significativa: -6 (baja) / +4 (alta) puntos en S de la rotación actual | Supuesto de diseño |
+| Muestras `smap_sample_san_luis.csv` y `ndvi_sample_san_luis.csv` | **Simuladas** |
+
 ## A verificar con la fuente
 
 - Si NASA POWER ofrece ET₀ ya calculada en la API diaria.
 - Estructura exacta del JSON de la API diaria (el parser se escribió sin una respuesta real; grabar una como fixture).
 - Zona horaria de los datos diarios (la documentación habla de UTC y LST, pero no dice cuál es el valor por defecto para datos diarios) y unidad de radiación en la comunidad AG.
-- Si AppEEARS soporta SPL3SMP_E y SPL4SMGP.
+- Nombres exactos de columnas del CSV de AppEEARS y si el NDVI viene escalado (el parser tolera ambos).
+- Formato de `/bundle/{task_id}` de AppEEARS y decodificación de la bandera de calidad de SPL3SMP_E.
 - Referencias de INTA EEA San Luis sobre erosión eólica y cultivos de cobertura.

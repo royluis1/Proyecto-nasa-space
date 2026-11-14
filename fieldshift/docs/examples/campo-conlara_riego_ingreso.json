@@ -48,20 +48,39 @@
         "soja",
         "maiz"
       ],
+      "soil_moisture": {
+        "product": "SMAP_L4",
+        "anomaly_pct": 18.6,
+        "period": "2025-10-03 a 2025-12-31",
+        "drought_frequency_pct": 16.7,
+        "stress_level": "bajo",
+        "origin": "sample"
+      },
+      "vegetation": {
+        "product": "MOD13Q1",
+        "bare_soil_fraction": 0.5,
+        "threshold": 0.3,
+        "mean_ndvi": 0.376,
+        "cover_fraction": 0.321,
+        "biomass_trend_pct_per_decade": 72.8,
+        "trend_significant": false,
+        "period": "campañas 2016/17 a 2024/25",
+        "origin": "sample"
+      },
       "priorities_default": false
     },
     "ranking": [
       {
         "rotation_id": "campo-conlara-conservadora",
         "rank": 1,
-        "total": 82.8,
-        "uncertainty_low": 72.5,
-        "uncertainty_high": 94.1,
+        "total": 83.5,
+        "uncertainty_low": 73.2,
+        "uncertainty_high": 94.8,
         "components": [
           {
             "key": "A",
             "name": "Resiliencia hídrica",
-            "value": 46.8,
+            "value": 51.3,
             "weight": 0.16,
             "drivers": [
               {
@@ -104,6 +123,18 @@
                 "provenance": {
                   "label": "supuesto",
                   "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Humedad de suelo actual (SMAP)",
+                "effect": "sube",
+                "points": 4.5,
+                "detail": "SMAP_L4 (modelado, zona de raíces): +19 % respecto de lo normal en 2025-10-03 a 2025-12-31.",
+                "provenance": {
+                  "label": "modelado",
+                  "source_id": "smap",
+                  "resolution": "~9 km",
+                  "confidence": "media"
                 }
               }
             ],
@@ -181,7 +212,7 @@
           {
             "key": "R",
             "name": "Resiliencia climática",
-            "value": 97.9,
+            "value": 97.7,
             "weight": 0.2,
             "drivers": [
               {
@@ -240,6 +271,18 @@
                 "provenance": {
                   "label": "supuesto",
                   "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Frecuencia de sequías de suelo (SMAP)",
+                "effect": "baja",
+                "points": -0.2,
+                "detail": "SMAP L4: 17 % de los meses con sequía de humedad de suelo (lo esperable es ~16 %); pesa más en cultivos poco tolerantes.",
+                "provenance": {
+                  "label": "modelado",
+                  "source_id": "smap",
+                  "resolution": "~9 km",
+                  "confidence": "media"
                 }
               }
             ],
@@ -358,14 +401,14 @@
       {
         "rotation_id": "campo-conlara-mixta",
         "rank": 2,
-        "total": 81.8,
-        "uncertainty_low": 72.0,
-        "uncertainty_high": 93.2,
+        "total": 82.5,
+        "uncertainty_low": 72.7,
+        "uncertainty_high": 93.8,
         "components": [
           {
             "key": "A",
             "name": "Resiliencia hídrica",
-            "value": 41.9,
+            "value": 46.4,
             "weight": 0.16,
             "drivers": [
               {
@@ -408,6 +451,18 @@
                 "provenance": {
                   "label": "supuesto",
                   "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Humedad de suelo actual (SMAP)",
+                "effect": "sube",
+                "points": 4.5,
+                "detail": "SMAP_L4 (modelado, zona de raíces): +19 % respecto de lo normal en 2025-10-03 a 2025-12-31.",
+                "provenance": {
+                  "label": "modelado",
+                  "source_id": "smap",
+                  "resolution": "~9 km",
+                  "confidence": "media"
                 }
               }
             ],
@@ -485,7 +540,7 @@
           {
             "key": "R",
             "name": "Resiliencia climática",
-            "value": 99.2,
+            "value": 98.9,
             "weight": 0.2,
             "drivers": [
               {
@@ -544,6 +599,18 @@
                 "provenance": {
                   "label": "supuesto",
                   "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Frecuencia de sequías de suelo (SMAP)",
+                "effect": "baja",
+                "points": -0.3,
+                "detail": "SMAP L4: 17 % de los meses con sequía de humedad de suelo (lo esperable es ~16 %); pesa más en cultivos poco tolerantes.",
+                "provenance": {
+                  "label": "modelado",
+                  "source_id": "smap",
+                  "resolution": "~9 km",
+                  "confidence": "media"
                 }
               }
             ],
@@ -669,7 +736,7 @@
           {
             "key": "A",
             "name": "Resiliencia hídrica",
-            "value": 54.3,
+            "value": 58.8,
             "weight": 0.16,
             "drivers": [
               {
@@ -713,6 +780,18 @@
                   "label": "supuesto",
                   "confidence": "baja"
                 }
+              },
+              {
+                "factor": "Humedad de suelo actual (SMAP)",
+                "effect": "sube",
+                "points": 4.5,
+                "detail": "SMAP_L4 (modelado, zona de raíces): +19 % respecto de lo normal en 2025-10-03 a 2025-12-31.",
+                "provenance": {
+                  "label": "modelado",
+                  "source_id": "smap",
+                  "resolution": "~9 km",
+                  "confidence": "media"
+                }
               }
             ],
             "provenance": {
@@ -725,7 +804,7 @@
           {
             "key": "S",
             "name": "Salud del suelo",
-            "value": 61.5,
+            "value": 57.2,
             "weight": 0.16,
             "drivers": [
               {
@@ -771,11 +850,37 @@
               {
                 "factor": "Penalización por erosión",
                 "effect": "baja",
-                "points": -6.0,
-                "detail": "3,5 meses por año sin cultivo vivo; exposición ponderada por rastrojo y viento 3,4, textura franca.",
+                "points": -10.3,
+                "detail": "3,5 meses por año sin cultivo vivo; exposición ponderada por rastrojo y viento 5,7, textura franca (ajustada por NDVI x1,71).",
                 "provenance": {
                   "label": "supuesto",
                   "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Cobertura observada (NDVI)",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "MOD13Q1: cobertura vegetal estimada 32 % y suelo desnudo 50 % del tiempo (campañas 2016/17 a 2024/25).",
+                "provenance": {
+                  "label": "observado",
+                  "source_id": "modis-ndvi",
+                  "resolution": "250 m",
+                  "confidence": "media",
+                  "note": "Origen: DATO DE MUESTRA"
+                }
+              },
+              {
+                "factor": "Tendencia de biomasa (NDVI)",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Cambio de +73 % por década en el NDVI integrado, sin tendencia significativa.",
+                "provenance": {
+                  "label": "observado",
+                  "source_id": "modis-ndvi",
+                  "resolution": "250 m",
+                  "confidence": "media",
+                  "note": "Origen: DATO DE MUESTRA"
                 }
               }
             ],
@@ -789,7 +894,7 @@
           {
             "key": "R",
             "name": "Resiliencia climática",
-            "value": 93.3,
+            "value": 93.0,
             "weight": 0.2,
             "drivers": [
               {
@@ -848,6 +953,18 @@
                 "provenance": {
                   "label": "supuesto",
                   "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Frecuencia de sequías de suelo (SMAP)",
+                "effect": "baja",
+                "points": -0.3,
+                "detail": "SMAP L4: 17 % de los meses con sequía de humedad de suelo (lo esperable es ~16 %); pesa más en cultivos poco tolerantes.",
+                "provenance": {
+                  "label": "modelado",
+                  "source_id": "smap",
+                  "resolution": "~9 km",
+                  "confidence": "media"
                 }
               },
               {
@@ -966,14 +1083,14 @@
       {
         "rotation_id": "campo-conlara-rentabilidad",
         "rank": 4,
-        "total": 77.4,
-        "uncertainty_low": 66.3,
-        "uncertainty_high": 88.4,
+        "total": 78.1,
+        "uncertainty_low": 66.9,
+        "uncertainty_high": 89.0,
         "components": [
           {
             "key": "A",
             "name": "Resiliencia hídrica",
-            "value": 53.8,
+            "value": 58.3,
             "weight": 0.16,
             "drivers": [
               {
@@ -1016,6 +1133,18 @@
                 "provenance": {
                   "label": "supuesto",
                   "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Humedad de suelo actual (SMAP)",
+                "effect": "sube",
+                "points": 4.5,
+                "detail": "SMAP_L4 (modelado, zona de raíces): +19 % respecto de lo normal en 2025-10-03 a 2025-12-31.",
+                "provenance": {
+                  "label": "modelado",
+                  "source_id": "smap",
+                  "resolution": "~9 km",
+                  "confidence": "media"
                 }
               }
             ],
@@ -1093,7 +1222,7 @@
           {
             "key": "R",
             "name": "Resiliencia climática",
-            "value": 95.2,
+            "value": 94.9,
             "weight": 0.2,
             "drivers": [
               {
@@ -1152,6 +1281,18 @@
                 "provenance": {
                   "label": "supuesto",
                   "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Frecuencia de sequías de suelo (SMAP)",
+                "effect": "baja",
+                "points": -0.3,
+                "detail": "SMAP L4: 17 % de los meses con sequía de humedad de suelo (lo esperable es ~16 %); pesa más en cultivos poco tolerantes.",
+                "provenance": {
+                  "label": "modelado",
+                  "source_id": "smap",
+                  "resolution": "~9 km",
+                  "confidence": "media"
                 }
               },
               {
@@ -1270,14 +1411,14 @@
       {
         "rotation_id": "campo-conlara-suelo",
         "rank": 5,
-        "total": 76.5,
-        "uncertainty_low": 66.4,
-        "uncertainty_high": 87.7,
+        "total": 77.2,
+        "uncertainty_low": 67.0,
+        "uncertainty_high": 88.4,
         "components": [
           {
             "key": "A",
             "name": "Resiliencia hídrica",
-            "value": 46.9,
+            "value": 51.4,
             "weight": 0.16,
             "drivers": [
               {
@@ -1320,6 +1461,18 @@
                 "provenance": {
                   "label": "supuesto",
                   "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Humedad de suelo actual (SMAP)",
+                "effect": "sube",
+                "points": 4.5,
+                "detail": "SMAP_L4 (modelado, zona de raíces): +19 % respecto de lo normal en 2025-10-03 a 2025-12-31.",
+                "provenance": {
+                  "label": "modelado",
+                  "source_id": "smap",
+                  "resolution": "~9 km",
+                  "confidence": "media"
                 }
               }
             ],
@@ -1397,7 +1550,7 @@
           {
             "key": "R",
             "name": "Resiliencia climática",
-            "value": 99.5,
+            "value": 99.3,
             "weight": 0.2,
             "drivers": [
               {
@@ -1456,6 +1609,18 @@
                 "provenance": {
                   "label": "supuesto",
                   "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Frecuencia de sequías de suelo (SMAP)",
+                "effect": "baja",
+                "points": -0.2,
+                "detail": "SMAP L4: 17 % de los meses con sequía de humedad de suelo (lo esperable es ~16 %); pesa más en cultivos poco tolerantes.",
+                "provenance": {
+                  "label": "modelado",
+                  "source_id": "smap",
+                  "resolution": "~9 km",
+                  "confidence": "media"
                 }
               }
             ],
@@ -1574,14 +1739,14 @@
       {
         "rotation_id": "campo-conlara-diversificada",
         "rank": 6,
-        "total": 70.2,
-        "uncertainty_low": 59.1,
-        "uncertainty_high": 80.8,
+        "total": 70.9,
+        "uncertainty_low": 59.8,
+        "uncertainty_high": 81.4,
         "components": [
           {
             "key": "A",
             "name": "Resiliencia hídrica",
-            "value": 65.7,
+            "value": 70.2,
             "weight": 0.16,
             "drivers": [
               {
@@ -1624,6 +1789,18 @@
                 "provenance": {
                   "label": "supuesto",
                   "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Humedad de suelo actual (SMAP)",
+                "effect": "sube",
+                "points": 4.5,
+                "detail": "SMAP_L4 (modelado, zona de raíces): +19 % respecto de lo normal en 2025-10-03 a 2025-12-31.",
+                "provenance": {
+                  "label": "modelado",
+                  "source_id": "smap",
+                  "resolution": "~9 km",
+                  "confidence": "media"
                 }
               }
             ],
@@ -1701,7 +1878,7 @@
           {
             "key": "R",
             "name": "Resiliencia climática",
-            "value": 98.6,
+            "value": 98.4,
             "weight": 0.2,
             "drivers": [
               {
@@ -1760,6 +1937,18 @@
                 "provenance": {
                   "label": "supuesto",
                   "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Frecuencia de sequías de suelo (SMAP)",
+                "effect": "baja",
+                "points": -0.2,
+                "detail": "SMAP L4: 17 % de los meses con sequía de humedad de suelo (lo esperable es ~16 %); pesa más en cultivos poco tolerantes.",
+                "provenance": {
+                  "label": "modelado",
+                  "source_id": "smap",
+                  "resolution": "~9 km",
+                  "confidence": "media"
                 }
               }
             ],
@@ -1878,14 +2067,14 @@
       {
         "rotation_id": "campo-conlara-agua",
         "rank": 7,
-        "total": 54.9,
-        "uncertainty_low": 44.1,
-        "uncertainty_high": 65.2,
+        "total": 55.5,
+        "uncertainty_low": 44.8,
+        "uncertainty_high": 65.7,
         "components": [
           {
             "key": "A",
             "name": "Resiliencia hídrica",
-            "value": 75.8,
+            "value": 80.0,
             "weight": 0.16,
             "drivers": [
               {
@@ -1928,6 +2117,18 @@
                 "provenance": {
                   "label": "supuesto",
                   "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Humedad de suelo actual (SMAP)",
+                "effect": "sube",
+                "points": 4.2,
+                "detail": "SMAP_L4 (modelado, zona de raíces): +19 % respecto de lo normal en 2025-10-03 a 2025-12-31.",
+                "provenance": {
+                  "label": "modelado",
+                  "source_id": "smap",
+                  "resolution": "~9 km",
+                  "confidence": "media"
                 }
               }
             ],
@@ -2005,7 +2206,7 @@
           {
             "key": "R",
             "name": "Resiliencia climática",
-            "value": 90.1,
+            "value": 89.9,
             "weight": 0.2,
             "drivers": [
               {
@@ -2053,6 +2254,18 @@
                   "label": "estimado",
                   "source_id": "nasa-power",
                   "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Frecuencia de sequías de suelo (SMAP)",
+                "effect": "baja",
+                "points": -0.2,
+                "detail": "SMAP L4: 17 % de los meses con sequía de humedad de suelo (lo esperable es ~16 %); pesa más en cultivos poco tolerantes.",
+                "provenance": {
+                  "label": "modelado",
+                  "source_id": "smap",
+                  "resolution": "~9 km",
                   "confidence": "media"
                 }
               },
@@ -2232,7 +2445,7 @@
           "bare_months_per_year": 1.5,
           "soil_impact": {
             "direction": "mejora",
-            "detail": "Mejora la salud del suelo (+23 puntos en S)."
+            "detail": "Mejora la salud del suelo (+27 puntos en S)."
           },
           "erosion_impact": {
             "direction": "mejora",
@@ -2259,14 +2472,14 @@
         "score": {
           "rotation_id": "campo-conlara-conservadora",
           "rank": 1,
-          "total": 82.8,
-          "uncertainty_low": 72.5,
-          "uncertainty_high": 94.1,
+          "total": 83.5,
+          "uncertainty_low": 73.2,
+          "uncertainty_high": 94.8,
           "components": [
             {
               "key": "A",
               "name": "Resiliencia hídrica",
-              "value": 46.8,
+              "value": 51.3,
               "weight": 0.16,
               "drivers": [
                 {
@@ -2309,6 +2522,18 @@
                   "provenance": {
                     "label": "supuesto",
                     "confidence": "baja"
+                  }
+                },
+                {
+                  "factor": "Humedad de suelo actual (SMAP)",
+                  "effect": "sube",
+                  "points": 4.5,
+                  "detail": "SMAP_L4 (modelado, zona de raíces): +19 % respecto de lo normal en 2025-10-03 a 2025-12-31.",
+                  "provenance": {
+                    "label": "modelado",
+                    "source_id": "smap",
+                    "resolution": "~9 km",
+                    "confidence": "media"
                   }
                 }
               ],
@@ -2386,7 +2611,7 @@
             {
               "key": "R",
               "name": "Resiliencia climática",
-              "value": 97.9,
+              "value": 97.7,
               "weight": 0.2,
               "drivers": [
                 {
@@ -2445,6 +2670,18 @@
                   "provenance": {
                     "label": "supuesto",
                     "confidence": "baja"
+                  }
+                },
+                {
+                  "factor": "Frecuencia de sequías de suelo (SMAP)",
+                  "effect": "baja",
+                  "points": -0.2,
+                  "detail": "SMAP L4: 17 % de los meses con sequía de humedad de suelo (lo esperable es ~16 %); pesa más en cultivos poco tolerantes.",
+                  "provenance": {
+                    "label": "modelado",
+                    "source_id": "smap",
+                    "resolution": "~9 km",
+                    "confidence": "media"
                   }
                 }
               ],
@@ -2562,7 +2799,7 @@
         },
         "recommendation": {
           "rotation_id": "campo-conlara-conservadora",
-          "summary": "Conservadora: Cobertura de gramíneas – Maíz – Trigo – Soja: puesto 1 de 7, 83 puntos (rango 72–94).",
+          "summary": "Conservadora: Cobertura de gramíneas – Maíz – Trigo – Soja: puesto 1 de 7, 83 puntos (rango 73–95).",
           "why": "Esta rotación se recomienda porque agrega cobertura vegetal en invierno, diversifica el sistema (4 cultivos distintos frente a 3) y reduce los meses de suelo desnudo (de 3,5 a 1,5 por año). Es la de mayor puntaje con más peso en ingreso. Sin embargo, aumenta la demanda hídrica estimada (10 % más que la actual) y requiere secar la cobertura en agosto para no consumir el agua del barbecho.",
           "benefits": [
             "Agrega cobertura vegetal en invierno.",
@@ -2582,13 +2819,11 @@
           ],
           "uncertainties": [
             "El clima usado es una MUESTRA SIMULADA: los números son ilustrativos.",
-            "El puntaje puede variar entre 72 y 94 (lluvia ±15 %, ET0 ±5 % y margen por confianza baja).",
+            "El puntaje puede variar entre 73 y 95 (lluvia ±15 %, ET0 ±5 % y margen por confianza baja).",
             "NASA POWER describe el entorno regional (~50 km): la lluvia del lote puede ser distinta.",
             "No se modelan rendimientos, precios ni costos: el ingreso es un índice relativo."
           ],
           "information_gaps": [
-            "Humedad de suelo SMAP del lote.",
-            "Serie de NDVI MODIS del lote.",
             "Análisis de suelo de laboratorio.",
             "Pendiente del lote (SRTM)."
           ],
@@ -2598,8 +2833,8 @@
               "Con estos datos, los cultivos de la rotación demandan ~1027 mm/año y la lluvia efectiva más el agua almacenada cubren el 47 %.",
               "Días con Tmax > 35 °C: 3 por año en promedio.",
               "Variabilidad de la lluvia anual: 29 % (coeficiente de variación).",
-              "Humedad de suelo SMAP: no se cargó para este lote (no se usó).",
-              "NDVI MODIS: no se cargó para este lote (no se usó)."
+              "Humedad de suelo SMAP L4 en zona de raíces (DATO DE MUESTRA): +19 % respecto de la misma época de otros años, sequía de suelo en el 17 % de los meses.",
+              "NDVI MODIS MOD13Q1 (DATO DE MUESTRA): suelo desnudo el 50 % del tiempo (NDVI < 0,30), tendencia de biomasa +73 % por década (no significativa)."
             ],
             "local_soil": [
               "Textura franca: agua útil estimada 155 mm y eficiencia de barbecho 0,25.",
@@ -2686,13 +2921,15 @@
           "fao-56",
           "usda-scs",
           "unep-aridity",
-          "catalogo-fieldshift"
+          "catalogo-fieldshift",
+          "smap",
+          "modis-ndvi"
         ],
         "confidence": "baja",
         "confidence_reasons": [
           "Clima de muestra simulada, no datos NASA reales.",
           "Sin análisis de suelo de laboratorio.",
-          "Sin humedad de suelo (SMAP) ni NDVI del lote."
+          "SMAP y NDVI de muestra simulada, no observaciones del lote."
         ],
         "warnings": []
       }
@@ -2702,7 +2939,7 @@
     "confidence_reasons": [
       "Clima de muestra simulada, no datos NASA reales.",
       "Sin análisis de suelo de laboratorio.",
-      "Sin humedad de suelo (SMAP) ni NDVI del lote.",
+      "SMAP y NDVI de muestra simulada, no observaciones del lote.",
       "Atributos con confianza baja en el catálogo: Cobertura de leguminosas."
     ],
     "assumptions": [
@@ -2954,11 +3191,46 @@
         "limitations": [
           "Valores cualitativos provisorios, a validar con INTA y agrónomos locales."
         ]
+      },
+      {
+        "id": "smap",
+        "name": "SMAP humedad de suelo (L4 zona de raíces 0-100 cm; L3 superficial)",
+        "provider": "NASA SMAP, NSIDC DAAC (vía AppEEARS)",
+        "product": "SPL4SMGP.008 (modelado con asimilación) / SPL3SMP_E.006 (observado)",
+        "endpoint": "https://appeears.earthdatacloud.nasa.gov/api",
+        "spatial_resolution": "9 km (EASE-Grid 2.0)",
+        "temporal_resolution": "L4: cada 3 h; L3: diaria con huecos",
+        "license": "Datos abiertos de NASA",
+        "citation": "Reichle, R. et al. SMAP L4 Version 8, NSIDC DAAC, doi:10.5067/T5RUATAQREF8.",
+        "limitations": [
+          "Un píxel de 9 km promedia muchos lotes.",
+          "L4 es modelado; L3 mide solo ~5 cm."
+        ]
+      },
+      {
+        "id": "modis-ndvi",
+        "name": "MODIS NDVI (MOD13Q1 v6.1)",
+        "provider": "NASA / USGS LP DAAC (vía AppEEARS)",
+        "product": "MOD13Q1.061, compuesto de 16 días",
+        "endpoint": "https://appeears.earthdatacloud.nasa.gov/api",
+        "spatial_resolution": "250 m",
+        "temporal_resolution": "16 días",
+        "license": "Datos abiertos de NASA",
+        "citation": "Didan, K. (2021). MOD13Q1 MODIS/Terra Vegetation Indices 16-Day L3 Global 250m SIN Grid V061. LP DAAC.",
+        "limitations": [
+          "A 250 m mezcla lotes vecinos en lotes chicos.",
+          "Nubes y compuestos de 16 días."
+        ]
       }
     ],
     "warnings": [
       "NASA POWER no respondió (modo sin red).",
-      "Se usan DATOS DE MUESTRA SIMULADOS del sitio 'campo-conlara' (-32.45, -65.25); no son observaciones de tus coordenadas."
+      "Se usan DATOS DE MUESTRA SIMULADOS del sitio 'campo-conlara' (-32.45, -65.25); no son observaciones de tus coordenadas.",
+      "SMAP: Sin credenciales de AppEEARS: no se consultaron datos en vivo.",
+      "SMAP: Se usan DATOS DE MUESTRA SIMULADOS de sm_rootzone del sitio 'campo-conlara' (-32.45, -65.25); no son observaciones de tus coordenadas.",
+      "NDVI: Sin credenciales de AppEEARS: no se consultaron datos en vivo.",
+      "NDVI: Se usan DATOS DE MUESTRA SIMULADOS de NDVI del sitio 'campo-conlara' (-32.45, -65.25); no son observaciones de tus coordenadas.",
+      "El NDVI muestra suelo desnudo el 50 % del tiempo, más que lo declarado (29 %): se aumentó la exposición a erosión de la rotación actual."
     ],
     "disclaimer": "FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.",
     "note": "Ejemplo recortado: solo la evaluación de la rotación recomendada. La respuesta real trae todas."

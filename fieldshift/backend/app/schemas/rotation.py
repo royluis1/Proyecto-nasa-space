@@ -173,17 +173,28 @@ class RotationEvaluation(BaseModel):
 
 
 class SoilMoistureInput(BaseModel):
+    """Resumen de SMAP que usa el motor. Se arma solo desde /soil-moisture o se puede enviar a mano."""
+
     product: Literal["SMAP_L3", "SMAP_L4"] = Field(description="L3: capa superficial (observado). L4: zona de raíces (modelado).")
-    anomaly_pct: float = Field(ge=-100, le=300, description="Humedad reciente respecto del promedio del período, en %.")
-    period: str | None = Field(default=None, examples=["2025-09 a 2025-11"])
+    anomaly_pct: float = Field(ge=-100, le=300, description="Humedad reciente respecto de la misma época de otros años, en %.")
+    period: str | None = Field(default=None, examples=["2025-10-03 a 2025-12-31"])
+    drought_frequency_pct: float | None = Field(default=None, ge=0, le=100, description="% de meses con sequía de humedad de suelo.")
+    stress_level: Level | None = None
+    origin: DataStatus | None = Field(default=None, description="Origen del dato (en vivo, cacheado, cargado o muestra).")
 
 
 class VegetationInput(BaseModel):
-    product: Literal["MOD13A1"] = "MOD13A1"
+    """Resumen de NDVI que usa el motor. Se arma solo desde /vegetation-index o se puede enviar a mano."""
+
+    product: Literal["MOD13Q1", "MYD13Q1", "MOD13A1"] = "MOD13Q1"
     bare_soil_fraction: float = Field(ge=0, le=1, description="Fracción de compuestos de 16 días con NDVI bajo el umbral.")
     threshold: float = Field(default=0.3, ge=0, le=1)
     mean_ndvi: float | None = Field(default=None, ge=-1, le=1)
+    cover_fraction: float | None = Field(default=None, ge=0, le=1, description="Cobertura vegetal estimada promedio.")
+    biomass_trend_pct_per_decade: float | None = Field(default=None, description="Tendencia del NDVI integrado por campaña.")
+    trend_significant: bool = False
     period: str | None = None
+    origin: DataStatus | None = None
 
 
 # --- Request y resultado ---
@@ -212,6 +223,9 @@ class CompareRequest(BaseModel):
     history: list[str] | None = Field(default=None, description="Cultivos de campañas anteriores, del más antiguo al más reciente.")
     soil_moisture: SoilMoistureInput | None = None
     vegetation: VegetationInput | None = None
+    use_satellite: bool = Field(
+        default=True, description="Si no se envían soil_moisture o vegetation, buscarlos (AppEEARS, caché o muestra)."
+    )
     start_year: int | None = Field(default=None, ge=1981, description="Período climático. Por defecto, los últimos 10 años completos.")
     end_year: int | None = Field(default=None, ge=1981)
 

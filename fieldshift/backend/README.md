@@ -11,6 +11,7 @@ API de FieldShift para el NASA Space Apps Challenge 2026 (*Field Shift: Adapting
 | `GET /health`, `POST /fields`, `GET /fields/{id}`, `POST /priorities` | Funcionan con datos de muestra |
 | `GET /crops` | Catálogo editable de 16 cultivos y coberturas |
 | `POST /climate-summary` | **NASA POWER integrado**, con caché y fallback a muestra simulada |
+| `POST /soil-moisture`, `POST /vegetation-index` | **SMAP y MODIS NDVI**: AppEEARS (asincrónico), CSV o GeoTIFF cargado, caché y muestra |
 | `POST /rotations/compare`, `GET /rotations/{id}` | **Motor de rotaciones**: 7 estrategias, puntaje explicable A/S/R/I/E |
 | `POST /scenarios` | Ranking por escenario (lluvia, temperatura, año seco, riego) |
 | `GET /export/report` | JSON y CSV con ranking, explicaciones, fuentes y supuestos |
@@ -85,6 +86,21 @@ curl -X POST http://127.0.0.1:8000/climate-summary \
 - **Años secos/húmedos:** relativos al período pedido (|z| ≥ 1), no a una normal oficial. Con pocos años la clasificación es inestable.
 - **Tendencias:** con 10–11 años son orientativas; casi nunca resultan significativas.
 - **Uso responsable:** POWER advierte que puede bloquear aplicaciones que consultan repetidamente el mismo punto. Por eso la caché.
+
+## SMAP y MODIS NDVI
+
+```bash
+curl -X POST http://127.0.0.1:8000/soil-moisture -H "Content-Type: application/json" -d '{"field_id": "campo-centro"}'
+curl -X POST http://127.0.0.1:8000/vegetation-index -H "Content-Type: application/json" -d '{"field_id": "campo-este"}'
+```
+
+- Humedad de suelo (SMAP L4, zona de raíces, por defecto): promedio, frecuencia de sequías, meses con baja humedad, tendencia y estrés hídrico relativo.
+- NDVI (MOD13Q1, 250 m, por defecto): promedio, cobertura vegetal estimada, barbechos, tendencia de biomasa y comparación entre campañas.
+- `csv_content`: CSV de AppEEARS o `date,value[,qa]`. Para GeoTIFF: `scripts/geotiff_to_csv.py`.
+- Cada respuesta trae `trace` (fuente, producto, fechas, resolución, estado y limitaciones) y `quality`.
+- En vivo: configurar `FIELDSHIFT_APPEEARS_*`. AppEEARS procesa en cola: la primera consulta crea la tarea y responde con la muestra.
+
+Productos, métricas, integración con el motor y limitaciones: [`docs/satellite.md`](../docs/satellite.md).
 
 ## Motor de rotaciones
 

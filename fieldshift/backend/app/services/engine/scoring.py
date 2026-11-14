@@ -68,6 +68,10 @@ _PROV = {
 _SUPUESTO = Provenance(label=DataLabel.SUPUESTO, confidence=Confidence.BAJA)
 
 
+# Con anomalías normales, ~16 % de los meses tienen z <= -1: más que eso es un lugar más propenso a sequías.
+EXPECTED_DROUGHT_PCT = 16.0
+
+
 def fmt(x: float, decimals: int = 1) -> str:
     """Número con coma decimal, para los textos."""
     return f"{x:.{decimals}f}".replace(".", ",")
@@ -264,7 +268,7 @@ def compute_metrics(calendar: Calendar, climate: ClimateContext, soil: SoilConte
 def _d(factor: str, points: float, detail: str, prov: Provenance | None = None) -> ScoreDriver:
     effect = "sube" if points > 0.05 else "baja" if points < -0.05 else "neutro"
     return ScoreDriver(
-        factor=factor, effect=effect, points=round(points, 1), detail=detail, provenance=prov or _SUPUESTO
+        factor=factor, effect=effect, points=round(points, 1) + 0.0, detail=detail, provenance=prov or _SUPUESTO
     )
 
 
@@ -337,8 +341,60 @@ def water_component(m: Metrics, ctx: ScoringContext) -> tuple[float, list[ScoreD
     return clamp(sum(d.points for d in drivers)), drivers
 
 
+def _ndvi_drivers(ctx: ScoringContext) -> list[ScoreDriver]:
+    """Solo para la rotación actual: el NDVI observa el manejo real, no las alternativas."""
+    v = ctx.vegetation
+    prov = Provenance(
+        label=DataLabel.OBSERVADO,
+        source_id="modis-ndvi",
+        resolution="250 m" if v.product.endswith("Q1") else "500 m",
+        note=f"Origen: {v.origin.origin_label}" if v.origin else None,
+    )
+    out = []
+    if v.cover_fraction is not None:
+        out.append(
+            _d(
+                "Cobertura observada (NDVI)",
+                0.0,
+                f"{v.product}: cobertura vegetal estimada {v.cover_fraction * 100:.0f} % y suelo desnudo "
+                f"{v.bare_soil_fraction * 100:.0f} % del tiempo" + (f" ({v.period})." if v.period else "."),
+                prov,
+            )
+        )
+    t = v.biomass_trend_pct_per_decade
+    if t is not None:
+        if v.trend_significant and t < 0:
+            out.append(
+                _d(
+                    "Tendencia de biomasa en baja (NDVI)",
+                    -6.0,
+                    f"El NDVI integrado por campaña cae {abs(t):.0f} % por década (tendencia significativa).",
+                    prov,
+                )
+            )
+        elif v.trend_significant and t > 0:
+            out.append(
+                _d(
+                    "Tendencia de biomasa en alza (NDVI)",
+                    4.0,
+                    f"El NDVI integrado por campaña sube {t:.0f} % por década (tendencia significativa).",
+                    prov,
+                )
+            )
+        else:
+            out.append(
+                _d(
+                    "Tendencia de biomasa (NDVI)",
+                    0.0,
+                    f"Cambio de {t:+.0f} % por década en el NDVI integrado, sin tendencia significativa.",
+                    prov,
+                )
+            )
+    return out
+
+
 def soil_component(
-    m: Metrics, ctx: ScoringContext, erosion_scale: float = 1.0
+    m: Metrics, ctx: ScoringContext, erosion_scale: float = 1.0, is_actual: bool = False
 ) -> tuple[float, list[ScoreDriver], float]:
     n = m.calendar.n_months
     drivers = [
@@ -375,6 +431,8 @@ def soil_component(
     if erosion_scale != 1.0:
         detail += f" (ajustada por NDVI x{fmt(erosion_scale, 2)})"
     drivers.append(_d("Penalización por erosión", -pen, detail + "."))
+    if is_actual and ctx.vegetation is not None:
+        drivers += _ndvi_drivers(ctx)
     return clamp(sum(d.points for d in drivers)), drivers, pen
 
 
@@ -440,6 +498,23 @@ def risk_component(m: Metrics, ctx: ScoringContext, first_crop: Crop) -> tuple[f
                 "Antecesores favorables",
                 min(6.0, 2 * len(m.good_predecessors)),
                 "; ".join(m.good_predecessors[:3]) + ".",
+            )
+        )
+    sm = ctx.soil_moisture
+    if sm is not None and sm.drought_frequency_pct is not None:
+        sensitivity = 1 - 0.7 * m.drought_tolerance
+        excess = max(0.0, sm.drought_frequency_pct - EXPECTED_DROUGHT_PCT)
+        drivers.append(
+            _d(
+                "Frecuencia de sequías de suelo (SMAP)",
+                -min(10.0, excess / 2) * sensitivity,
+                f"SMAP {'L3' if sm.product == 'SMAP_L3' else 'L4'}: {sm.drought_frequency_pct:.0f} % de los meses con sequía de humedad de suelo "
+                f"(lo esperable es ~{EXPECTED_DROUGHT_PCT:.0f} %); pesa más en cultivos poco tolerantes.",
+                Provenance(
+                    label=DataLabel.OBSERVADO if sm.product == "SMAP_L3" else DataLabel.MODELADO,
+                    source_id="smap",
+                    resolution="~9 km",
+                ),
             )
         )
     if ctx.current_crop is not None:
@@ -530,9 +605,11 @@ class Components:
     erosion_penalty: float
 
 
-def score_components(m: Metrics, ctx: ScoringContext, first_crop: Crop, erosion_scale: float = 1.0) -> Components:
+def score_components(
+    m: Metrics, ctx: ScoringContext, first_crop: Crop, erosion_scale: float = 1.0, is_actual: bool = False
+) -> Components:
     a, da = water_component(m, ctx)
-    s, ds, erosion_pen = soil_component(m, ctx, erosion_scale)
+    s, ds, erosion_pen = soil_component(m, ctx, erosion_scale, is_actual)
     r, dr = risk_component(m, ctx, first_crop)
     i, di = income_component(m)
     e, de = sustainability_component(m)

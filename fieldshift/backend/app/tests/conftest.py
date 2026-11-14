@@ -29,19 +29,45 @@ def offline_power(tmp_path):
     return PowerService(failing, PowerCache(tmp_path, 24), SampleProvider(SAMPLE_CSV))
 
 
+SAMPLES_DIR = SAMPLE_CSV.parent
+
+
 @pytest.fixture
-def client(repo, offline_power):
+def satellite_provider(tmp_path):
+    """Proveedor satelital sin credenciales, con caché en un directorio temporal y las muestras del repo."""
+    from app.services.satellite.provider import SatelliteProvider
+
+    return SatelliteProvider(
+        tmp_path / "appeears",
+        {
+            "SPL4SMGP_rootzone": SAMPLES_DIR / "smap_sample_san_luis.csv",
+            "SPL4SMGP_surface": SAMPLES_DIR / "smap_sample_san_luis.csv",
+            "MOD13Q1": SAMPLES_DIR / "ndvi_sample_san_luis.csv",
+        },
+    )
+
+
+@pytest.fixture
+def satellite_service(repo, satellite_provider):
+    from app.services.satellite.service import SatelliteService
+
+    return SatelliteService(repo, satellite_provider)
+
+
+@pytest.fixture
+def client(repo, offline_power, satellite_provider):
     """Cliente de la API con repositorio nuevo y POWER sin red, por test."""
     pytest.importorskip("fastapi")
     pytest.importorskip("httpx")
     from fastapi.testclient import TestClient
 
-    from app.api.deps import get_power_service, get_repository
+    from app.api.deps import get_power_service, get_repository, get_satellite_provider
     from app.main import create_app
 
     app = create_app()
     app.dependency_overrides[get_repository] = lambda: repo
     app.dependency_overrides[get_power_service] = lambda: offline_power
+    app.dependency_overrides[get_satellite_provider] = lambda: satellite_provider
     return TestClient(app)
 
 

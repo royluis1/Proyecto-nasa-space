@@ -19,12 +19,15 @@ sys.path.insert(0, str(ROOT / "backend"))
 from app.config import get_settings  # noqa: E402
 from app.schemas.priority import Priorities  # noqa: E402
 from app.schemas.rotation import CompareRequest, ScenarioInput, SoilMoistureInput, VegetationInput  # noqa: E402
+from app.schemas.satellite import SoilMoistureRequest, VegetationRequest  # noqa: E402
 from app.services.engine.explain import strategy_label  # noqa: E402
 from app.services.engine.service import RotationService  # noqa: E402
 from app.services.power.cache import PowerCache  # noqa: E402
 from app.services.power.sample import SampleProvider  # noqa: E402
 from app.services.power.service import PowerService  # noqa: E402
 from app.services.repository import Repository  # noqa: E402
+from app.services.satellite.provider import SatelliteProvider  # noqa: E402
+from app.services.satellite.service import SatelliteService  # noqa: E402
 from app.utils.exceptions import UpstreamError  # noqa: E402
 
 CASES = [
@@ -77,7 +80,13 @@ def main() -> None:
 
         cache = PowerCache(Path(tempfile.mkdtemp()), s.cache_ttl_hours)
     power = PowerService(fetcher, cache, SampleProvider(s.nasa_samples_dir / s.power_sample_file))
-    service = RotationService(Repository(s.data_dir), power, s.power_base_url)
+    repo = Repository(s.data_dir)
+    samples = {
+        "SPL4SMGP_rootzone": s.nasa_samples_dir / s.smap_sample_file,
+        "MOD13Q1": s.nasa_samples_dir / s.ndvi_sample_file,
+    }
+    satellite = SatelliteService(repo, SatelliteProvider(Path(tempfile.mkdtemp()), samples))
+    service = RotationService(repo, power, s.power_base_url, satellite)
 
     out = ROOT / "docs" / "examples"
     out.mkdir(parents=True, exist_ok=True)
@@ -149,7 +158,43 @@ def main() -> None:
         ]
         if result.warnings:
             md += ["**Advertencias:**", ""] + [f"- {w}" for w in result.warnings] + [""]
-    (out / "README.md").write_text("\n".join(md), encoding="utf-8")
+    sm, _ = satellite.soil_moisture(SoilMoistureRequest(field_id="campo-centro"))
+    ndvi, _ = satellite.vegetation(VegetationRequest(field_id="campo-centro"))
+    for name, obj in (("soil-moisture_campo-centro", sm), ("vegetation-index_campo-centro", ndvi)):
+        data = obj.model_dump(mode="json", exclude_none=True)
+        data.pop("monthly", None)  # recorte: la respuesta real trae los 120 meses
+        (out / f"{name}.json").write_text(
+            json.dumps({"data": data}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+
+    def c_(x, sign=False):
+        return "-" if x is None else (f"{x:+g}" if sign else f"{x:g}").replace(".", ",")
+
+    ws = sm.water_stress
+    md += [
+        "## SMAP y NDVI de Campo Centro",
+        "",
+        "Archivos: [`soil-moisture_campo-centro.json`](soil-moisture_campo-centro.json) (sin la tabla mensual) y "
+        "[`vegetation-index_campo-centro.json`](vegetation-index_campo-centro.json). **Datos de muestra simulados.**",
+        "",
+        f"- Humedad media en zona de raíces: {c_(sm.mean)} m³/m³; sequía de suelo en el {c_(sm.drought_frequency_pct)} % de los meses "
+        f"({len(sm.drought_events)} eventos); meses típicamente secos: {sm.typically_dry_months}.",
+        f"- Estrés hídrico de los últimos 90 días: {c_(ws.anomaly_pct, sign=True)} % frente a lo normal, percentil {c_(ws.percentile)}, nivel {ws.level.value}.",
+        f"- NDVI medio {c_(ndvi.mean_ndvi)}; cobertura estimada {c_(ndvi.cover_fraction_mean)}; suelo desnudo el "
+        f"{ndvi.bare_soil_fraction * 100:.0f} % del tiempo; {len(ndvi.fallow_periods)} períodos de barbecho.",
+        f"- Tendencia de biomasa: {c_(ndvi.biomass_trend_pct_per_decade)} % por década "
+        f"({'significativa' if ndvi.biomass_trend.significant else 'no significativa'}); "
+        f"mejor campaña {ndvi.best_campaign}, peor {ndvi.worst_campaign}.",
+        "",
+        "| Campaña | NDVI medio | Pico | NDVI integrado | Ciclos | Anomalía % |",
+        "|---|---|---|---|---|---|",
+    ]
+    md += [
+        f"| {c.campaign} | {c_(c.mean_ndvi)} | {c_(c.peak_ndvi)} | {c_(c.integrated_ndvi)} | {c.growth_cycles} | {c_(c.anomaly_pct)} |"
+        for c in ndvi.campaigns
+        if c.complete
+    ]
+    (out / "README.md").write_text("\n".join(md) + "\n", encoding="utf-8")
     print(f"Ejemplos escritos en {out}")
 
 

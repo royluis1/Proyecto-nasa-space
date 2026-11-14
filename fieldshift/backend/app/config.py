@@ -39,6 +39,15 @@ class Settings(BaseSettings):
 
     cors_origins: list[str] = ["http://localhost:3000"]
 
+    smap_sample_file: str = "smap_sample_san_luis.csv"
+    ndvi_sample_file: str = "ndvi_sample_san_luis.csv"
+
+    # AppEEARS (NASA LP DAAC). Con token o con usuario y contraseña de Earthdata se piden extracciones en vivo.
+    appeears_base_url: str = "https://appeears.earthdatacloud.nasa.gov/api"
+    appeears_token: SecretStr | None = None
+    appeears_username: str | None = None
+    appeears_password: SecretStr | None = None
+
     earthdata_token: SecretStr | None = None
     llm_enabled: bool = False
     llm_api_key: SecretStr | None = None

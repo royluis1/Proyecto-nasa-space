@@ -46,6 +46,8 @@ from app.services.engine.scoring import (
 from app.utils.exceptions import InvalidInputError
 
 MIN_ROTATIONS = 3
+# El NDVI ve como "suelo desnudo" también la implantación de cada cultivo: margen antes de corregir lo declarado.
+NDVI_BARE_MARGIN = 0.2
 _CONF_ORDER = [Confidence.BAJA, Confidence.MEDIA, Confidence.ALTA]
 
 
@@ -86,7 +88,9 @@ def _evaluate(
     except RotationCalendarError as exc:
         raise InvalidInputError(str(exc), {"rotation_id": rotation.id}) from None
     metrics = compute_metrics(calendar, climate, ctx.soil, ctx.irrigated)
-    comps = score_components(metrics, ctx, calendar.steps[0].crop, erosion_scale)
+    comps = score_components(
+        metrics, ctx, calendar.steps[0].crop, erosion_scale, is_actual=rotation.strategy == RotationStrategy.ACTUAL
+    )
     return Evaluated(rotation=rotation, metrics=metrics, components=comps, total=total(comps.values, weights))
 
 
@@ -151,7 +155,7 @@ def run(req: EngineRequest, crops: dict[str, Crop], templates: list[RotationTemp
     if req.vegetation is not None:
         actual_ev0 = _evaluate(actual, crops, climate, ctx, weights)
         declared_bare = actual_ev0.metrics.bare_months_per_year / 12
-        if req.vegetation.bare_soil_fraction > declared_bare + 0.15:
+        if req.vegetation.bare_soil_fraction > declared_bare + NDVI_BARE_MARGIN:
             actual_erosion_scale = min(2.0, req.vegetation.bare_soil_fraction / max(declared_bare, 0.05))
             warnings.append(
                 f"El NDVI muestra suelo desnudo el {req.vegetation.bare_soil_fraction * 100:.0f} % del tiempo, más que lo declarado "

@@ -398,16 +398,32 @@ def evidence(
             + (f", año seco análogo {base_climate.driest_year}" if s.dry_year and base_climate.driest_year else "")
             + f" → lluvia {climate.annual_precip:.0f} mm/año y ET0 {climate.annual_et0:.0f} mm/año."
         )
-    nasa.append(
-        f"Humedad de suelo SMAP: {soil_moisture.product}, {soil_moisture.anomaly_pct:+.0f} % respecto de lo normal."
-        if soil_moisture
-        else "Humedad de suelo SMAP: no se cargó para este lote (no se usó)."
-    )
-    nasa.append(
-        f"NDVI MODIS: {vegetation.bare_soil_fraction * 100:.0f} % de los compuestos con NDVI < {fmt(vegetation.threshold, 2)}."
-        if vegetation
-        else "NDVI MODIS: no se cargó para este lote (no se usó)."
-    )
+    if soil_moisture:
+        origin = f" ({soil_moisture.origin.origin_label})" if soil_moisture.origin else ""
+        freq = (
+            f", sequía de suelo en el {soil_moisture.drought_frequency_pct:.0f} % de los meses"
+            if soil_moisture.drought_frequency_pct is not None
+            else ""
+        )
+        nasa.append(
+            f"Humedad de suelo SMAP {'L3 superficial' if soil_moisture.product == 'SMAP_L3' else 'L4 en zona de raíces'}{origin}: "
+            f"{soil_moisture.anomaly_pct:+.0f} % respecto de la "
+            f"misma época de otros años{freq}."
+        )
+    else:
+        nasa.append("Humedad de suelo SMAP: no disponible para este lote (no se usó).")
+    if vegetation:
+        origin = f" ({vegetation.origin.origin_label})" if vegetation.origin else ""
+        trend = ""
+        if vegetation.biomass_trend_pct_per_decade is not None:
+            trend = f", tendencia de biomasa {vegetation.biomass_trend_pct_per_decade:+.0f} % por década"
+            trend += "" if vegetation.trend_significant else " (no significativa)"
+        nasa.append(
+            f"NDVI MODIS {vegetation.product}{origin}: suelo desnudo el {vegetation.bare_soil_fraction * 100:.0f} % del tiempo "
+            f"(NDVI < {fmt(vegetation.threshold, 2)}){trend}."
+        )
+    else:
+        nasa.append("NDVI MODIS: no disponible para este lote (no se usó).")
 
     texture = soil.texture.value.replace("_", " ")
     local = [
@@ -536,6 +552,11 @@ def confidence_for(
         reasons.append("Atributos con confianza baja en el catálogo: " + join(low) + ".")
     if soil_moisture is None and vegetation is None:
         reasons.append("Sin humedad de suelo (SMAP) ni NDVI del lote.")
+    sat_sample = [
+        n for n, x in (("SMAP", soil_moisture), ("NDVI", vegetation)) if x is not None and x.origin == DataStatus.SAMPLE
+    ]
+    if sat_sample:
+        reasons.append(f"{join(sat_sample)} de muestra simulada, no observaciones del lote.")
     if climate.origin == DataStatus.SAMPLE or len(reasons) >= 4:
         return Confidence.BAJA, reasons
     return (Confidence.MEDIA if reasons else Confidence.ALTA), reasons

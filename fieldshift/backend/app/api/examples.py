@@ -100,3 +100,24 @@ SCENARIOS = {
         },
     }
 }
+
+SOIL_MOISTURE = {
+    "lote": {"summary": "Lote precargado, SMAP L4 en zona de raíces", "value": {"field_id": "campo-centro"}},
+    "coordenadas": {
+        "summary": "Por coordenadas, con la serie diaria",
+        "value": {"latitude": -33.85, "longitude": -65.2, "start_date": "2020-01-01", "end_date": "2025-12-31", "include_series": True},
+    },
+    "csv": {
+        "summary": "CSV propio (formato simple)",
+        "value": {"latitude": -33.85, "longitude": -65.2, "start_date": "2024-01-01", "end_date": "2024-01-03",
+                  "csv_content": "date,value\n2024-01-01,0.21\n2024-01-02,0.20\n2024-01-03,0.19\n"},
+    },
+}
+
+VEGETATION = {
+    "lote": {"summary": "Lote precargado, MOD13Q1 250 m", "value": {"field_id": "campo-este"}},
+    "umbral": {
+        "summary": "Con otro umbral de barbecho y la serie",
+        "value": {"field_id": "campo-centro", "bare_threshold": 0.25, "include_series": True},
+    },
+}

@@ -54,9 +54,10 @@
         "period": "2025-09 a 2025-11"
       },
       "vegetation": {
-        "product": "MOD13A1",
+        "product": "MOD13Q1",
         "bare_soil_fraction": 0.75,
         "threshold": 0.3,
+        "trend_significant": false,
         "period": "2021-2025"
       },
       "priorities_default": true
@@ -868,7 +869,7 @@
               {
                 "factor": "Exposición a heladas",
                 "effect": "neutro",
-                "points": -0.0,
+                "points": 0.0,
                 "detail": "Meses fríos con cultivo x sensibilidad a heladas (índice 0,00).",
                 "provenance": {
                   "label": "estimado",
@@ -2142,7 +2143,7 @@
               {
                 "factor": "Exposición a heladas",
                 "effect": "neutro",
-                "points": -0.0,
+                "points": 0.0,
                 "detail": "Meses fríos con cultivo x sensibilidad a heladas (índice 0,00).",
                 "provenance": {
                   "label": "estimado",
@@ -2730,8 +2731,8 @@
               "Con estos datos, los cultivos de la rotación demandan ~876 mm/año y la lluvia efectiva más el agua almacenada cubren el 59 %.",
               "Días con Tmax > 35 °C: 6 por año en promedio.",
               "Variabilidad de la lluvia anual: 13 % (coeficiente de variación).",
-              "Humedad de suelo SMAP: SMAP_L3, -25 % respecto de lo normal.",
-              "NDVI MODIS: 75 % de los compuestos con NDVI < 0,30."
+              "Humedad de suelo SMAP L3 superficial: -25 % respecto de la misma época de otros años.",
+              "NDVI MODIS MOD13Q1: suelo desnudo el 75 % del tiempo (NDVI < 0,30)."
             ],
             "local_soil": [
               "Textura franco arenosa: agua útil estimada 130 mm y eficiencia de barbecho 0,20.",
@@ -3091,29 +3092,32 @@
       },
       {
         "id": "smap",
-        "name": "SMAP humedad de suelo (L3 superficial / L4 zona de raíces)",
-        "provider": "NASA",
-        "product": "SPL3SMP_E / SPL4SMGP",
-        "spatial_resolution": "~9 km",
-        "temporal_resolution": "diaria / 3 h",
+        "name": "SMAP humedad de suelo (L4 zona de raíces 0-100 cm; L3 superficial)",
+        "provider": "NASA SMAP, NSIDC DAAC (vía AppEEARS)",
+        "product": "SPL4SMGP.008 (modelado con asimilación) / SPL3SMP_E.006 (observado)",
+        "endpoint": "https://appeears.earthdatacloud.nasa.gov/api",
+        "spatial_resolution": "9 km (EASE-Grid 2.0)",
+        "temporal_resolution": "L4: cada 3 h; L3: diaria con huecos",
         "license": "Datos abiertos de NASA",
-        "citation": "NASA SMAP mission (Earthdata).",
+        "citation": "Reichle, R. et al. SMAP L4 Version 8, NSIDC DAAC, doi:10.5067/T5RUATAQREF8.",
         "limitations": [
-          "L3 mide solo los primeros ~5 cm.",
-          "L4 es un producto modelado."
+          "Un píxel de 9 km promedia muchos lotes.",
+          "L4 es modelado; L3 mide solo ~5 cm."
         ]
       },
       {
         "id": "modis-ndvi",
-        "name": "MODIS NDVI (MOD13A1)",
-        "provider": "NASA / USGS LP DAAC",
-        "product": "MOD13A1, compuesto de 16 días",
-        "spatial_resolution": "500 m",
+        "name": "MODIS NDVI (MOD13Q1 v6.1)",
+        "provider": "NASA / USGS LP DAAC (vía AppEEARS)",
+        "product": "MOD13Q1.061, compuesto de 16 días",
+        "endpoint": "https://appeears.earthdatacloud.nasa.gov/api",
+        "spatial_resolution": "250 m",
         "temporal_resolution": "16 días",
         "license": "Datos abiertos de NASA",
-        "citation": "Didan, K. MOD13A1 MODIS/Terra Vegetation Indices 16-Day L3 Global 500m.",
+        "citation": "Didan, K. (2021). MOD13Q1 MODIS/Terra Vegetation Indices 16-Day L3 Global 250m SIN Grid V061. LP DAAC.",
         "limitations": [
-          "A 500 m mezcla lotes vecinos en lotes chicos."
+          "A 250 m mezcla lotes vecinos en lotes chicos.",
+          "Nubes y compuestos de 16 días."
         ]
       }
     ],
