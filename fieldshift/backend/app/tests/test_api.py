@@ -187,3 +187,32 @@ def test_exportar(client):
     assert r.headers["content-type"].startswith("text/csv")
     assert DISCLAIMER in r.text and "DATO DE MUESTRA" in r.text and "explicacion" in r.text
     assert_error(client.get("/export/report", params={"field_id": "campo-este", "format": "pdf"}), 422, "VALIDATION_ERROR")
+
+
+def test_listar_lotes(client):
+    body = client.get("/fields").json()
+    assert {f["id"] for f in body["data"]} >= {"campo-este", "campo-centro", "campo-conlara"}
+
+
+def test_crear_lote_completo_y_compararlo(client):
+    lote = {
+        "name": "Lote del mapa", "location": {"lat": -33.70, "lon": -65.40, "slope_pct": 1.5}, "area_ha": 120,
+        "current_crop": "soja", "crop_history": ["maiz", "soja"], "drainage": "medio", "budget": "bajo",
+        "soil_profile": {"texture": "arenosa", "organic_matter": "bajo", "provenance": {"label": "estimado"}},
+        "boundary": {"type": "Polygon", "coordinates": [[[-65.41, -33.69], [-65.39, -33.69], [-65.39, -33.71], [-65.41, -33.69]]]},
+    }
+    r = client.post("/fields", json=lote)
+    assert r.status_code == 201, r.text
+    field = r.json()["data"]
+    assert field["boundary"]["type"] == "Polygon" and field["budget"] == "bajo"
+    data = client.post("/rotations/compare", json={"field_id": field["id"]}).json()["data"]
+    assert data["inputs"]["current_crop"] == "soja"
+    actual = next(e for e in data["evaluations"] if e["rotation"]["strategy"] == "actual")
+    assert [s["crop_id"] for s in actual["rotation"]["steps"]] == ["maiz", "soja"]
+
+
+def test_crear_lote_invalido(client):
+    base = {"name": "X", "location": {"lat": -33.7, "lon": -65.4}, "area_ha": 10}
+    assert_error(client.post("/fields", json={**base, "crop_history": ["papa"]}), 400, "INVALID_INPUT")
+    abierto = {"type": "Polygon", "coordinates": [[[-65.41, -33.69], [-65.39, -33.69], [-65.39, -33.71], [-65.40, -33.70]]]}
+    assert_error(client.post("/fields", json={**base, "boundary": abierto}), 422, "VALIDATION_ERROR")

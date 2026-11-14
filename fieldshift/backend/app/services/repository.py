@@ -12,7 +12,7 @@ from app.schemas.crop import Crop
 from app.schemas.field import FieldCreate, FieldOut
 from app.schemas.priority import FarmerPriority, Priorities
 from app.schemas.rotation import Rotation, RotationTemplate
-from app.utils.exceptions import FieldNotFoundError, RotationNotFoundError
+from app.utils.exceptions import FieldNotFoundError, InvalidInputError, RotationNotFoundError
 
 
 def _load(path: Path) -> list[dict]:
@@ -54,7 +54,13 @@ class Repository:
         except KeyError:
             raise FieldNotFoundError(f"No existe el lote '{field_id}'.") from None
 
+    def list_fields(self) -> list[FieldOut]:
+        return list(self.fields.values())
+
     def create_field(self, data: FieldCreate) -> FieldOut:
+        unknown = sorted({*data.crop_history, *([data.current_crop] if data.current_crop else [])} - set(self.crops))
+        if unknown:
+            raise InvalidInputError(f"Cultivos desconocidos: {unknown}.", {"crop_ids": unknown})
         field = FieldOut(id=f"lote-{uuid.uuid4().hex[:8]}", **data.model_dump())
         self.fields[field.id] = field
         return field

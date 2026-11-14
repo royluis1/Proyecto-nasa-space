@@ -1,5 +1,7 @@
 """Ubicación, perfil de suelo y campo/lote."""
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.enums import Level, SoilTexture
@@ -31,6 +33,25 @@ class SoilProfile(BaseModel):
     provenance: Provenance
 
 
+class Boundary(BaseModel):
+    """Polígono del lote en GeoJSON (WGS84). Se guarda para futuras consultas por área (Sentinel-2, MODIS)."""
+
+    type: Literal["Polygon"] = "Polygon"
+    coordinates: list[list[tuple[float, float]]] = Field(description="Anillos [lon, lat]; el primero es el borde exterior.")
+
+    @field_validator("coordinates")
+    @classmethod
+    def _ring(cls, rings: list[list[tuple[float, float]]]) -> list[list[tuple[float, float]]]:
+        if not rings or len(rings[0]) < 4:
+            raise ValueError("El polígono necesita al menos 3 vértices y cerrar en el primero.")
+        for lon, lat in rings[0]:
+            if not (-180 <= lon <= 180 and -90 <= lat <= 90):
+                raise ValueError("Coordenadas del polígono fuera de rango.")
+        if rings[0][0] != rings[0][-1]:
+            raise ValueError("El polígono tiene que cerrar: el último vértice debe repetir el primero.")
+        return rings
+
+
 class FieldCreate(BaseModel):
     name: str = Field(min_length=1, max_length=100, examples=["Lote Norte"])
     farm_name: str | None = Field(default=None, max_length=100)
@@ -38,6 +59,13 @@ class FieldCreate(BaseModel):
     area_ha: float = Field(gt=0, le=100_000, examples=[250])
     irrigated: bool = False
     soil_profile: SoilProfile | None = None
+    current_crop: str | None = Field(default=None, description="Cultivo actual (id del catálogo).")
+    crop_history: list[str] = Field(
+        default=[], max_length=10, description="Cultivos principales de campañas anteriores, del más antiguo al más reciente."
+    )
+    drainage: Level | None = Field(default=None, description="Drenaje: bajo = anegable, alto = excesivo. Todavía no influye en el puntaje.")
+    budget: Level | None = Field(default=None, description="Presupuesto disponible para cambios. Todavía no influye en el puntaje.")
+    boundary: Boundary | None = None
 
 
 class FieldOut(FieldCreate):
@@ -45,9 +73,6 @@ class FieldOut(FieldCreate):
 
     id: str
     current_rotation_id: str | None = None
-    crop_history: list[str] = Field(
-        default=[], description="Cultivos principales de campañas anteriores, del más antiguo al más reciente."
-    )
     sample_note: str | None = Field(
         default=None, description="Indica si los datos del lote son reales o ilustrativos."
     )

@@ -36,6 +36,15 @@ def create_field(
     return ApiResponse(data=field, meta=ResponseMeta(data_status=DataStatus.SAMPLE, warnings=warnings))
 
 
+@router.get("/fields", response_model=ApiResponse[list[FieldOut]], summary="Listar lotes")
+def list_fields(repo: Repository = Depends(get_repository)) -> ApiResponse[list[FieldOut]]:
+    """Lotes de ejemplo y los creados en la sesión."""
+    return ApiResponse(
+        data=repo.list_fields(),
+        meta=ResponseMeta(data_status=DataStatus.SAMPLE, warnings=["Los lotes de ejemplo tienen datos ILUSTRATIVOS."]),
+    )
+
+
 @router.get("/fields/{field_id}", response_model=ApiResponse[FieldOut], summary="Obtener un lote", responses=NOT_FOUND)
 def get_field(field_id: str, repo: Repository = Depends(get_repository)) -> ApiResponse[FieldOut]:
     """Devuelve el lote con su ubicación, perfil de suelo y rotación actual."""

@@ -92,7 +92,7 @@ class RotationService:
             declared_actual=declared,
             extra_rotations=extra,
             history=list(history),
-            current_crop=req.current_crop,
+            current_crop=req.current_crop or field.current_crop,
             strategies=req.strategies,
             soil_moisture=soil_moisture,
             vegetation=vegetation,

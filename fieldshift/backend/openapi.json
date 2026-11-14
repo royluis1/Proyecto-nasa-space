@@ -1,0 +1,6564 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "FieldShift API",
+  "description": "\nAPI de **FieldShift** (NASA Space Apps Challenge 2026 · *Field Shift: Adapting Farms with NASA Data*).\n\nCompara estrategias de rotación de cultivos usando datos NASA, información local de suelo\ny prioridades del productor.\n\n- Cada valor indica si es **observado, modelado, estimado o supuesto**.\n- `meta.data_status` indica si la respuesta usa datos en vivo, caché, muestra o valores simulados (`mock`).\n- Los errores tienen siempre la forma `{\"error\": {\"code\", \"message\", \"details\", \"request_id\"}}`.\n\n> FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.\n",
+  "version": "0.1.0"
+ },
+ "paths": {
+  "/health": {
+   "get": {
+    "tags": [
+     "sistema"
+    ],
+    "summary": "Estado del servicio",
+    "description": "Devuelve `ok` si la API está levantada. No consulta fuentes externas.",
+    "operationId": "health_health_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HealthResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/crops": {
+   "get": {
+    "tags": [
+     "cultivos"
+    ],
+    "summary": "Catálogo de cultivos",
+    "description": "Cultivos y coberturas con atributos cualitativos, fuente y nivel de confianza.",
+    "operationId": "list_crops_crops_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_list_Crop__"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/fields": {
+   "get": {
+    "tags": [
+     "lotes"
+    ],
+    "summary": "Listar lotes",
+    "description": "Lotes de ejemplo y los creados en la sesión.",
+    "operationId": "list_fields_fields_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_list_FieldOut__"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "lotes"
+    ],
+    "summary": "Crear un lote",
+    "description": "Crea un lote a partir de coordenadas (WGS84). Se redondean a 4 decimales.\n\nSi el punto cae fuera de San Luis se acepta, pero con advertencia: los datos\nde muestra y los supuestos agronómicos son de San Luis.",
+    "operationId": "create_field_fields_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/FieldCreate"
+       },
+       "examples": {
+        "lote_san_luis": {
+         "summary": "Lote en el este de San Luis",
+         "value": {
+          "name": "Lote Norte",
+          "farm_name": "La Esperanza",
+          "location": {
+           "lat": -33.8512,
+           "lon": -65.2034
+          },
+          "area_ha": 250,
+          "irrigated": false,
+          "soil_profile": {
+           "texture": "franco_arenosa",
+           "lab_analysis": false,
+           "provenance": {
+            "label": "estimado",
+            "confidence": "baja",
+            "note": "Declarado por el productor."
+           }
+          }
+         }
+        },
+        "fuera_de_san_luis": {
+         "summary": "Coordenada válida fuera de San Luis (devuelve advertencia)",
+         "value": {
+          "name": "Lote Pergamino",
+          "location": {
+           "lat": -33.89,
+           "lon": -60.57
+          },
+          "area_ha": 100
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_FieldOut_"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Coordenadas o datos inválidos.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/fields/{field_id}": {
+   "get": {
+    "tags": [
+     "lotes"
+    ],
+    "summary": "Obtener un lote",
+    "description": "Devuelve el lote con su ubicación, perfil de suelo y rotación actual.",
+    "operationId": "get_field_fields__field_id__get",
+    "parameters": [
+     {
+      "name": "field_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Field Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_FieldOut_"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "El lote no existe.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/priorities": {
+   "post": {
+    "tags": [
+     "prioridades"
+    ],
+    "summary": "Guardar prioridades del productor",
+    "description": "Guarda las prioridades (0 a 10) de un lote. Se usan como pesos del puntaje.",
+    "operationId": "save_priorities_priorities_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/FarmerPriority"
+       },
+       "examples": {
+        "prioriza_agua": {
+         "summary": "Productor que prioriza el agua",
+         "value": {
+          "field_id": "campo-este",
+          "priorities": {
+           "water": 9,
+           "soil": 6,
+           "risk": 7,
+           "income": 5,
+           "sustainability": 4
+          }
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_FarmerPriority_"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not Found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Unprocessable Content",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/climate-summary": {
+   "post": {
+    "tags": [
+     "clima"
+    ],
+    "summary": "Resumen climático con NASA POWER",
+    "description": "Serie diaria, resúmenes mensual, estacional y anual, extremos, tendencias, días calurosos,\nlluvia acumulada, variabilidad, ET0 y déficit hídrico climático.\n\nOrigen del dato (`meta.origin_label`): **DATO NASA EN VIVO**, **DATO CACHEADO** o **DATO DE MUESTRA**.\nOrden de búsqueda: caché vigente → POWER en vivo → caché vencida → muestra simulada.",
+    "operationId": "climate_summary_climate_summary_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ClimateSummaryRequest"
+       },
+       "examples": {
+        "coordenadas": {
+         "summary": "Por coordenadas, 2015-2025, sin serie diaria",
+         "value": {
+          "latitude": -33.85,
+          "longitude": -65.2,
+          "start_date": "2015-01-01",
+          "end_date": "2025-12-31",
+          "community": "AG",
+          "include_daily": false
+         }
+        },
+        "lote": {
+         "summary": "Por lote precargado, con serie diaria",
+         "value": {
+          "field_id": "campo-centro",
+          "start_date": "2020-01-01",
+          "end_date": "2024-12-31"
+         }
+        },
+        "parametros": {
+         "summary": "Solo parámetros básicos",
+         "value": {
+          "latitude": -32.45,
+          "longitude": -65.25,
+          "start_date": "2018-01-01",
+          "end_date": "2023-12-31",
+          "parameters": [
+           "T2M",
+           "T2M_MAX",
+           "T2M_MIN",
+           "PRECTOTCORR"
+          ],
+          "include_daily": false
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_ClimateSummary_"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "El lote no existe.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Coordenadas, fechas o parámetros inválidos.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "502": {
+      "description": "Respuesta inválida de NASA POWER.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "503": {
+      "description": "Sin datos: POWER no responde y no hay caché ni muestra.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/soil-moisture": {
+   "post": {
+    "tags": [
+     "satélite"
+    ],
+    "summary": "Humedad de suelo SMAP",
+    "description": "Humedad promedio, frecuencia de sequías, meses con baja humedad, tendencia y estrés hídrico relativo.\n\nPor defecto: SMAP L4 en zona de raíces (0-100 cm, modelado). Origen del dato (`meta.origin_label`):\nCSV cargado → caché → AppEEARS en vivo (asincrónico) → muestra simulada → 503.",
+    "operationId": "soil_moisture_soil_moisture_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SoilMoistureRequest"
+       },
+       "examples": {
+        "lote": {
+         "summary": "Lote precargado, SMAP L4 en zona de raíces",
+         "value": {
+          "field_id": "campo-centro"
+         }
+        },
+        "coordenadas": {
+         "summary": "Por coordenadas, con la serie diaria",
+         "value": {
+          "latitude": -33.85,
+          "longitude": -65.2,
+          "start_date": "2020-01-01",
+          "end_date": "2025-12-31",
+          "include_series": true
+         }
+        },
+        "csv": {
+         "summary": "CSV propio (formato simple)",
+         "value": {
+          "latitude": -33.85,
+          "longitude": -65.2,
+          "start_date": "2024-01-01",
+          "end_date": "2024-01-03",
+          "csv_content": "date,value\n2024-01-01,0.21\n2024-01-02,0.20\n2024-01-03,0.19\n"
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_SoilMoistureSummary_"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "CSV ilegible o período sin datos.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "El lote no existe.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Coordenadas o fechas inválidas.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "503": {
+      "description": "Sin datos: no hay CSV, caché, AppEEARS ni muestra para el punto.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/vegetation-index": {
+   "post": {
+    "tags": [
+     "satélite"
+    ],
+    "summary": "NDVI MODIS",
+    "description": "NDVI promedio, cobertura vegetal estimada, períodos de barbecho, tendencia de biomasa y comparación entre campañas.\n\nPor defecto: MOD13Q1 v6.1 (250 m, 16 días), 10 campañas de julio a junio. Se descartan nubes y nieve\ncon la capa de confiabilidad del píxel.",
+    "operationId": "vegetation_index_vegetation_index_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/VegetationRequest"
+       },
+       "examples": {
+        "lote": {
+         "summary": "Lote precargado, MOD13Q1 250 m",
+         "value": {
+          "field_id": "campo-este"
+         }
+        },
+        "umbral": {
+         "summary": "Con otro umbral de barbecho y la serie",
+         "value": {
+          "field_id": "campo-centro",
+          "bare_threshold": 0.25,
+          "include_series": true
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_VegetationSummary_"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "CSV ilegible o período sin datos.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "El lote no existe.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Coordenadas o fechas inválidas.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "503": {
+      "description": "Sin datos: no hay CSV, caché, AppEEARS ni muestra para el punto.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/rotations/compare": {
+   "post": {
+    "tags": [
+     "rotaciones"
+    ],
+    "summary": "Comparar rotaciones de un lote",
+    "description": "Genera y compara al menos 3 rotaciones, siempre con la actual como línea base.\n\nEstrategias: actual, conservadora, diversificada, ahorro de agua, salud del suelo,\nrentabilidad y mixta recomendada. Cada una trae puntaje total (0-100) con rango de\nincertidumbre, desglose A/S/R/I/E con bonificaciones y penalizaciones, explicación en\nlenguaje simple, riesgos, supuestos, fuentes, nivel de confianza y advertencias.\n\nClima: NASA POWER de los últimos 10 años completos (con caché y fallback a muestra).\nSi no se envían prioridades, se usan las guardadas o, si no hay, las por defecto.",
+    "operationId": "compare_rotations_rotations_compare_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CompareRequest"
+       },
+       "examples": {
+        "todas": {
+         "summary": "Todas las estrategias, prioridades guardadas o por defecto",
+         "value": {
+          "field_id": "campo-este"
+         }
+        },
+        "prioriza_agua_escenario_seco": {
+         "summary": "Prioriza agua, con escenario seco y caluroso",
+         "value": {
+          "field_id": "campo-centro",
+          "priorities": {
+           "water": 9,
+           "soil": 6,
+           "risk": 7,
+           "income": 4,
+           "sustainability": 5
+          },
+          "scenario": {
+           "id": "seco-20-calor-1",
+           "name": "Lluvia -20 % y +1 °C",
+           "rain_delta_pct": -20,
+           "temp_delta_c": 1
+          }
+         }
+        },
+        "con_sensores_e_historial": {
+         "summary": "Con humedad SMAP, NDVI e historial de monocultivo",
+         "value": {
+          "field_id": "campo-este",
+          "history": [
+           "maiz",
+           "soja",
+           "soja",
+           "soja"
+          ],
+          "soil_moisture": {
+           "product": "SMAP_L3",
+           "anomaly_pct": -25,
+           "period": "2025-09 a 2025-11"
+          },
+          "vegetation": {
+           "bare_soil_fraction": 0.55,
+           "threshold": 0.3,
+           "period": "2021-2025"
+          }
+         }
+        },
+        "algunas_estrategias": {
+         "summary": "Solo algunas estrategias (la actual se incluye siempre)",
+         "value": {
+          "field_id": "campo-conlara",
+          "strategies": [
+           "conservadora",
+           "agua",
+           "rentabilidad"
+          ]
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_CompareResult_"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Rotación, historial o período inválido.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not Found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Unprocessable Content",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "503": {
+      "description": "Sin datos climáticos.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/rotations/{rotation_id}": {
+   "get": {
+    "tags": [
+     "rotaciones"
+    ],
+    "summary": "Detalle de una rotación",
+    "description": "Rotación declarada o generada (por ejemplo `campo-este-suelo`) con su perfil, puntaje,\nexplicación, riesgos y supuestos, calculada con las prioridades guardadas del lote.",
+    "operationId": "get_rotation_rotations__rotation_id__get",
+    "parameters": [
+     {
+      "name": "rotation_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Rotation Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_RotationEvaluation_"
+        }
+       }
+      }
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      },
+      "description": "Not Found"
+     },
+     "503": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      },
+      "description": "Service Unavailable"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/scenarios": {
+   "post": {
+    "tags": [
+     "escenarios"
+    ],
+    "summary": "Simular escenarios climáticos",
+    "description": "Recalcula el ranking bajo cada escenario (lluvia -50 a +30 %, temperatura 0 a +3 °C,\naño seco análogo, riego). Las rotaciones son las mismas en todos los escenarios, así se\npueden comparar. Los escenarios son supuestos de sensibilidad, no proyecciones climáticas.",
+    "operationId": "run_scenarios_scenarios_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ScenarioRequest"
+       },
+       "examples": {
+        "seco_y_calor": {
+         "summary": "Lluvia -20% y +1 °C",
+         "value": {
+          "field_id": "campo-centro",
+          "scenarios": [
+           {
+            "id": "base",
+            "name": "Clima del período"
+           },
+           {
+            "id": "seco-20",
+            "name": "Lluvia -20%",
+            "rain_delta_pct": -20
+           },
+           {
+            "id": "calor-1",
+            "name": "+1 °C",
+            "temp_delta_c": 1
+           },
+           {
+            "id": "anio-seco",
+            "name": "Año más seco observado",
+            "dry_year": true
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_list_ScenarioResult__"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not Found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Valores fuera de rango.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/export/report": {
+   "get": {
+    "tags": [
+     "reporte"
+    ],
+    "summary": "Exportar reporte del lote",
+    "description": "Reporte con lote, rotaciones, ranking, explicaciones, fuentes, supuestos y advertencia.",
+    "operationId": "export_report_export_report_get",
+    "parameters": [
+     {
+      "name": "field_id",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "examples": [
+        "campo-este"
+       ],
+       "title": "Field Id"
+      }
+     },
+     {
+      "name": "format",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "enum": [
+        "json",
+        "csv"
+       ],
+       "type": "string",
+       "description": "El PDF llega en una fase posterior.",
+       "default": "json",
+       "title": "Format"
+      },
+      "description": "El PDF llega en una fase posterior."
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "JSON (por defecto) o CSV según `format`.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_Report_"
+        }
+       },
+       "text/csv": {}
+      }
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      },
+      "description": "Not Found"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "AnnualRecord": {
+    "properties": {
+     "year": {
+      "type": "integer",
+      "title": "Year"
+     },
+     "complete": {
+      "type": "boolean",
+      "title": "Complete"
+     },
+     "precip_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Precip Mm"
+     },
+     "precip_anomaly_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Precip Anomaly Pct"
+     },
+     "t2m_mean": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "T2M Mean"
+     },
+     "tmax_max": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Tmax Max"
+     },
+     "tmin_min": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Tmin Min"
+     },
+     "heat_days": {
+      "type": "integer",
+      "title": "Heat Days"
+     },
+     "et0_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Et0 Mm"
+     },
+     "deficit_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Deficit Mm"
+     },
+     "classification": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "seco",
+         "normal",
+         "húmedo"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Classification"
+     },
+     "heat_stress": {
+      "type": "boolean",
+      "title": "Heat Stress"
+     }
+    },
+    "type": "object",
+    "required": [
+     "year",
+     "complete",
+     "precip_mm",
+     "precip_anomaly_pct",
+     "t2m_mean",
+     "tmax_max",
+     "tmin_min",
+     "heat_days",
+     "et0_mm",
+     "deficit_mm",
+     "classification",
+     "heat_stress"
+    ],
+    "title": "AnnualRecord"
+   },
+   "ApiResponse_ClimateSummary_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/ClimateSummary"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[ClimateSummary]"
+   },
+   "ApiResponse_CompareResult_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/CompareResult"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[CompareResult]"
+   },
+   "ApiResponse_FarmerPriority_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/FarmerPriority"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[FarmerPriority]"
+   },
+   "ApiResponse_FieldOut_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/FieldOut"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[FieldOut]"
+   },
+   "ApiResponse_Report_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/Report"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[Report]"
+   },
+   "ApiResponse_RotationEvaluation_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/RotationEvaluation"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[RotationEvaluation]"
+   },
+   "ApiResponse_SoilMoistureSummary_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/SoilMoistureSummary"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[SoilMoistureSummary]"
+   },
+   "ApiResponse_VegetationSummary_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/VegetationSummary"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[VegetationSummary]"
+   },
+   "ApiResponse_list_Crop__": {
+    "properties": {
+     "data": {
+      "items": {
+       "$ref": "#/components/schemas/Crop"
+      },
+      "type": "array",
+      "title": "Data"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[list[Crop]]"
+   },
+   "ApiResponse_list_FieldOut__": {
+    "properties": {
+     "data": {
+      "items": {
+       "$ref": "#/components/schemas/FieldOut"
+      },
+      "type": "array",
+      "title": "Data"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[list[FieldOut]]"
+   },
+   "ApiResponse_list_ScenarioResult__": {
+    "properties": {
+     "data": {
+      "items": {
+       "$ref": "#/components/schemas/ScenarioResult"
+      },
+      "type": "array",
+      "title": "Data"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[list[ScenarioResult]]"
+   },
+   "AridityZone": {
+    "type": "string",
+    "enum": [
+     "arido",
+     "semiarido",
+     "subhumedo_seco",
+     "humedo"
+    ],
+    "title": "AridityZone",
+    "description": "Clase de aridez según el índice P/ET0 (UNEP)."
+   },
+   "Assumption": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "text": {
+      "type": "string",
+      "title": "Text"
+     },
+     "value_range": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Value Range"
+     },
+     "source": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Source",
+      "description": "Fuente verificable; None = a validar."
+     },
+     "validated": {
+      "type": "boolean",
+      "title": "Validated",
+      "default": false
+     },
+     "used_in": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Used In",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "text"
+    ],
+    "title": "Assumption"
+   },
+   "Boundary": {
+    "properties": {
+     "type": {
+      "type": "string",
+      "const": "Polygon",
+      "title": "Type",
+      "default": "Polygon"
+     },
+     "coordinates": {
+      "items": {
+       "items": {
+        "prefixItems": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "number"
+         }
+        ],
+        "type": "array",
+        "maxItems": 2,
+        "minItems": 2
+       },
+       "type": "array"
+      },
+      "type": "array",
+      "title": "Coordinates",
+      "description": "Anillos [lon, lat]; el primero es el borde exterior."
+     }
+    },
+    "type": "object",
+    "required": [
+     "coordinates"
+    ],
+    "title": "Boundary",
+    "description": "Polígono del lote en GeoJSON (WGS84). Se guarda para futuras consultas por área (Sentinel-2, MODIS)."
+   },
+   "Campaign": {
+    "properties": {
+     "campaign": {
+      "type": "string",
+      "title": "Campaign",
+      "description": "Campaña agrícola de julio a junio.",
+      "examples": [
+       "2023/24"
+      ]
+     },
+     "complete": {
+      "type": "boolean",
+      "title": "Complete"
+     },
+     "valid_composites": {
+      "type": "integer",
+      "title": "Valid Composites"
+     },
+     "mean_ndvi": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Mean Ndvi"
+     },
+     "peak_ndvi": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Peak Ndvi"
+     },
+     "peak_date": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Peak Date"
+     },
+     "integrated_ndvi": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Integrated Ndvi",
+      "description": "Suma de (NDVI - NDVI de suelo) x días: proxy de biomasa producida."
+     },
+     "cover_fraction": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cover Fraction"
+     },
+     "bare_fraction": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Bare Fraction"
+     },
+     "growth_cycles": {
+      "type": "integer",
+      "title": "Growth Cycles",
+      "description": "Ciclos de crecimiento detectados (1 = un cultivo, 2 = doble cultivo o cobertura)."
+     },
+     "anomaly_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Anomaly Pct",
+      "description": "NDVI integrado frente al promedio de las campañas completas."
+     }
+    },
+    "type": "object",
+    "required": [
+     "campaign",
+     "complete",
+     "valid_composites",
+     "mean_ndvi",
+     "peak_ndvi",
+     "peak_date",
+     "integrated_ndvi",
+     "cover_fraction",
+     "bare_fraction",
+     "growth_cycles",
+     "anomaly_pct"
+    ],
+    "title": "Campaign"
+   },
+   "ClimateInputSummary": {
+    "properties": {
+     "origin": {
+      "$ref": "#/components/schemas/DataStatus"
+     },
+     "origin_label": {
+      "type": "string",
+      "title": "Origin Label"
+     },
+     "period": {
+      "type": "string",
+      "title": "Period"
+     },
+     "annual_precip_mm": {
+      "type": "number",
+      "title": "Annual Precip Mm"
+     },
+     "annual_et0_mm": {
+      "type": "number",
+      "title": "Annual Et0 Mm"
+     },
+     "aridity_index": {
+      "type": "number",
+      "title": "Aridity Index",
+      "description": "Lluvia / ET0 anual (UNEP)."
+     },
+     "zone": {
+      "$ref": "#/components/schemas/AridityZone"
+     },
+     "precip_cv_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Precip Cv Pct"
+     },
+     "heat_days_per_year": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Heat Days Per Year"
+     },
+     "scenario": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Scenario"
+     },
+     "scenario_precip_mm": {
+      "type": "number",
+      "title": "Scenario Precip Mm"
+     },
+     "scenario_et0_mm": {
+      "type": "number",
+      "title": "Scenario Et0 Mm"
+     }
+    },
+    "type": "object",
+    "required": [
+     "origin",
+     "origin_label",
+     "period",
+     "annual_precip_mm",
+     "annual_et0_mm",
+     "aridity_index",
+     "zone",
+     "precip_cv_pct",
+     "heat_days_per_year",
+     "scenario_precip_mm",
+     "scenario_et0_mm"
+    ],
+    "title": "ClimateInputSummary"
+   },
+   "ClimateSource": {
+    "properties": {
+     "provider": {
+      "type": "string",
+      "title": "Provider",
+      "default": "NASA POWER"
+     },
+     "community": {
+      "type": "string",
+      "title": "Community"
+     },
+     "endpoint": {
+      "type": "string",
+      "title": "Endpoint"
+     },
+     "resolution": {
+      "type": "string",
+      "title": "Resolution",
+      "default": "Meteorología ~0.5° x 0.625° (MERRA-2/GEOS); solar ~1° (CERES)"
+     },
+     "origin": {
+      "$ref": "#/components/schemas/DataStatus"
+     },
+     "origin_label": {
+      "type": "string",
+      "title": "Origin Label"
+     },
+     "retrieved_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Retrieved At"
+     },
+     "sample_site": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sample Site"
+     }
+    },
+    "type": "object",
+    "required": [
+     "community",
+     "endpoint",
+     "origin",
+     "origin_label",
+     "retrieved_at"
+    ],
+    "title": "ClimateSource"
+   },
+   "ClimateSummary": {
+    "properties": {
+     "latitude": {
+      "type": "number",
+      "title": "Latitude"
+     },
+     "longitude": {
+      "type": "number",
+      "title": "Longitude"
+     },
+     "field_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Field Id"
+     },
+     "grid_elevation_m": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Grid Elevation M"
+     },
+     "period": {
+      "$ref": "#/components/schemas/DateRange"
+     },
+     "source": {
+      "$ref": "#/components/schemas/ClimateSource"
+     },
+     "parameters": {
+      "additionalProperties": {
+       "$ref": "#/components/schemas/ParameterInfo"
+      },
+      "type": "object",
+      "title": "Parameters"
+     },
+     "labels": {
+      "additionalProperties": {
+       "type": "string"
+      },
+      "type": "object",
+      "title": "Labels",
+      "description": "Etiqueta de honestidad por bloque de resultados."
+     },
+     "stats": {
+      "additionalProperties": {
+       "$ref": "#/components/schemas/VariableStats"
+      },
+      "type": "object",
+      "title": "Stats"
+     },
+     "precipitation": {
+      "$ref": "#/components/schemas/PrecipitationSummary"
+     },
+     "heat": {
+      "$ref": "#/components/schemas/HeatSummary"
+     },
+     "trends": {
+      "$ref": "#/components/schemas/Trends"
+     },
+     "variability": {
+      "$ref": "#/components/schemas/Variability"
+     },
+     "water_deficit": {
+      "$ref": "#/components/schemas/WaterDeficit"
+     },
+     "annual": {
+      "items": {
+       "$ref": "#/components/schemas/AnnualRecord"
+      },
+      "type": "array",
+      "title": "Annual"
+     },
+     "seasonal": {
+      "items": {
+       "$ref": "#/components/schemas/SeasonalSummary"
+      },
+      "type": "array",
+      "title": "Seasonal"
+     },
+     "monthly_climatology": {
+      "items": {
+       "$ref": "#/components/schemas/MonthlyClimatology"
+      },
+      "type": "array",
+      "title": "Monthly Climatology"
+     },
+     "monthly": {
+      "items": {
+       "$ref": "#/components/schemas/MonthlyRecord"
+      },
+      "type": "array",
+      "title": "Monthly"
+     },
+     "daily": {
+      "anyOf": [
+       {
+        "items": {
+         "$ref": "#/components/schemas/DailyRecord"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Daily"
+     },
+     "missing": {
+      "$ref": "#/components/schemas/MissingDataReport"
+     },
+     "limitations": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Limitations"
+     }
+    },
+    "type": "object",
+    "required": [
+     "latitude",
+     "longitude",
+     "period",
+     "source",
+     "parameters",
+     "labels",
+     "stats",
+     "precipitation",
+     "heat",
+     "trends",
+     "variability",
+     "water_deficit",
+     "annual",
+     "seasonal",
+     "monthly_climatology",
+     "monthly",
+     "missing",
+     "limitations"
+    ],
+    "title": "ClimateSummary"
+   },
+   "ClimateSummaryRequest": {
+    "properties": {
+     "field_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Field Id",
+      "description": "Alternativa a latitud/longitud: usa las del lote."
+     },
+     "latitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 90.0,
+        "minimum": -90.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Latitude",
+      "examples": [
+       -33.85
+      ]
+     },
+     "longitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 180.0,
+        "minimum": -180.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Longitude",
+      "examples": [
+       -65.2
+      ]
+     },
+     "start_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Start Date",
+      "examples": [
+       "2015-01-01"
+      ]
+     },
+     "end_date": {
+      "type": "string",
+      "format": "date",
+      "title": "End Date",
+      "examples": [
+       "2025-12-31"
+      ]
+     },
+     "community": {
+      "type": "string",
+      "enum": [
+       "AG",
+       "RE",
+       "SB"
+      ],
+      "title": "Community",
+      "default": "AG"
+     },
+     "parameters": {
+      "anyOf": [
+       {
+        "items": {
+         "$ref": "#/components/schemas/PowerParameter"
+        },
+        "type": "array",
+        "maxItems": 20
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Parameters",
+      "description": "Si se omite, se piden los 8 parámetros. T2M, T2M_MAX, T2M_MIN y PRECTOTCORR se agregan siempre."
+     },
+     "include_daily": {
+      "type": "boolean",
+      "title": "Include Daily",
+      "description": "Incluir la serie diaria completa (respuesta más grande).",
+      "default": true
+     }
+    },
+    "type": "object",
+    "required": [
+     "start_date",
+     "end_date"
+    ],
+    "title": "ClimateSummaryRequest"
+   },
+   "CompareRequest": {
+    "properties": {
+     "field_id": {
+      "type": "string",
+      "title": "Field Id"
+     },
+     "priorities": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Priorities"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "scenario": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/ScenarioInput"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "strategies": {
+      "anyOf": [
+       {
+        "items": {
+         "$ref": "#/components/schemas/RotationStrategy"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Strategies",
+      "description": "Estrategias a generar. La actual se incluye siempre. Por defecto, todas."
+     },
+     "rotation_ids": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rotation Ids",
+      "description": "Rotaciones guardadas del lote para sumar a la comparación."
+     },
+     "current_crop": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Current Crop",
+      "description": "Cultivo actual. Por defecto, el último del historial."
+     },
+     "history": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "History",
+      "description": "Cultivos de campañas anteriores, del más antiguo al más reciente."
+     },
+     "soil_moisture": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/SoilMoistureInput"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "vegetation": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/VegetationInput"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "use_satellite": {
+      "type": "boolean",
+      "title": "Use Satellite",
+      "description": "Si no se envían soil_moisture o vegetation, buscarlos (AppEEARS, caché o muestra).",
+      "default": true
+     },
+     "start_year": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "minimum": 1981.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Start Year",
+      "description": "Período climático. Por defecto, los últimos 10 años completos."
+     },
+     "end_year": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "minimum": 1981.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "End Year"
+     }
+    },
+    "type": "object",
+    "required": [
+     "field_id"
+    ],
+    "title": "CompareRequest"
+   },
+   "CompareResult": {
+    "properties": {
+     "field_id": {
+      "type": "string",
+      "title": "Field Id"
+     },
+     "priorities": {
+      "$ref": "#/components/schemas/Priorities"
+     },
+     "weights": {
+      "additionalProperties": {
+       "type": "number"
+      },
+      "type": "object",
+      "title": "Weights"
+     },
+     "scenario": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/ScenarioInput"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "inputs": {
+      "$ref": "#/components/schemas/EngineInputsSummary"
+     },
+     "ranking": {
+      "items": {
+       "$ref": "#/components/schemas/RotationScore"
+      },
+      "type": "array",
+      "title": "Ranking"
+     },
+     "evaluations": {
+      "items": {
+       "$ref": "#/components/schemas/RotationEvaluation"
+      },
+      "type": "array",
+      "title": "Evaluations"
+     },
+     "recommended_rotation_id": {
+      "type": "string",
+      "title": "Recommended Rotation Id"
+     },
+     "confidence": {
+      "$ref": "#/components/schemas/Confidence"
+     },
+     "confidence_reasons": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Confidence Reasons"
+     },
+     "assumptions": {
+      "items": {
+       "$ref": "#/components/schemas/Assumption"
+      },
+      "type": "array",
+      "title": "Assumptions"
+     },
+     "sources": {
+      "items": {
+       "$ref": "#/components/schemas/DataSource"
+      },
+      "type": "array",
+      "title": "Sources"
+     },
+     "warnings": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Warnings"
+     },
+     "disclaimer": {
+      "type": "string",
+      "title": "Disclaimer",
+      "default": "FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor."
+     }
+    },
+    "type": "object",
+    "required": [
+     "field_id",
+     "priorities",
+     "weights",
+     "scenario",
+     "inputs",
+     "ranking",
+     "evaluations",
+     "recommended_rotation_id",
+     "confidence",
+     "confidence_reasons",
+     "assumptions",
+     "sources",
+     "warnings"
+    ],
+    "title": "CompareResult"
+   },
+   "Confidence": {
+    "type": "string",
+    "enum": [
+     "alta",
+     "media",
+     "baja"
+    ],
+    "title": "Confidence"
+   },
+   "Crop": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id",
+      "examples": [
+       "soja"
+      ]
+     },
+     "name": {
+      "type": "string",
+      "title": "Name",
+      "description": "Nombre común."
+     },
+     "scientific_name": {
+      "type": "string",
+      "title": "Scientific Name"
+     },
+     "group": {
+      "$ref": "#/components/schemas/CropGroup"
+     },
+     "family": {
+      "$ref": "#/components/schemas/CropFamily"
+     },
+     "cycle": {
+      "$ref": "#/components/schemas/CropCycle"
+     },
+     "cycle_months": {
+      "$ref": "#/components/schemas/Range",
+      "description": "Duración aproximada en el lote, en meses."
+     },
+     "sowing_months": {
+      "items": {
+       "type": "integer"
+      },
+      "type": "array",
+      "title": "Sowing Months",
+      "description": "Meses de siembra (1-12).",
+      "examples": [
+       [
+        11,
+        12
+       ]
+      ]
+     },
+     "sowing_window": {
+      "type": "string",
+      "title": "Sowing Window",
+      "description": "Época de siembra en texto."
+     },
+     "default_calendar": {
+      "$ref": "#/components/schemas/CropCalendar"
+     },
+     "water_requirement": {
+      "$ref": "#/components/schemas/Level",
+      "description": "Requerimiento hídrico relativo entre los cultivos del catálogo."
+     },
+     "drought_tolerance": {
+      "$ref": "#/components/schemas/Level"
+     },
+     "heat_tolerance": {
+      "$ref": "#/components/schemas/Level"
+     },
+     "frost_tolerance": {
+      "$ref": "#/components/schemas/Level"
+     },
+     "root_depth": {
+      "$ref": "#/components/schemas/Level",
+      "description": "bajo = superficial, medio, alto = profundo."
+     },
+     "organic_matter_contribution": {
+      "$ref": "#/components/schemas/Level"
+     },
+     "soil_cover": {
+      "$ref": "#/components/schemas/Level"
+     },
+     "fixes_nitrogen": {
+      "type": "boolean",
+      "title": "Fixes Nitrogen"
+     },
+     "nitrogen_fixation": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Level"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Capacidad de fijación. None = no fija."
+     },
+     "erosion_risk": {
+      "$ref": "#/components/schemas/Level",
+      "description": "Riesgo de erosión que deja el cultivo (poco rastrojo = alto)."
+     },
+     "forage_value": {
+      "$ref": "#/components/schemas/Level"
+     },
+     "main_use": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Main Use"
+     },
+     "relative_yield": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Level"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Rendimiento relativo esperado en San Luis. None = no se cosecha."
+     },
+     "relative_income": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Level"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "None para coberturas sin cosecha."
+     },
+     "local_market": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Level"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Disponibilidad de mercado local. None = no se vende."
+     },
+     "pest_risk": {
+      "$ref": "#/components/schemas/Level",
+      "description": "Riesgo de plagas y enfermedades, que sube con la repetición."
+     },
+     "is_cover_crop": {
+      "type": "boolean",
+      "title": "Is Cover Crop",
+      "default": false
+     },
+     "rotation": {
+      "$ref": "#/components/schemas/RotationCompatibility"
+     },
+     "kc": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/KcValues"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "kc_source": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Kc Source"
+     },
+     "ky": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 2.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ky",
+      "description": "Respuesta del rendimiento al déficit hídrico (FAO-33). None = no se cosecha."
+     },
+     "ky_source": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ky Source"
+     },
+     "agronomic_notes": {
+      "type": "string",
+      "title": "Agronomic Notes"
+     },
+     "sources": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "minItems": 1,
+      "title": "Sources"
+     },
+     "confidence": {
+      "$ref": "#/components/schemas/Confidence"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "name",
+     "scientific_name",
+     "group",
+     "family",
+     "cycle",
+     "cycle_months",
+     "sowing_months",
+     "sowing_window",
+     "default_calendar",
+     "water_requirement",
+     "drought_tolerance",
+     "heat_tolerance",
+     "frost_tolerance",
+     "root_depth",
+     "organic_matter_contribution",
+     "soil_cover",
+     "fixes_nitrogen",
+     "erosion_risk",
+     "forage_value",
+     "main_use",
+     "pest_risk",
+     "rotation",
+     "agronomic_notes",
+     "sources",
+     "confidence"
+    ],
+    "title": "Crop"
+   },
+   "CropCalendar": {
+    "properties": {
+     "start_month": {
+      "type": "integer",
+      "maximum": 12.0,
+      "minimum": 1.0,
+      "title": "Start Month"
+     },
+     "end_month": {
+      "type": "integer",
+      "maximum": 12.0,
+      "minimum": 1.0,
+      "title": "End Month"
+     }
+    },
+    "type": "object",
+    "required": [
+     "start_month",
+     "end_month"
+    ],
+    "title": "CropCalendar",
+    "description": "Calendario típico: mes de siembra y último mes en el lote (cosecha o secado)."
+   },
+   "CropCycle": {
+    "type": "string",
+    "enum": [
+     "estival",
+     "invernal",
+     "perenne"
+    ],
+    "title": "CropCycle"
+   },
+   "CropFamily": {
+    "type": "string",
+    "enum": [
+     "graminea",
+     "leguminosa",
+     "asteracea",
+     "brasicacea",
+     "mezcla"
+    ],
+    "title": "CropFamily",
+    "description": "Familia botánica: se usa para medir diversificación."
+   },
+   "CropGroup": {
+    "type": "string",
+    "enum": [
+     "cereal",
+     "oleaginosa",
+     "leguminosa",
+     "forrajera",
+     "cobertura"
+    ],
+    "title": "CropGroup"
+   },
+   "DailyRecord": {
+    "properties": {
+     "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+     },
+     "T2M": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "T2M"
+     },
+     "T2M_MAX": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "T2M Max"
+     },
+     "T2M_MIN": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "T2M Min"
+     },
+     "PRECTOTCORR": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Prectotcorr"
+     },
+     "RH2M": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rh2M"
+     },
+     "WS2M": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ws2M"
+     },
+     "ALLSKY_SFC_SW_DWN": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Allsky Sfc Sw Dwn"
+     },
+     "PS": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ps"
+     },
+     "ET0": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Et0",
+      "description": "mm/día, estimado (FAO-56)."
+     },
+     "ET0_method": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "PM",
+         "HG"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Et0 Method"
+     }
+    },
+    "type": "object",
+    "required": [
+     "date"
+    ],
+    "title": "DailyRecord"
+   },
+   "DataLabel": {
+    "type": "string",
+    "enum": [
+     "observado",
+     "modelado",
+     "estimado",
+     "supuesto"
+    ],
+    "title": "DataLabel",
+    "description": "Regla de honestidad 1: cada dato se etiqueta según su origen."
+   },
+   "DataSource": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id",
+      "examples": [
+       "nasa-power"
+      ]
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "provider": {
+      "type": "string",
+      "title": "Provider"
+     },
+     "product": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Product"
+     },
+     "endpoint": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Endpoint"
+     },
+     "spatial_resolution": {
+      "type": "string",
+      "title": "Spatial Resolution"
+     },
+     "temporal_resolution": {
+      "type": "string",
+      "title": "Temporal Resolution"
+     },
+     "license": {
+      "type": "string",
+      "title": "License"
+     },
+     "citation": {
+      "type": "string",
+      "title": "Citation"
+     },
+     "limitations": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Limitations",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "name",
+     "provider",
+     "spatial_resolution",
+     "temporal_resolution",
+     "license",
+     "citation"
+    ],
+    "title": "DataSource"
+   },
+   "DataStatus": {
+    "type": "string",
+    "enum": [
+     "live",
+     "cached",
+     "sample",
+     "mock",
+     "uploaded"
+    ],
+    "title": "DataStatus",
+    "description": "De dónde salió la respuesta completa."
+   },
+   "DataTrace": {
+    "properties": {
+     "source": {
+      "type": "string",
+      "title": "Source",
+      "examples": [
+       "NASA SMAP, NSIDC DAAC (vía AppEEARS)"
+      ]
+     },
+     "product": {
+      "type": "string",
+      "title": "Product",
+      "examples": [
+       "SPL4SMGP.008 · Geophysical_Data_sm_rootzone"
+      ]
+     },
+     "product_name": {
+      "type": "string",
+      "title": "Product Name"
+     },
+     "label": {
+      "$ref": "#/components/schemas/DataLabel",
+      "description": "observado (medido por el satélite) o modelado."
+     },
+     "status": {
+      "$ref": "#/components/schemas/DataStatus",
+      "description": "live = real en vivo, cached = cacheado, uploaded = CSV cargado, sample = muestra."
+     },
+     "status_label": {
+      "type": "string",
+      "title": "Status Label"
+     },
+     "period_start": {
+      "type": "string",
+      "format": "date",
+      "title": "Period Start"
+     },
+     "period_end": {
+      "type": "string",
+      "format": "date",
+      "title": "Period End"
+     },
+     "last_observation": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Observation"
+     },
+     "retrieved_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Retrieved At"
+     },
+     "spatial_resolution": {
+      "type": "string",
+      "title": "Spatial Resolution"
+     },
+     "temporal_resolution": {
+      "type": "string",
+      "title": "Temporal Resolution"
+     },
+     "depth": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Depth"
+     },
+     "latitude": {
+      "type": "number",
+      "title": "Latitude"
+     },
+     "longitude": {
+      "type": "number",
+      "title": "Longitude"
+     },
+     "pixel_site": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pixel Site",
+      "description": "Sitio de la muestra o punto del CSV usado."
+     },
+     "task_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Task Id",
+      "description": "Tarea de AppEEARS asociada, si se pidió."
+     },
+     "citation": {
+      "type": "string",
+      "title": "Citation"
+     },
+     "limitations": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Limitations"
+     }
+    },
+    "type": "object",
+    "required": [
+     "source",
+     "product",
+     "product_name",
+     "label",
+     "status",
+     "status_label",
+     "period_start",
+     "period_end",
+     "last_observation",
+     "retrieved_at",
+     "spatial_resolution",
+     "temporal_resolution",
+     "latitude",
+     "longitude",
+     "citation",
+     "limitations"
+    ],
+    "title": "DataTrace",
+    "description": "Trazabilidad de un bloque de datos satelitales."
+   },
+   "DateRange": {
+    "properties": {
+     "start": {
+      "type": "string",
+      "format": "date",
+      "title": "Start",
+      "examples": [
+       "2015-01-01"
+      ]
+     },
+     "end": {
+      "type": "string",
+      "format": "date",
+      "title": "End",
+      "examples": [
+       "2025-12-31"
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "start",
+     "end"
+    ],
+    "title": "DateRange"
+   },
+   "DroughtEvent": {
+    "properties": {
+     "start": {
+      "type": "string",
+      "title": "Start",
+      "examples": [
+       "2022-11"
+      ]
+     },
+     "end": {
+      "type": "string",
+      "title": "End"
+     },
+     "months": {
+      "type": "integer",
+      "title": "Months"
+     },
+     "min_anomaly_z": {
+      "type": "number",
+      "title": "Min Anomaly Z"
+     }
+    },
+    "type": "object",
+    "required": [
+     "start",
+     "end",
+     "months",
+     "min_anomaly_z"
+    ],
+    "title": "DroughtEvent"
+   },
+   "EngineInputsSummary": {
+    "properties": {
+     "location": {
+      "$ref": "#/components/schemas/Location"
+     },
+     "climate": {
+      "$ref": "#/components/schemas/ClimateInputSummary"
+     },
+     "soil": {
+      "$ref": "#/components/schemas/SoilInputSummary"
+     },
+     "irrigated": {
+      "type": "boolean",
+      "title": "Irrigated"
+     },
+     "current_crop": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Current Crop"
+     },
+     "history": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "History"
+     },
+     "soil_moisture": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/SoilMoistureInput"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "vegetation": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/VegetationInput"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "priorities_default": {
+      "type": "boolean",
+      "title": "Priorities Default"
+     }
+    },
+    "type": "object",
+    "required": [
+     "location",
+     "climate",
+     "soil",
+     "irrigated",
+     "current_crop",
+     "history",
+     "soil_moisture",
+     "vegetation",
+     "priorities_default"
+    ],
+    "title": "EngineInputsSummary"
+   },
+   "ErrorBody": {
+    "properties": {
+     "code": {
+      "type": "string",
+      "title": "Code",
+      "examples": [
+       "FIELD_NOT_FOUND"
+      ]
+     },
+     "message": {
+      "type": "string",
+      "title": "Message",
+      "examples": [
+       "No existe el lote 'campo-x'."
+      ]
+     },
+     "details": {
+      "anyOf": [
+       {},
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Details"
+     },
+     "request_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Request Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "code",
+     "message"
+    ],
+    "title": "ErrorBody"
+   },
+   "ErrorResponse": {
+    "properties": {
+     "error": {
+      "$ref": "#/components/schemas/ErrorBody"
+     }
+    },
+    "type": "object",
+    "required": [
+     "error"
+    ],
+    "title": "ErrorResponse"
+   },
+   "EvidenceBreakdown": {
+    "properties": {
+     "nasa_data": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Nasa Data",
+      "description": "Qué muestran los datos NASA."
+     },
+     "local_soil": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Local Soil",
+      "description": "Qué depende del suelo local."
+     },
+     "producer": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Producer",
+      "description": "Qué depende del productor."
+     },
+     "needs_validation": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Needs Validation",
+      "description": "Qué requiere validación agronómica."
+     }
+    },
+    "type": "object",
+    "required": [
+     "nasa_data",
+     "local_soil",
+     "producer",
+     "needs_validation"
+    ],
+    "title": "EvidenceBreakdown",
+    "description": "Las 4 fuentes de evidencia que pide el desafío, siempre separadas."
+   },
+   "Extreme": {
+    "properties": {
+     "value": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Value"
+     },
+     "date": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Date"
+     }
+    },
+    "type": "object",
+    "required": [
+     "value"
+    ],
+    "title": "Extreme"
+   },
+   "FallowPeriod": {
+    "properties": {
+     "start": {
+      "type": "string",
+      "format": "date",
+      "title": "Start"
+     },
+     "end": {
+      "type": "string",
+      "format": "date",
+      "title": "End"
+     },
+     "days": {
+      "type": "integer",
+      "title": "Days"
+     },
+     "mean_ndvi": {
+      "type": "number",
+      "title": "Mean Ndvi"
+     }
+    },
+    "type": "object",
+    "required": [
+     "start",
+     "end",
+     "days",
+     "mean_ndvi"
+    ],
+    "title": "FallowPeriod"
+   },
+   "FarmerPriority": {
+    "properties": {
+     "field_id": {
+      "type": "string",
+      "title": "Field Id"
+     },
+     "priorities": {
+      "$ref": "#/components/schemas/Priorities"
+     },
+     "is_default": {
+      "type": "boolean",
+      "title": "Is Default",
+      "description": "True = valores por defecto (estimado), no elegidos por el productor.",
+      "default": false
+     }
+    },
+    "type": "object",
+    "required": [
+     "field_id",
+     "priorities"
+    ],
+    "title": "FarmerPriority"
+   },
+   "FieldCreate": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Name",
+      "examples": [
+       "Lote Norte"
+      ]
+     },
+     "farm_name": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 100
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Farm Name"
+     },
+     "location": {
+      "$ref": "#/components/schemas/Location"
+     },
+     "area_ha": {
+      "type": "number",
+      "maximum": 100000.0,
+      "exclusiveMinimum": 0.0,
+      "title": "Area Ha",
+      "examples": [
+       250
+      ]
+     },
+     "irrigated": {
+      "type": "boolean",
+      "title": "Irrigated",
+      "default": false
+     },
+     "soil_profile": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/SoilProfile"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "current_crop": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Current Crop",
+      "description": "Cultivo actual (id del catálogo)."
+     },
+     "crop_history": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 10,
+      "title": "Crop History",
+      "description": "Cultivos principales de campañas anteriores, del más antiguo al más reciente.",
+      "default": []
+     },
+     "drainage": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Level"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Drenaje: bajo = anegable, alto = excesivo. Todavía no influye en el puntaje."
+     },
+     "budget": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Level"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Presupuesto disponible para cambios. Todavía no influye en el puntaje."
+     },
+     "boundary": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Boundary"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "location",
+     "area_ha"
+    ],
+    "title": "FieldCreate"
+   },
+   "FieldOut": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Name",
+      "examples": [
+       "Lote Norte"
+      ]
+     },
+     "farm_name": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 100
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Farm Name"
+     },
+     "location": {
+      "$ref": "#/components/schemas/Location"
+     },
+     "area_ha": {
+      "type": "number",
+      "maximum": 100000.0,
+      "exclusiveMinimum": 0.0,
+      "title": "Area Ha",
+      "examples": [
+       250
+      ]
+     },
+     "irrigated": {
+      "type": "boolean",
+      "title": "Irrigated",
+      "default": false
+     },
+     "soil_profile": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/SoilProfile"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "current_crop": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Current Crop",
+      "description": "Cultivo actual (id del catálogo)."
+     },
+     "crop_history": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 10,
+      "title": "Crop History",
+      "description": "Cultivos principales de campañas anteriores, del más antiguo al más reciente.",
+      "default": []
+     },
+     "drainage": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Level"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Drenaje: bajo = anegable, alto = excesivo. Todavía no influye en el puntaje."
+     },
+     "budget": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Level"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Presupuesto disponible para cambios. Todavía no influye en el puntaje."
+     },
+     "boundary": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Boundary"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "current_rotation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Current Rotation Id"
+     },
+     "sample_note": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sample Note",
+      "description": "Indica si los datos del lote son reales o ilustrativos."
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "location",
+     "area_ha",
+     "id"
+    ],
+    "title": "FieldOut",
+    "description": "Campo/lote guardado."
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "HealthResponse": {
+    "properties": {
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "environment": {
+      "type": "string",
+      "title": "Environment"
+     },
+     "version": {
+      "type": "string",
+      "title": "Version"
+     }
+    },
+    "type": "object",
+    "required": [
+     "status",
+     "environment",
+     "version"
+    ],
+    "title": "HealthResponse"
+   },
+   "HeatSummary": {
+    "properties": {
+     "threshold_c": {
+      "type": "number",
+      "title": "Threshold C"
+     },
+     "mean_days_per_year": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Mean Days Per Year"
+     },
+     "frequency_pct_by_month": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Frequency Pct By Month",
+      "description": "12 valores, enero a diciembre."
+     },
+     "heat_stress_years": {
+      "items": {
+       "type": "integer"
+      },
+      "type": "array",
+      "title": "Heat Stress Years"
+     }
+    },
+    "type": "object",
+    "required": [
+     "threshold_c",
+     "mean_days_per_year",
+     "frequency_pct_by_month",
+     "heat_stress_years"
+    ],
+    "title": "HeatSummary"
+   },
+   "Impact": {
+    "properties": {
+     "direction": {
+      "$ref": "#/components/schemas/ImpactDirection"
+     },
+     "detail": {
+      "type": "string",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "required": [
+     "direction",
+     "detail"
+    ],
+    "title": "Impact"
+   },
+   "ImpactDirection": {
+    "type": "string",
+    "enum": [
+     "mejora",
+     "neutro",
+     "empeora",
+     "linea_base"
+    ],
+    "title": "ImpactDirection",
+    "description": "Impacto de una rotación frente a la rotación actual."
+   },
+   "KcValues": {
+    "properties": {
+     "ini": {
+      "type": "number",
+      "maximum": 1.5,
+      "minimum": 0.0,
+      "title": "Ini"
+     },
+     "mid": {
+      "type": "number",
+      "maximum": 1.5,
+      "minimum": 0.0,
+      "title": "Mid"
+     },
+     "end": {
+      "type": "number",
+      "maximum": 1.5,
+      "minimum": 0.0,
+      "title": "End"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ini",
+     "mid",
+     "end"
+    ],
+    "title": "KcValues",
+    "description": "Coeficientes de cultivo tipo FAO-56 (inicial, medio, final)."
+   },
+   "Level": {
+    "type": "string",
+    "enum": [
+     "bajo",
+     "medio",
+     "alto"
+    ],
+    "title": "Level",
+    "description": "Escala cualitativa usada en cultivos, riesgo e ingreso relativo."
+   },
+   "Location": {
+    "properties": {
+     "lat": {
+      "type": "number",
+      "maximum": 90.0,
+      "minimum": -90.0,
+      "title": "Lat",
+      "description": "Latitud en grados decimales (WGS84).",
+      "examples": [
+       -33.85
+      ]
+     },
+     "lon": {
+      "type": "number",
+      "maximum": 180.0,
+      "minimum": -180.0,
+      "title": "Lon",
+      "description": "Longitud en grados decimales (WGS84).",
+      "examples": [
+       -65.2
+      ]
+     },
+     "elevation_m": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Elevation M",
+      "description": "De SRTM, si está disponible."
+     },
+     "slope_pct": {
+      "anyOf": [
+       {
+        "type": "number",
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Slope Pct",
+      "description": "De SRTM, si está disponible."
+     }
+    },
+    "type": "object",
+    "required": [
+     "lat",
+     "lon"
+    ],
+    "title": "Location"
+   },
+   "MissingDataReport": {
+    "properties": {
+     "total_days": {
+      "type": "integer",
+      "title": "Total Days"
+     },
+     "missing_by_parameter": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "Missing By Parameter"
+     },
+     "invalid_months": {
+      "type": "integer",
+      "title": "Invalid Months"
+     },
+     "incomplete_years": {
+      "items": {
+       "type": "integer"
+      },
+      "type": "array",
+      "title": "Incomplete Years"
+     }
+    },
+    "type": "object",
+    "required": [
+     "total_days",
+     "missing_by_parameter",
+     "invalid_months",
+     "incomplete_years"
+    ],
+    "title": "MissingDataReport"
+   },
+   "MonthlyClimatology": {
+    "properties": {
+     "month": {
+      "type": "integer",
+      "title": "Month"
+     },
+     "precip_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Precip Mm"
+     },
+     "t2m_mean": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "T2M Mean"
+     },
+     "tmax_mean": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Tmax Mean"
+     },
+     "tmin_mean": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Tmin Mean"
+     },
+     "heat_days": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Heat Days"
+     },
+     "et0_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Et0 Mm"
+     },
+     "years": {
+      "type": "integer",
+      "title": "Years"
+     }
+    },
+    "type": "object",
+    "required": [
+     "month",
+     "precip_mm",
+     "t2m_mean",
+     "tmax_mean",
+     "tmin_mean",
+     "heat_days",
+     "et0_mm",
+     "years"
+    ],
+    "title": "MonthlyClimatology"
+   },
+   "MonthlyClimatologySM": {
+    "properties": {
+     "month": {
+      "type": "integer",
+      "title": "Month"
+     },
+     "mean": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Mean"
+     },
+     "std": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Std"
+     },
+     "years": {
+      "type": "integer",
+      "title": "Years"
+     }
+    },
+    "type": "object",
+    "required": [
+     "month",
+     "mean",
+     "std",
+     "years"
+    ],
+    "title": "MonthlyClimatologySM"
+   },
+   "MonthlyRecord": {
+    "properties": {
+     "year": {
+      "type": "integer",
+      "title": "Year"
+     },
+     "month": {
+      "type": "integer",
+      "title": "Month"
+     },
+     "precip_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Precip Mm"
+     },
+     "t2m_mean": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "T2M Mean"
+     },
+     "tmax_mean": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Tmax Mean"
+     },
+     "tmin_mean": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Tmin Mean"
+     },
+     "heat_days": {
+      "type": "integer",
+      "title": "Heat Days"
+     },
+     "et0_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Et0 Mm"
+     },
+     "balance_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Balance Mm",
+      "description": "Lluvia - ET0 (negativo = déficit)."
+     },
+     "missing_precip_days": {
+      "type": "integer",
+      "title": "Missing Precip Days"
+     },
+     "valid": {
+      "type": "boolean",
+      "title": "Valid"
+     }
+    },
+    "type": "object",
+    "required": [
+     "year",
+     "month",
+     "precip_mm",
+     "t2m_mean",
+     "tmax_mean",
+     "tmin_mean",
+     "heat_days",
+     "et0_mm",
+     "balance_mm",
+     "missing_precip_days",
+     "valid"
+    ],
+    "title": "MonthlyRecord"
+   },
+   "NdviPoint": {
+    "properties": {
+     "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+     },
+     "ndvi": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ndvi"
+     },
+     "cover_fraction": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cover Fraction"
+     },
+     "interpolated": {
+      "type": "boolean",
+      "title": "Interpolated",
+      "default": false
+     }
+    },
+    "type": "object",
+    "required": [
+     "date",
+     "ndvi",
+     "cover_fraction"
+    ],
+    "title": "NdviPoint"
+   },
+   "ParameterInfo": {
+    "properties": {
+     "units": {
+      "type": "string",
+      "title": "Units"
+     },
+     "longname": {
+      "type": "string",
+      "title": "Longname"
+     },
+     "missing_days": {
+      "type": "integer",
+      "title": "Missing Days"
+     }
+    },
+    "type": "object",
+    "required": [
+     "units",
+     "longname",
+     "missing_days"
+    ],
+    "title": "ParameterInfo"
+   },
+   "PowerParameter": {
+    "type": "string",
+    "enum": [
+     "T2M",
+     "T2M_MAX",
+     "T2M_MIN",
+     "PRECTOTCORR",
+     "RH2M",
+     "WS2M",
+     "ALLSKY_SFC_SW_DWN",
+     "PS"
+    ],
+    "title": "PowerParameter",
+    "description": "Parámetros diarios de NASA POWER admitidos por FieldShift."
+   },
+   "PrecipitationSummary": {
+    "properties": {
+     "total_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Total Mm"
+     },
+     "mean_annual_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Mean Annual Mm"
+     },
+     "max_daily": {
+      "$ref": "#/components/schemas/Extreme"
+     },
+     "dry_years": {
+      "items": {
+       "type": "integer"
+      },
+      "type": "array",
+      "title": "Dry Years"
+     },
+     "wet_years": {
+      "items": {
+       "type": "integer"
+      },
+      "type": "array",
+      "title": "Wet Years"
+     }
+    },
+    "type": "object",
+    "required": [
+     "total_mm",
+     "mean_annual_mm",
+     "max_daily",
+     "dry_years",
+     "wet_years"
+    ],
+    "title": "PrecipitationSummary"
+   },
+   "Priorities": {
+    "properties": {
+     "water": {
+      "type": "integer",
+      "maximum": 10.0,
+      "minimum": 0.0,
+      "title": "Water",
+      "description": "Ahorro de agua.",
+      "default": 5
+     },
+     "soil": {
+      "type": "integer",
+      "maximum": 10.0,
+      "minimum": 0.0,
+      "title": "Soil",
+      "description": "Salud del suelo.",
+      "default": 5
+     },
+     "risk": {
+      "type": "integer",
+      "maximum": 10.0,
+      "minimum": 0.0,
+      "title": "Risk",
+      "description": "Reducir riesgo climático.",
+      "default": 5
+     },
+     "income": {
+      "type": "integer",
+      "maximum": 10.0,
+      "minimum": 0.0,
+      "title": "Income",
+      "description": "Ingreso relativo.",
+      "default": 5
+     },
+     "sustainability": {
+      "type": "integer",
+      "maximum": 10.0,
+      "minimum": 0.0,
+      "title": "Sustainability",
+      "description": "Sostenibilidad del lote.",
+      "default": 5
+     }
+    },
+    "type": "object",
+    "title": "Priorities"
+   },
+   "Provenance": {
+    "properties": {
+     "label": {
+      "$ref": "#/components/schemas/DataLabel"
+     },
+     "source_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Source Id",
+      "description": "Id de DataSource, si aplica."
+     },
+     "retrieved_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Retrieved At"
+     },
+     "resolution": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Resolution",
+      "examples": [
+       "~0.5° x 0.625°",
+       "500 m"
+      ]
+     },
+     "method": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Method"
+     },
+     "confidence": {
+      "$ref": "#/components/schemas/Confidence",
+      "default": "media"
+     },
+     "note": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Note"
+     }
+    },
+    "type": "object",
+    "required": [
+     "label"
+    ],
+    "title": "Provenance"
+   },
+   "QualityReport": {
+    "properties": {
+     "records": {
+      "type": "integer",
+      "title": "Records"
+     },
+     "valid": {
+      "type": "integer",
+      "title": "Valid"
+     },
+     "missing_or_fill": {
+      "type": "integer",
+      "title": "Missing Or Fill"
+     },
+     "bad_quality": {
+      "type": "integer",
+      "title": "Bad Quality",
+      "description": "Descartados por la capa de calidad (nubes, nieve, recuperación dudosa)."
+     },
+     "valid_pct": {
+      "type": "number",
+      "title": "Valid Pct"
+     },
+     "format": {
+      "type": "string",
+      "title": "Format",
+      "description": "appeears o simple."
+     },
+     "scaled": {
+      "type": "boolean",
+      "title": "Scaled",
+      "description": "True si se aplicó el factor de escala del producto."
+     },
+     "warnings": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Warnings",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "records",
+     "valid",
+     "missing_or_fill",
+     "bad_quality",
+     "valid_pct",
+     "format",
+     "scaled"
+    ],
+    "title": "QualityReport"
+   },
+   "Range": {
+    "properties": {
+     "min": {
+      "type": "number",
+      "title": "Min"
+     },
+     "max": {
+      "type": "number",
+      "title": "Max"
+     },
+     "unit": {
+      "type": "string",
+      "title": "Unit"
+     }
+    },
+    "type": "object",
+    "required": [
+     "min",
+     "max",
+     "unit"
+    ],
+    "title": "Range"
+   },
+   "Recommendation": {
+    "properties": {
+     "rotation_id": {
+      "type": "string",
+      "title": "Rotation Id"
+     },
+     "summary": {
+      "type": "string",
+      "title": "Summary"
+     },
+     "why": {
+      "type": "string",
+      "title": "Why",
+      "description": "Explicación en lenguaje simple."
+     },
+     "benefits": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Benefits"
+     },
+     "risks": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Risks"
+     },
+     "assumptions": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Assumptions"
+     },
+     "uncertainties": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Uncertainties"
+     },
+     "information_gaps": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Information Gaps"
+     },
+     "evidence": {
+      "$ref": "#/components/schemas/EvidenceBreakdown"
+     },
+     "validation_note": {
+      "type": "string",
+      "title": "Validation Note"
+     },
+     "requires_agronomist": {
+      "type": "boolean",
+      "title": "Requires Agronomist",
+      "default": true
+     },
+     "disclaimer": {
+      "type": "string",
+      "title": "Disclaimer",
+      "default": "FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor."
+     },
+     "generated_by": {
+      "type": "string",
+      "pattern": "^(plantilla|llm)$",
+      "title": "Generated By",
+      "default": "plantilla"
+     }
+    },
+    "type": "object",
+    "required": [
+     "rotation_id",
+     "summary",
+     "why",
+     "benefits",
+     "risks",
+     "assumptions",
+     "uncertainties",
+     "information_gaps",
+     "evidence",
+     "validation_note"
+    ],
+    "title": "Recommendation"
+   },
+   "Report": {
+    "properties": {
+     "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Generated At"
+     },
+     "field": {
+      "$ref": "#/components/schemas/FieldOut"
+     },
+     "rotations": {
+      "items": {
+       "$ref": "#/components/schemas/Rotation"
+      },
+      "type": "array",
+      "title": "Rotations"
+     },
+     "ranking": {
+      "items": {
+       "$ref": "#/components/schemas/RotationScore"
+      },
+      "type": "array",
+      "title": "Ranking"
+     },
+     "explanations": {
+      "additionalProperties": {
+       "type": "string"
+      },
+      "type": "object",
+      "title": "Explanations"
+     },
+     "recommended_rotation_id": {
+      "type": "string",
+      "title": "Recommended Rotation Id"
+     },
+     "confidence": {
+      "$ref": "#/components/schemas/Confidence"
+     },
+     "sources": {
+      "items": {
+       "$ref": "#/components/schemas/DataSource"
+      },
+      "type": "array",
+      "title": "Sources"
+     },
+     "assumptions": {
+      "items": {
+       "$ref": "#/components/schemas/Assumption"
+      },
+      "type": "array",
+      "title": "Assumptions"
+     },
+     "warnings": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Warnings"
+     },
+     "disclaimer": {
+      "type": "string",
+      "title": "Disclaimer"
+     }
+    },
+    "type": "object",
+    "required": [
+     "generated_at",
+     "field",
+     "rotations",
+     "ranking",
+     "explanations",
+     "recommended_rotation_id",
+     "confidence",
+     "sources",
+     "assumptions",
+     "warnings",
+     "disclaimer"
+    ],
+    "title": "Report"
+   },
+   "ResponseMeta": {
+    "properties": {
+     "data_status": {
+      "$ref": "#/components/schemas/DataStatus"
+     },
+     "origin_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Origin Label",
+      "description": "Etiqueta visible del origen: DATO NASA EN VIVO / DATO CACHEADO / DATO DE MUESTRA."
+     },
+     "as_of": {
+      "type": "string",
+      "format": "date-time",
+      "title": "As Of"
+     },
+     "warnings": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Warnings",
+      "default": []
+     },
+     "disclaimer": {
+      "type": "string",
+      "title": "Disclaimer",
+      "default": "FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor."
+     }
+    },
+    "type": "object",
+    "required": [
+     "data_status"
+    ],
+    "title": "ResponseMeta"
+   },
+   "RiskFlag": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "target_type": {
+      "type": "string",
+      "title": "Target Type",
+      "examples": [
+       "field",
+       "rotation"
+      ]
+     },
+     "target_id": {
+      "type": "string",
+      "title": "Target Id"
+     },
+     "kind": {
+      "$ref": "#/components/schemas/RiskKind"
+     },
+     "severity": {
+      "$ref": "#/components/schemas/Severity"
+     },
+     "icon": {
+      "type": "string",
+      "title": "Icon",
+      "examples": [
+       "alert-triangle"
+      ]
+     },
+     "message": {
+      "type": "string",
+      "title": "Message"
+     },
+     "evidence": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Evidence",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "target_type",
+     "target_id",
+     "kind",
+     "severity",
+     "icon",
+     "message"
+    ],
+    "title": "RiskFlag",
+    "description": "Advertencia. La severidad se comunica con texto e ícono, nunca solo con color."
+   },
+   "RiskKind": {
+    "type": "string",
+    "enum": [
+     "calor",
+     "helada",
+     "deficit_hidrico",
+     "erosion",
+     "monocultivo",
+     "mercado",
+     "manejo",
+     "dato_faltante",
+     "otro"
+    ],
+    "title": "RiskKind"
+   },
+   "Rotation": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id",
+      "examples": [
+       "campo-este-actual"
+      ]
+     },
+     "field_id": {
+      "type": "string",
+      "title": "Field Id"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "strategy": {
+      "$ref": "#/components/schemas/RotationStrategy"
+     },
+     "duration_years": {
+      "type": "integer",
+      "maximum": 6.0,
+      "minimum": 1.0,
+      "title": "Duration Years"
+     },
+     "steps": {
+      "items": {
+       "$ref": "#/components/schemas/RotationStep"
+      },
+      "type": "array",
+      "minItems": 1,
+      "title": "Steps"
+     },
+     "description": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Description"
+     },
+     "origin": {
+      "type": "string",
+      "enum": [
+       "declarada",
+       "generada"
+      ],
+      "title": "Origin",
+      "default": "declarada"
+     },
+     "rule_ids": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Rule Ids",
+      "description": "Reglas o plantillas que generaron la rotación.",
+      "default": []
+     },
+     "management": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Management",
+      "description": "Requisitos de manejo para implementarla.",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "field_id",
+     "name",
+     "strategy",
+     "duration_years",
+     "steps"
+    ],
+    "title": "Rotation"
+   },
+   "RotationCompatibility": {
+    "properties": {
+     "good_predecessors": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Good Predecessors",
+      "description": "Antecesores recomendados (ids de cultivo).",
+      "default": []
+     },
+     "avoid_predecessors": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Avoid Predecessors",
+      "description": "Antecesores a evitar (enfermedades, plagas, agua).",
+      "default": []
+     },
+     "return_interval_years": {
+      "$ref": "#/components/schemas/Range",
+      "description": "Cada cuántos años, como mínimo, conviene volver a sembrarlo en el lote."
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     }
+    },
+    "type": "object",
+    "required": [
+     "return_interval_years"
+    ],
+    "title": "RotationCompatibility"
+   },
+   "RotationEvaluation": {
+    "properties": {
+     "rotation": {
+      "$ref": "#/components/schemas/Rotation"
+     },
+     "profile": {
+      "$ref": "#/components/schemas/RotationProfile"
+     },
+     "score": {
+      "$ref": "#/components/schemas/RotationScore"
+     },
+     "recommendation": {
+      "$ref": "#/components/schemas/Recommendation"
+     },
+     "risk_flags": {
+      "items": {
+       "$ref": "#/components/schemas/RiskFlag"
+      },
+      "type": "array",
+      "title": "Risk Flags"
+     },
+     "assumption_ids": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Assumption Ids",
+      "description": "Supuestos (ver CompareResult.assumptions) que usa el puntaje."
+     },
+     "source_ids": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Source Ids"
+     },
+     "confidence": {
+      "$ref": "#/components/schemas/Confidence"
+     },
+     "confidence_reasons": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Confidence Reasons"
+     },
+     "warnings": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Warnings"
+     }
+    },
+    "type": "object",
+    "required": [
+     "rotation",
+     "profile",
+     "score",
+     "recommendation",
+     "risk_flags",
+     "assumption_ids",
+     "source_ids",
+     "confidence",
+     "confidence_reasons",
+     "warnings"
+    ],
+    "title": "RotationEvaluation"
+   },
+   "RotationProfile": {
+    "properties": {
+     "sequence": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Sequence",
+      "description": "Secuencia legible, en orden."
+     },
+     "duration_years": {
+      "type": "integer",
+      "title": "Duration Years"
+     },
+     "distinct_crops": {
+      "type": "integer",
+      "title": "Distinct Crops"
+     },
+     "water_demand_mm_year": {
+      "type": "number",
+      "title": "Water Demand Mm Year",
+      "description": "Demanda hídrica estimada de los cultivos (Kc x ET0), mm/año."
+     },
+     "water_requirement": {
+      "$ref": "#/components/schemas/Level"
+     },
+     "rain_coverage_pct": {
+      "type": "number",
+      "title": "Rain Coverage Pct",
+      "description": "% de la demanda cubierta por lluvia efectiva y agua almacenada."
+     },
+     "deficit_mm_year": {
+      "type": "number",
+      "title": "Deficit Mm Year",
+      "description": "Demanda no cubierta antes del riego, mm/año."
+     },
+     "irrigation_mm_year": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Irrigation Mm Year",
+      "description": "Riego estimado, mm/año. None = secano."
+     },
+     "relative_water_demand": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Relative Water Demand",
+      "description": "Demanda relativa a la rotación actual (1,0 = igual)."
+     },
+     "covered_months_pct": {
+      "type": "number",
+      "title": "Covered Months Pct"
+     },
+     "bare_months_per_year": {
+      "type": "number",
+      "title": "Bare Months Per Year"
+     },
+     "soil_impact": {
+      "$ref": "#/components/schemas/Impact"
+     },
+     "erosion_impact": {
+      "$ref": "#/components/schemas/Impact"
+     },
+     "erosion_risk": {
+      "$ref": "#/components/schemas/Level"
+     },
+     "biodiversity_impact": {
+      "$ref": "#/components/schemas/Impact"
+     },
+     "relative_income": {
+      "$ref": "#/components/schemas/Level"
+     },
+     "implementation_complexity": {
+      "$ref": "#/components/schemas/Level"
+     },
+     "benefits": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Benefits"
+     },
+     "risks": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Risks"
+     },
+     "justification": {
+      "type": "string",
+      "title": "Justification"
+     }
+    },
+    "type": "object",
+    "required": [
+     "sequence",
+     "duration_years",
+     "distinct_crops",
+     "water_demand_mm_year",
+     "water_requirement",
+     "rain_coverage_pct",
+     "deficit_mm_year",
+     "irrigation_mm_year",
+     "relative_water_demand",
+     "covered_months_pct",
+     "bare_months_per_year",
+     "soil_impact",
+     "erosion_impact",
+     "erosion_risk",
+     "biodiversity_impact",
+     "relative_income",
+     "implementation_complexity",
+     "benefits",
+     "risks",
+     "justification"
+    ],
+    "title": "RotationProfile",
+    "description": "Características calculadas de la rotación (independientes de las prioridades)."
+   },
+   "RotationScore": {
+    "properties": {
+     "rotation_id": {
+      "type": "string",
+      "title": "Rotation Id"
+     },
+     "scenario_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Scenario Id"
+     },
+     "rank": {
+      "type": "integer",
+      "minimum": 1.0,
+      "title": "Rank"
+     },
+     "total": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 100.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Total"
+     },
+     "uncertainty_low": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 100.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Uncertainty Low"
+     },
+     "uncertainty_high": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 100.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Uncertainty High"
+     },
+     "components": {
+      "items": {
+       "$ref": "#/components/schemas/ScoreComponent"
+      },
+      "type": "array",
+      "title": "Components"
+     },
+     "relative_water_demand": {
+      "anyOf": [
+       {
+        "type": "number",
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Relative Water Demand",
+      "description": "Demanda hídrica relativa a la rotación actual (1.0 = igual)."
+     },
+     "risk_level": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Level"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "confidence": {
+      "$ref": "#/components/schemas/Confidence",
+      "default": "baja"
+     }
+    },
+    "type": "object",
+    "required": [
+     "rotation_id",
+     "rank",
+     "total",
+     "components"
+    ],
+    "title": "RotationScore"
+   },
+   "RotationStep": {
+    "properties": {
+     "crop_id": {
+      "type": "string",
+      "title": "Crop Id"
+     },
+     "year": {
+      "type": "integer",
+      "minimum": 1.0,
+      "title": "Year",
+      "description": "Año relativo en que se siembra (1 = primero). La rotación es cíclica."
+     },
+     "start_month": {
+      "type": "integer",
+      "maximum": 12.0,
+      "minimum": 1.0,
+      "title": "Start Month"
+     },
+     "end_month": {
+      "type": "integer",
+      "maximum": 12.0,
+      "minimum": 1.0,
+      "title": "End Month",
+      "description": "Si es menor que start_month, termina en el año siguiente."
+     }
+    },
+    "type": "object",
+    "required": [
+     "crop_id",
+     "year",
+     "start_month",
+     "end_month"
+    ],
+    "title": "RotationStep"
+   },
+   "RotationStrategy": {
+    "type": "string",
+    "enum": [
+     "actual",
+     "conservadora",
+     "diversificada",
+     "agua",
+     "suelo",
+     "rentabilidad",
+     "mixta"
+    ],
+    "title": "RotationStrategy"
+   },
+   "ScenarioInput": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id",
+      "default": "base",
+      "examples": [
+       "seco-20"
+      ]
+     },
+     "name": {
+      "type": "string",
+      "title": "Name",
+      "default": "Clima del período",
+      "examples": [
+       "Lluvia -20%"
+      ]
+     },
+     "rain_delta_pct": {
+      "type": "number",
+      "maximum": 30.0,
+      "minimum": -50.0,
+      "title": "Rain Delta Pct",
+      "default": 0
+     },
+     "temp_delta_c": {
+      "type": "number",
+      "maximum": 3.0,
+      "minimum": 0.0,
+      "title": "Temp Delta C",
+      "default": 0
+     },
+     "dry_year": {
+      "type": "boolean",
+      "title": "Dry Year",
+      "description": "Usar el año más seco observado como análogo.",
+      "default": false
+     },
+     "irrigation": {
+      "type": "boolean",
+      "title": "Irrigation",
+      "description": "Evaluar como si el lote tuviera riego.",
+      "default": false
+     }
+    },
+    "type": "object",
+    "title": "ScenarioInput",
+    "description": "Escenario climático aplicado al puntaje (mismos rangos que /scenarios)."
+   },
+   "ScenarioRequest": {
+    "properties": {
+     "field_id": {
+      "type": "string",
+      "title": "Field Id"
+     },
+     "scenarios": {
+      "items": {
+       "$ref": "#/components/schemas/ScenarioInput"
+      },
+      "type": "array",
+      "maxItems": 8,
+      "minItems": 1,
+      "title": "Scenarios"
+     },
+     "priorities": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Priorities"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "field_id",
+     "scenarios"
+    ],
+    "title": "ScenarioRequest"
+   },
+   "ScenarioResult": {
+    "properties": {
+     "scenario": {
+      "$ref": "#/components/schemas/ScenarioInput"
+     },
+     "recommended_rotation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Recommended Rotation Id"
+     },
+     "ranking": {
+      "items": {
+       "$ref": "#/components/schemas/RotationScore"
+      },
+      "type": "array",
+      "title": "Ranking",
+      "default": []
+     },
+     "warnings": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Warnings",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "scenario"
+    ],
+    "title": "ScenarioResult"
+   },
+   "ScoreComponent": {
+    "properties": {
+     "key": {
+      "$ref": "#/components/schemas/ScoreComponentKey"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "value": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 100.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Value",
+      "description": "0 a 100. None = no calculable."
+     },
+     "weight": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Weight",
+      "description": "Peso normalizado a partir de las prioridades."
+     },
+     "drivers": {
+      "items": {
+       "$ref": "#/components/schemas/ScoreDriver"
+      },
+      "type": "array",
+      "title": "Drivers",
+      "default": []
+     },
+     "provenance": {
+      "$ref": "#/components/schemas/Provenance"
+     }
+    },
+    "type": "object",
+    "required": [
+     "key",
+     "name",
+     "value",
+     "weight",
+     "provenance"
+    ],
+    "title": "ScoreComponent"
+   },
+   "ScoreComponentKey": {
+    "type": "string",
+    "enum": [
+     "A",
+     "S",
+     "R",
+     "I",
+     "E"
+    ],
+    "title": "ScoreComponentKey"
+   },
+   "ScoreDriver": {
+    "properties": {
+     "factor": {
+      "type": "string",
+      "title": "Factor",
+      "examples": [
+       "Meses con cobertura viva"
+      ]
+     },
+     "effect": {
+      "type": "string",
+      "pattern": "^(sube|baja|neutro)$",
+      "title": "Effect"
+     },
+     "points": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Points",
+      "description": "Puntos que suma o resta al componente."
+     },
+     "detail": {
+      "type": "string",
+      "title": "Detail"
+     },
+     "provenance": {
+      "$ref": "#/components/schemas/Provenance"
+     }
+    },
+    "type": "object",
+    "required": [
+     "factor",
+     "effect",
+     "detail",
+     "provenance"
+    ],
+    "title": "ScoreDriver"
+   },
+   "SeasonalSummary": {
+    "properties": {
+     "season": {
+      "type": "string",
+      "title": "Season"
+     },
+     "months": {
+      "items": {
+       "type": "integer"
+      },
+      "type": "array",
+      "title": "Months"
+     },
+     "precip_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Precip Mm"
+     },
+     "t2m_mean": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "T2M Mean"
+     },
+     "heat_days": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Heat Days"
+     },
+     "years": {
+      "type": "integer",
+      "title": "Years"
+     }
+    },
+    "type": "object",
+    "required": [
+     "season",
+     "months",
+     "precip_mm",
+     "t2m_mean",
+     "heat_days",
+     "years"
+    ],
+    "title": "SeasonalSummary"
+   },
+   "Severity": {
+    "type": "string",
+    "enum": [
+     "info",
+     "media",
+     "alta"
+    ],
+    "title": "Severity"
+   },
+   "SoilInputSummary": {
+    "properties": {
+     "texture": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/SoilTexture"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "texture_assumed": {
+      "type": "boolean",
+      "title": "Texture Assumed"
+     },
+     "lab_analysis": {
+      "type": "boolean",
+      "title": "Lab Analysis"
+     },
+     "available_water_mm": {
+      "type": "number",
+      "title": "Available Water Mm",
+      "description": "Agua útil estimada en la zona de raíces."
+     },
+     "fallow_efficiency": {
+      "type": "number",
+      "title": "Fallow Efficiency",
+      "description": "Fracción de la lluvia del barbecho que queda almacenada."
+     },
+     "slope_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Slope Pct"
+     }
+    },
+    "type": "object",
+    "required": [
+     "texture",
+     "texture_assumed",
+     "lab_analysis",
+     "available_water_mm",
+     "fallow_efficiency",
+     "slope_pct"
+    ],
+    "title": "SoilInputSummary"
+   },
+   "SoilMoistureInput": {
+    "properties": {
+     "product": {
+      "type": "string",
+      "enum": [
+       "SMAP_L3",
+       "SMAP_L4"
+      ],
+      "title": "Product",
+      "description": "L3: capa superficial (observado). L4: zona de raíces (modelado)."
+     },
+     "anomaly_pct": {
+      "type": "number",
+      "maximum": 300.0,
+      "minimum": -100.0,
+      "title": "Anomaly Pct",
+      "description": "Humedad reciente respecto de la misma época de otros años, en %."
+     },
+     "period": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Period",
+      "examples": [
+       "2025-10-03 a 2025-12-31"
+      ]
+     },
+     "drought_frequency_pct": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 100.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Drought Frequency Pct",
+      "description": "% de meses con sequía de humedad de suelo."
+     },
+     "stress_level": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Level"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "origin": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/DataStatus"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Origen del dato (en vivo, cacheado, cargado o muestra)."
+     }
+    },
+    "type": "object",
+    "required": [
+     "product",
+     "anomaly_pct"
+    ],
+    "title": "SoilMoistureInput",
+    "description": "Resumen de SMAP que usa el motor. Se arma solo desde /soil-moisture o se puede enviar a mano."
+   },
+   "SoilMoistureMonth": {
+    "properties": {
+     "year": {
+      "type": "integer",
+      "title": "Year"
+     },
+     "month": {
+      "type": "integer",
+      "title": "Month"
+     },
+     "mean": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Mean"
+     },
+     "days": {
+      "type": "integer",
+      "title": "Days"
+     },
+     "anomaly_z": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Anomaly Z",
+      "description": "Anomalía estandarizada frente al mismo mes de otros años."
+     },
+     "drought": {
+      "type": "boolean",
+      "title": "Drought",
+      "description": "z <= -1: sequía de humedad de suelo."
+     },
+     "low": {
+      "type": "boolean",
+      "title": "Low",
+      "description": "Por debajo del percentil 25 de todos los meses."
+     }
+    },
+    "type": "object",
+    "required": [
+     "year",
+     "month",
+     "mean",
+     "days",
+     "anomaly_z",
+     "drought",
+     "low"
+    ],
+    "title": "SoilMoistureMonth"
+   },
+   "SoilMoisturePoint": {
+    "properties": {
+     "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+     },
+     "value": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Value"
+     }
+    },
+    "type": "object",
+    "required": [
+     "date",
+     "value"
+    ],
+    "title": "SoilMoisturePoint"
+   },
+   "SoilMoistureRequest": {
+    "properties": {
+     "field_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Field Id",
+      "description": "Alternativa a latitud/longitud: usa las del lote."
+     },
+     "latitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 90.0,
+        "minimum": -90.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Latitude",
+      "examples": [
+       -33.85
+      ]
+     },
+     "longitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 180.0,
+        "minimum": -180.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Longitude",
+      "examples": [
+       -65.2
+      ]
+     },
+     "start_date": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Start Date",
+      "description": "Por defecto, 10 años completos hasta el año pasado."
+     },
+     "end_date": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "End Date"
+     },
+     "csv_content": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 5000000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Csv Content",
+      "description": "CSV de AppEEARS (extracción por punto) o `date,value[,qa]` (p. ej. convertido desde GeoTIFF)."
+     },
+     "include_series": {
+      "type": "boolean",
+      "title": "Include Series",
+      "description": "Incluir la serie completa.",
+      "default": false
+     },
+     "product": {
+      "type": "string",
+      "enum": [
+       "SPL4SMGP_rootzone",
+       "SPL4SMGP_surface",
+       "SPL3SMP_E"
+      ],
+      "title": "Product",
+      "description": "Por defecto, SMAP L4 en zona de raíces (0-100 cm).",
+      "default": "SPL4SMGP_rootzone"
+     },
+     "recent_days": {
+      "type": "integer",
+      "maximum": 365.0,
+      "minimum": 15.0,
+      "title": "Recent Days",
+      "description": "Ventana para el estrés hídrico relativo.",
+      "default": 90
+     }
+    },
+    "type": "object",
+    "title": "SoilMoistureRequest"
+   },
+   "SoilMoistureSummary": {
+    "properties": {
+     "variable": {
+      "type": "string",
+      "title": "Variable"
+     },
+     "units": {
+      "type": "string",
+      "title": "Units"
+     },
+     "trace": {
+      "$ref": "#/components/schemas/DataTrace"
+     },
+     "quality": {
+      "$ref": "#/components/schemas/QualityReport"
+     },
+     "mean": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Mean"
+     },
+     "min": {
+      "$ref": "#/components/schemas/SoilMoisturePoint"
+     },
+     "max": {
+      "$ref": "#/components/schemas/SoilMoisturePoint"
+     },
+     "drought_frequency_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Drought Frequency Pct",
+      "description": "% de meses con sequía de humedad de suelo (z <= -1)."
+     },
+     "drought_months": {
+      "type": "integer",
+      "title": "Drought Months"
+     },
+     "drought_events": {
+      "items": {
+       "$ref": "#/components/schemas/DroughtEvent"
+      },
+      "type": "array",
+      "title": "Drought Events"
+     },
+     "low_moisture_months": {
+      "items": {
+       "$ref": "#/components/schemas/SoilMoistureMonth"
+      },
+      "type": "array",
+      "title": "Low Moisture Months",
+      "description": "Meses por debajo del percentil 25 (absoluto)."
+     },
+     "typically_dry_months": {
+      "items": {
+       "type": "integer"
+      },
+      "type": "array",
+      "title": "Typically Dry Months",
+      "description": "Meses del año con la humedad media más baja (tercio inferior)."
+     },
+     "monthly_climatology": {
+      "items": {
+       "$ref": "#/components/schemas/MonthlyClimatologySM"
+      },
+      "type": "array",
+      "title": "Monthly Climatology"
+     },
+     "monthly": {
+      "items": {
+       "$ref": "#/components/schemas/SoilMoistureMonth"
+      },
+      "type": "array",
+      "title": "Monthly"
+     },
+     "annual_means": {
+      "additionalProperties": {
+       "type": "number"
+      },
+      "type": "object",
+      "title": "Annual Means"
+     },
+     "trend": {
+      "$ref": "#/components/schemas/Trend"
+     },
+     "water_stress": {
+      "$ref": "#/components/schemas/WaterStress"
+     },
+     "series": {
+      "anyOf": [
+       {
+        "items": {
+         "$ref": "#/components/schemas/SoilMoisturePoint"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Series"
+     },
+     "assumptions": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Assumptions"
+     }
+    },
+    "type": "object",
+    "required": [
+     "variable",
+     "units",
+     "trace",
+     "quality",
+     "mean",
+     "min",
+     "max",
+     "drought_frequency_pct",
+     "drought_months",
+     "drought_events",
+     "low_moisture_months",
+     "typically_dry_months",
+     "monthly_climatology",
+     "monthly",
+     "annual_means",
+     "trend",
+     "water_stress",
+     "assumptions"
+    ],
+    "title": "SoilMoistureSummary"
+   },
+   "SoilProfile": {
+    "properties": {
+     "texture": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/SoilTexture"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "effective_depth": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Level"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Somera=bajo, media, profunda=alto."
+     },
+     "organic_matter": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Level"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Categoría. No se mide desde satélite: siempre es estimación o dato de laboratorio."
+     },
+     "lab_analysis": {
+      "type": "boolean",
+      "title": "Lab Analysis",
+      "description": "True si hay análisis de suelo de laboratorio.",
+      "default": false
+     },
+     "provenance": {
+      "$ref": "#/components/schemas/Provenance"
+     }
+    },
+    "type": "object",
+    "required": [
+     "provenance"
+    ],
+    "title": "SoilProfile"
+   },
+   "SoilTexture": {
+    "type": "string",
+    "enum": [
+     "arenosa",
+     "franco_arenosa",
+     "franca",
+     "franco_limosa",
+     "franco_arcillosa",
+     "arcillosa"
+    ],
+    "title": "SoilTexture"
+   },
+   "Trend": {
+    "properties": {
+     "slope_per_decade": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Slope Per Decade"
+     },
+     "units": {
+      "type": "string",
+      "title": "Units"
+     },
+     "kendall_tau": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Kendall Tau"
+     },
+     "p_value": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "P Value"
+     },
+     "significant": {
+      "type": "boolean",
+      "title": "Significant"
+     },
+     "n_years": {
+      "type": "integer",
+      "title": "N Years"
+     },
+     "method": {
+      "type": "string",
+      "title": "Method",
+      "default": "Pendiente de Sen + test de Mann-Kendall"
+     }
+    },
+    "type": "object",
+    "required": [
+     "slope_per_decade",
+     "units",
+     "kendall_tau",
+     "p_value",
+     "significant",
+     "n_years"
+    ],
+    "title": "Trend"
+   },
+   "TrendResult": {
+    "properties": {
+     "slope_per_decade": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Slope Per Decade"
+     },
+     "units": {
+      "type": "string",
+      "title": "Units"
+     },
+     "kendall_tau": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Kendall Tau"
+     },
+     "p_value": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "P Value"
+     },
+     "significant": {
+      "type": "boolean",
+      "title": "Significant"
+     },
+     "n_years": {
+      "type": "integer",
+      "title": "N Years"
+     },
+     "method": {
+      "type": "string",
+      "title": "Method",
+      "default": "Pendiente de Sen + test de Mann-Kendall (años completos)"
+     }
+    },
+    "type": "object",
+    "required": [
+     "slope_per_decade",
+     "units",
+     "kendall_tau",
+     "p_value",
+     "significant",
+     "n_years"
+    ],
+    "title": "TrendResult"
+   },
+   "Trends": {
+    "properties": {
+     "precipitation": {
+      "$ref": "#/components/schemas/TrendResult"
+     },
+     "temperature": {
+      "$ref": "#/components/schemas/TrendResult"
+     }
+    },
+    "type": "object",
+    "required": [
+     "precipitation",
+     "temperature"
+    ],
+    "title": "Trends"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   },
+   "Variability": {
+    "properties": {
+     "annual_precip_cv_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Annual Precip Cv Pct",
+      "description": "Coeficiente de variación de la lluvia anual."
+     },
+     "annual_temp_cv_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Annual Temp Cv Pct"
+     }
+    },
+    "type": "object",
+    "required": [
+     "annual_precip_cv_pct",
+     "annual_temp_cv_pct"
+    ],
+    "title": "Variability"
+   },
+   "VariableStats": {
+    "properties": {
+     "mean": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Mean"
+     },
+     "min": {
+      "$ref": "#/components/schemas/Extreme"
+     },
+     "max": {
+      "$ref": "#/components/schemas/Extreme"
+     },
+     "units": {
+      "type": "string",
+      "title": "Units"
+     }
+    },
+    "type": "object",
+    "required": [
+     "mean",
+     "min",
+     "max",
+     "units"
+    ],
+    "title": "VariableStats"
+   },
+   "VegetationInput": {
+    "properties": {
+     "product": {
+      "type": "string",
+      "enum": [
+       "MOD13Q1",
+       "MYD13Q1",
+       "MOD13A1"
+      ],
+      "title": "Product",
+      "default": "MOD13Q1"
+     },
+     "bare_soil_fraction": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Bare Soil Fraction",
+      "description": "Fracción de compuestos de 16 días con NDVI bajo el umbral."
+     },
+     "threshold": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Threshold",
+      "default": 0.3
+     },
+     "mean_ndvi": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 1.0,
+        "minimum": -1.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Mean Ndvi"
+     },
+     "cover_fraction": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 1.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cover Fraction",
+      "description": "Cobertura vegetal estimada promedio."
+     },
+     "biomass_trend_pct_per_decade": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Biomass Trend Pct Per Decade",
+      "description": "Tendencia del NDVI integrado por campaña."
+     },
+     "trend_significant": {
+      "type": "boolean",
+      "title": "Trend Significant",
+      "default": false
+     },
+     "period": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Period"
+     },
+     "origin": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/DataStatus"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "bare_soil_fraction"
+    ],
+    "title": "VegetationInput",
+    "description": "Resumen de NDVI que usa el motor. Se arma solo desde /vegetation-index o se puede enviar a mano."
+   },
+   "VegetationRequest": {
+    "properties": {
+     "field_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Field Id",
+      "description": "Alternativa a latitud/longitud: usa las del lote."
+     },
+     "latitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 90.0,
+        "minimum": -90.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Latitude",
+      "examples": [
+       -33.85
+      ]
+     },
+     "longitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 180.0,
+        "minimum": -180.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Longitude",
+      "examples": [
+       -65.2
+      ]
+     },
+     "start_date": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Start Date",
+      "description": "Por defecto, 10 años completos hasta el año pasado."
+     },
+     "end_date": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "End Date"
+     },
+     "csv_content": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 5000000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Csv Content",
+      "description": "CSV de AppEEARS (extracción por punto) o `date,value[,qa]` (p. ej. convertido desde GeoTIFF)."
+     },
+     "include_series": {
+      "type": "boolean",
+      "title": "Include Series",
+      "description": "Incluir la serie completa.",
+      "default": false
+     },
+     "product": {
+      "type": "string",
+      "enum": [
+       "MOD13Q1",
+       "MYD13Q1",
+       "MOD13A1"
+      ],
+      "title": "Product",
+      "description": "Por defecto, MODIS Terra 250 m.",
+      "default": "MOD13Q1"
+     },
+     "bare_threshold": {
+      "type": "number",
+      "maximum": 0.5,
+      "minimum": 0.1,
+      "title": "Bare Threshold",
+      "description": "NDVI por debajo del cual se considera barbecho o suelo desnudo.",
+      "default": 0.3
+     }
+    },
+    "type": "object",
+    "title": "VegetationRequest"
+   },
+   "VegetationSummary": {
+    "properties": {
+     "variable": {
+      "type": "string",
+      "title": "Variable",
+      "default": "NDVI"
+     },
+     "trace": {
+      "$ref": "#/components/schemas/DataTrace"
+     },
+     "quality": {
+      "$ref": "#/components/schemas/QualityReport"
+     },
+     "mean_ndvi": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Mean Ndvi"
+     },
+     "cover_fraction_mean": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cover Fraction Mean",
+      "description": "Cobertura vegetal estimada (0-1)."
+     },
+     "cover_method": {
+      "type": "string",
+      "title": "Cover Method"
+     },
+     "bare_threshold": {
+      "type": "number",
+      "title": "Bare Threshold"
+     },
+     "bare_soil_fraction": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Bare Soil Fraction",
+      "description": "Fracción de compuestos válidos con NDVI bajo el umbral."
+     },
+     "recent_bare_soil_fraction": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Recent Bare Soil Fraction",
+      "description": "Lo mismo en las últimas 3 campañas completas."
+     },
+     "fallow_periods": {
+      "items": {
+       "$ref": "#/components/schemas/FallowPeriod"
+      },
+      "type": "array",
+      "title": "Fallow Periods"
+     },
+     "monthly_climatology": {
+      "additionalProperties": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ]
+      },
+      "type": "object",
+      "title": "Monthly Climatology"
+     },
+     "campaigns": {
+      "items": {
+       "$ref": "#/components/schemas/Campaign"
+      },
+      "type": "array",
+      "title": "Campaigns"
+     },
+     "best_campaign": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Best Campaign"
+     },
+     "worst_campaign": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Worst Campaign"
+     },
+     "biomass_trend": {
+      "$ref": "#/components/schemas/Trend"
+     },
+     "biomass_trend_pct_per_decade": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Biomass Trend Pct Per Decade"
+     },
+     "series": {
+      "anyOf": [
+       {
+        "items": {
+         "$ref": "#/components/schemas/NdviPoint"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Series"
+     },
+     "assumptions": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Assumptions"
+     }
+    },
+    "type": "object",
+    "required": [
+     "trace",
+     "quality",
+     "mean_ndvi",
+     "cover_fraction_mean",
+     "cover_method",
+     "bare_threshold",
+     "bare_soil_fraction",
+     "recent_bare_soil_fraction",
+     "fallow_periods",
+     "monthly_climatology",
+     "campaigns",
+     "best_campaign",
+     "worst_campaign",
+     "biomass_trend",
+     "biomass_trend_pct_per_decade",
+     "assumptions"
+    ],
+    "title": "VegetationSummary"
+   },
+   "WaterDeficit": {
+    "properties": {
+     "mean_annual_et0_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Mean Annual Et0 Mm"
+     },
+     "mean_annual_precip_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Mean Annual Precip Mm"
+     },
+     "mean_annual_deficit_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Mean Annual Deficit Mm",
+      "description": "Promedio de la suma anual de max(0, ET0 - P) mensual."
+     },
+     "months_with_deficit_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Months With Deficit Pct"
+     },
+     "method": {
+      "type": "string",
+      "title": "Method"
+     },
+     "pm_days_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pm Days Pct",
+      "description": "% de días con ET0 por Penman-Monteith (el resto, Hargreaves)."
+     }
+    },
+    "type": "object",
+    "required": [
+     "mean_annual_et0_mm",
+     "mean_annual_precip_mm",
+     "mean_annual_deficit_mm",
+     "months_with_deficit_pct",
+     "method",
+     "pm_days_pct"
+    ],
+    "title": "WaterDeficit"
+   },
+   "WaterStress": {
+    "properties": {
+     "window_start": {
+      "type": "string",
+      "format": "date",
+      "title": "Window Start"
+     },
+     "window_end": {
+      "type": "string",
+      "format": "date",
+      "title": "Window End"
+     },
+     "recent_mean": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Recent Mean"
+     },
+     "normal_mean": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Normal Mean",
+      "description": "Promedio de los mismos meses en el resto del período."
+     },
+     "anomaly_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Anomaly Pct"
+     },
+     "percentile": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Percentile",
+      "description": "Posición de la ventana reciente frente a la misma época de otros años (0-100)."
+     },
+     "stress_index": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Stress Index",
+      "description": "0 = sin estrés relativo, 1 = el más seco del registro."
+     },
+     "level": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Level"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "method": {
+      "type": "string",
+      "title": "Method",
+      "default": "Promedio de los últimos días frente a la misma época de los otros años (percentil)."
+     }
+    },
+    "type": "object",
+    "required": [
+     "window_start",
+     "window_end",
+     "recent_mean",
+     "normal_mean",
+     "anomaly_pct",
+     "percentile",
+     "stress_index",
+     "level"
+    ],
+    "title": "WaterStress"
+   }
+  }
+ }
+}
