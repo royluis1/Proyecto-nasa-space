@@ -19,7 +19,7 @@ Cierra un ciclo de tres módulos:
 fieldshift/
 ├── backend/     API FastAPI (ver backend/README.md)
 ├── frontend/    Next.js + TypeScript + Tailwind + Leaflet (pendiente)
-├── scripts/     descarga y preprocesado de datos NASA (pendiente)
+├── scripts/     generación de muestras y ejemplos; descarga de NDVI/SMAP/SRTM pendiente
 ├── data/        datos NASA preprocesados (samples/) y caché local (cache/)
 └── docs/        arquitectura, plan, fuentes, supuestos, uso de IA, demo, ética
 ```
@@ -28,10 +28,10 @@ fieldshift/
 
 | Parte | Estado |
 |---|---|
-| Backend base y API | Hecho, con datos de muestra y puntajes simulados |
-| Integración NASA POWER | Pendiente |
-| Base de cultivos | Provisoria |
-| Motor de puntaje | Pendiente |
+| Backend base y API | Hecho |
+| Integración NASA POWER | Hecho (NDVI, SMAP y SRTM pendientes) |
+| Base de cultivos | Hecho: 16 cultivos editables, a validar con INTA |
+| Motor de rotaciones y puntaje | Hecho: ver [docs/scoring.md](docs/scoring.md) y [ejemplos](docs/examples/README.md) |
 | Frontend | Pendiente |
 
 El plan completo está en [docs/plan.md](docs/plan.md).

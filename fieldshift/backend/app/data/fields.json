@@ -21,7 +21,13 @@
       }
     },
     "current_rotation_id": "campo-este-actual",
-    "sample_note": "Coordenadas aproximadas y datos de suelo y manejo ILUSTRATIVOS. Ver docs/data_sources.md."
+    "sample_note": "Coordenadas aproximadas y datos de suelo y manejo ILUSTRATIVOS. Ver docs/data_sources.md.",
+    "crop_history": [
+      "soja",
+      "maiz",
+      "soja",
+      "maiz"
+    ]
   },
   {
     "id": "campo-centro",
@@ -45,7 +51,13 @@
       }
     },
     "current_rotation_id": "campo-centro-actual",
-    "sample_note": "Coordenadas aproximadas y datos de suelo y manejo ILUSTRATIVOS. Ver docs/data_sources.md."
+    "sample_note": "Coordenadas aproximadas y datos de suelo y manejo ILUSTRATIVOS. Ver docs/data_sources.md.",
+    "crop_history": [
+      "sorgo",
+      "avena",
+      "girasol",
+      "sorgo"
+    ]
   },
   {
     "id": "campo-conlara",
@@ -69,6 +81,12 @@
       }
     },
     "current_rotation_id": "campo-conlara-actual",
-    "sample_note": "Coordenadas aproximadas y datos de suelo y manejo ILUSTRATIVOS. Ver docs/data_sources.md."
+    "sample_note": "Coordenadas aproximadas y datos de suelo y manejo ILUSTRATIVOS. Ver docs/data_sources.md.",
+    "crop_history": [
+      "maiz",
+      "trigo",
+      "soja",
+      "maiz"
+    ]
   }
 ]

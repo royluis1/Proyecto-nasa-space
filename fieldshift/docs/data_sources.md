@@ -10,6 +10,16 @@
 | SMAP | L4 (zona de raíces) | ~9 km | Humedad en raíces, contexto regional | **modelado** | CSV offline, pendiente |
 | SRTM | Elevación | ~30 m | Pendiente y riesgo relativo de erosión hídrica | observado | Precalculado, pendiente |
 
+## Referencias del motor de rotaciones
+
+| Referencia | Uso |
+|---|---|
+| FAO-56 (Allen et al., 1998): Tabla 12 (Kc) y Tabla 19 (agua útil por textura) | Demanda hídrica de cada cultivo y tope de almacenaje del perfil |
+| FAO-33 (Doorenbos y Kassam, 1979): Ky | Caída del rendimiento por déficit hídrico en el ingreso relativo |
+| USDA-SCS, fórmula simplificada de FAO CROPWAT | Lluvia efectiva mensual |
+| UNEP (1992), World Atlas of Desertification | Clases de aridez P/ET0 |
+| INTA EEA San Luis y guías de cultivos de cobertura ⚠️ | Atributos cualitativos del catálogo: **pendiente verificar documento por documento** |
+
 ## Limitaciones
 
 - POWER describe el **entorno regional**, no el lote.

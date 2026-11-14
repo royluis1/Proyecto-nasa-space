@@ -11,7 +11,7 @@ from pathlib import Path
 from app.schemas.crop import Crop
 from app.schemas.field import FieldCreate, FieldOut
 from app.schemas.priority import FarmerPriority, Priorities
-from app.schemas.rotation import Rotation
+from app.schemas.rotation import Rotation, RotationTemplate
 from app.utils.exceptions import FieldNotFoundError, RotationNotFoundError
 
 
@@ -27,7 +27,21 @@ class Repository:
         self.rotations: dict[str, Rotation] = {
             r["id"]: Rotation(**r) for r in _load(data_dir / "rotations.json")
         }
+        self.templates: list[RotationTemplate] = [RotationTemplate(**t) for t in _load(data_dir / "rotation_templates.json")]
         self.priorities: dict[str, FarmerPriority] = {}
+        self._check_references()
+
+    def _check_references(self) -> None:
+        """Falla al arrancar si el catálogo o las rotaciones nombran cultivos que no existen."""
+        missing = set()
+        for crop in self.crops.values():
+            missing |= set(crop.rotation.good_predecessors + crop.rotation.avoid_predecessors) - set(self.crops)
+        for steps in [r.steps for r in self.rotations.values()] + [t.steps for t in self.templates]:
+            missing |= {s.crop_id for s in steps} - set(self.crops)
+        for f in self.fields.values():
+            missing |= set(f.crop_history) - set(self.crops)
+        if missing:
+            raise ValueError(f"Cultivos inexistentes referenciados en los datos: {sorted(missing)}")
 
     # --- cultivos ---
     def list_crops(self) -> list[Crop]:

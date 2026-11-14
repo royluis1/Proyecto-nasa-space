@@ -63,7 +63,7 @@ def penman_monteith(df: pd.DataFrame, ra: pd.Series) -> pd.Series:
 
 def compute_et0(df: pd.DataFrame, lat_deg: float) -> tuple[pd.Series, pd.Series]:
     """Devuelve (ET0 mm/día, método por día: 'PM', 'HG' o None)."""
-    doy = pd.Series(df.index.dayofyear, index=df.index, dtype="float64")
+    doy = pd.Series(df.index.day_of_year, index=df.index, dtype="float64")
     ra = extraterrestrial_radiation(lat_deg, doy)
 
     pm_cols = ["T2M", "T2M_MAX", "T2M_MIN", "RH2M", "WS2M", "ALLSKY_SFC_SW_DWN", "PS"]

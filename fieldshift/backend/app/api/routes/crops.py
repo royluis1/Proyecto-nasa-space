@@ -16,6 +16,6 @@ def list_crops(repo: Repository = Depends(get_repository)) -> ApiResponse[list[C
         data=repo.list_crops(),
         meta=ResponseMeta(
             data_status=DataStatus.SAMPLE,
-            warnings=["Catálogo provisorio: valores cualitativos a verificar con FAO e INTA."],
+            warnings=["Catálogo editable con valores cualitativos: los Kc y Ky citan FAO-56 y FAO-33; el resto debe validarse con INTA y agrónomos locales."],
         ),
     )

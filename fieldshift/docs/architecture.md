@@ -46,10 +46,11 @@ flowchart LR
 |---|---|
 | `api/` | Rutas HTTP finas: validan, llaman a servicios, envuelven la respuesta |
 | `services/` | Orquestación y acceso a datos (repositorio, clientes externos) |
+| `services/engine/` | Motor de rotaciones: calendario, balance hídrico, generador, puntaje y explicaciones (ver scoring.md) |
 | `models/` | Enums, procedencia (`Provenance`, `Valued`), constantes |
 | `schemas/` | Contratos de request y response (Pydantic v2) |
 | `utils/` | Validadores, excepciones, handlers de error, logging |
-| `data/` | Catálogos JSON (cultivos, campos, rotaciones) |
+| `data/` | Catálogos JSON editables: cultivos, campos, rotaciones actuales y plantillas de rotación |
 
 La lógica de cálculo (balance hídrico, puntaje) se escribe como funciones puras, sin red ni disco, para poder testearla aislada.
 
@@ -78,20 +79,21 @@ Cascada: **en vivo → caché (cualquier antigüedad, con advertencia) → muest
 | Location, Field, SoilProfile, Crop, Rotation, FarmerPriority, Scenario, ClimateSummary, RotationScore, Recommendation, RiskFlag, Assumption, DataSource | Implementadas como schemas |
 | Farm | Pendiente (hoy el lote tiene `farm_name`) |
 | SoilMoistureObservation (SMAP), VegetationIndex (NDVI) | Pendientes: fase de integración NASA |
-| RotationPlan (rotación aplicada a un lote con calendario) | Pendiente: fase del motor de rotaciones |
+| RotationPlan (rotación aplicada a un lote con calendario) | Cubierto por `Rotation` + calendario mensual del motor |
+| RotationTemplate, RotationProfile, RotationEvaluation, CompareResult | Implementadas (motor de rotaciones) |
 
 ## Endpoints
 
 | Método y ruta | Estado |
 |---|---|
 | `GET /health` | Hecho |
-| `GET /crops` | Hecho (catálogo provisorio) |
+| `GET /crops` | Hecho: 16 cultivos y coberturas |
 | `POST /fields`, `GET /fields/{field_id}` | Hecho (en memoria) |
 | `POST /priorities` | Hecho (en memoria) |
 | `POST /climate-summary` | Hecho: NASA POWER con caché y fallback |
-| `POST /rotations/compare`, `GET /rotations/{rotation_id}` | Puntajes simulados |
-| `POST /scenarios` | Rankings vacíos |
-| `GET /export/report` | JSON y CSV con ranking simulado |
+| `POST /rotations/compare`, `GET /rotations/{rotation_id}` | Hecho: motor de rotaciones con puntaje explicable |
+| `POST /scenarios` | Hecho: ranking por escenario (lluvia, temperatura, año seco, riego) |
+| `GET /export/report` | Hecho: JSON y CSV con ranking, explicaciones, fuentes y supuestos |
 | `GET /fields` (listar), humedad de suelo, NDVI, salud de suelo, alertas | Pendientes |
 
 ## Reglas de calidad de datos

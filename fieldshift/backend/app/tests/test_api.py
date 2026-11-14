@@ -28,7 +28,7 @@ def test_docs_disponibles(client):
 
 def test_crops_con_advertencia(client):
     body = client.get("/crops").json()
-    assert len(body["data"]) >= 8
+    assert len(body["data"]) >= 16
     assert body["meta"]["disclaimer"] == DISCLAIMER
     assert body["meta"]["data_status"] == "sample"
 
@@ -110,35 +110,80 @@ def test_climate_summary_sin_datos_da_503(client):
 
 def test_comparar_rotaciones(client):
     body = client.post("/rotations/compare", json={"field_id": "campo-este"}).json()
-    ranking = body["data"]["ranking"]
-    assert [s["rank"] for s in ranking] == [1, 2, 3]
-    assert body["meta"]["data_status"] == "mock"
+    data = body["data"]
+    ranking = data["ranking"]
+    assert len(ranking) >= 3 and [s["rank"] for s in ranking] == list(range(1, len(ranking) + 1))
+    assert {ev["rotation"]["strategy"] for ev in data["evaluations"]} >= {"actual", "mixta", "agua", "suelo"}
+    assert data["recommended_rotation_id"] == ranking[0]["rotation_id"]
+    assert body["meta"]["data_status"] == "sample" and body["meta"]["origin_label"] == "DATO DE MUESTRA"
     assert any("por defecto" in w for w in body["meta"]["warnings"])
+    ev = data["evaluations"][0]
+    assert ev["recommendation"]["why"] and ev["recommendation"]["validation_note"]
+    assert ev["recommendation"]["disclaimer"] == DISCLAIMER
 
 
-def test_comparar_exige_actual_y_minimo_tres(client):
-    pocas = {"field_id": "campo-este", "rotation_ids": ["campo-este-actual", "campo-este-agua"]}
+def test_comparar_con_prioridades_escenario_y_sensores(client):
+    req = {
+        "field_id": "campo-centro",
+        "priorities": {"water": 10, "soil": 2, "risk": 5, "income": 2, "sustainability": 2},
+        "scenario": {"id": "seco", "name": "seco", "rain_delta_pct": -20, "temp_delta_c": 1},
+        "history": ["sorgo", "girasol", "girasol"],
+        "soil_moisture": {"product": "SMAP_L3", "anomaly_pct": -30},
+        "vegetation": {"bare_soil_fraction": 0.6},
+    }
+    data = client.post("/rotations/compare", json=req).json()["data"]
+    assert data["weights"]["agua"] > 0.4
+    assert data["inputs"]["climate"]["scenario_precip_mm"] < data["inputs"]["climate"]["annual_precip_mm"]
+    assert {"smap", "modis-ndvi"} <= {s["id"] for s in data["sources"]}
+    assert any("monocultivo reciente" in w for w in data["warnings"])
+
+
+def test_comparar_solo_algunas_estrategias(client):
+    req = {"field_id": "campo-conlara", "strategies": ["agua", "rentabilidad"]}
+    data = client.post("/rotations/compare", json=req).json()["data"]
+    assert {ev["rotation"]["strategy"] for ev in data["evaluations"]} == {"actual", "agua", "rentabilidad"}
+
+
+def test_comparar_errores(client):
+    pocas = {"field_id": "campo-este", "strategies": ["agua"]}
     assert_error(client.post("/rotations/compare", json=pocas), 400, "INVALID_INPUT")
-    ajena = {"field_id": "campo-este", "rotation_ids": ["campo-este-actual", "campo-este-agua", "campo-centro-suelo"]}
+    historial = {"field_id": "campo-este", "history": ["papa"]}
+    assert_error(client.post("/rotations/compare", json=historial), 400, "INVALID_INPUT")
+    ajena = {"field_id": "campo-este", "rotation_ids": ["campo-centro-actual"]}
     assert_error(client.post("/rotations/compare", json=ajena), 400, "INVALID_INPUT")
+    escenario = {"field_id": "campo-este", "scenario": {"rain_delta_pct": -90}}
+    assert_error(client.post("/rotations/compare", json=escenario), 422, "VALIDATION_ERROR")
+    assert_error(client.post("/rotations/compare", json={"field_id": "nada"}), 404, "FIELD_NOT_FOUND")
 
 
 def test_detalle_rotacion(client):
     body = client.get("/rotations/campo-este-suelo").json()
     assert body["data"]["rotation"]["strategy"] == "suelo"
+    assert body["data"]["profile"]["sequence"]
+    assert client.get("/rotations/campo-este-actual").json()["data"]["rotation"]["strategy"] == "actual"
     assert_error(client.get("/rotations/nada"), 404, "ROTATION_NOT_FOUND")
+    assert_error(client.get("/rotations/campo-este-inventada"), 404, "ROTATION_NOT_FOUND")
 
 
 def test_escenarios(client):
-    req = {"field_id": "campo-centro", "scenarios": [{"id": "s", "name": "seco", "rain_delta_pct": -20}]}
-    assert client.post("/scenarios", json=req).status_code == 200
+    req = {"field_id": "campo-centro", "scenarios": [
+        {"id": "base", "name": "base"},
+        {"id": "s", "name": "seco", "rain_delta_pct": -30, "temp_delta_c": 2},
+    ]}
+    body = client.post("/scenarios", json=req).json()
+    base, seco = body["data"]
+    assert base["ranking"] and seco["ranking"] and seco["recommended_rotation_id"]
+    totals = {s["rotation_id"]: s["total"] for s in base["ranking"]}
+    assert all(s["total"] < totals[s["rotation_id"]] for s in seco["ranking"])
     req["scenarios"][0]["rain_delta_pct"] = -90
     assert_error(client.post("/scenarios", json=req), 422, "VALIDATION_ERROR")
 
 
 def test_exportar(client):
-    assert client.get("/export/report", params={"field_id": "campo-este"}).json()["data"]["disclaimer"] == DISCLAIMER
+    data = client.get("/export/report", params={"field_id": "campo-este"}).json()["data"]
+    assert data["disclaimer"] == DISCLAIMER and data["sources"] and data["assumptions"]
+    assert set(data["explanations"]) == {s["rotation_id"] for s in data["ranking"]}
     r = client.get("/export/report", params={"field_id": "campo-este", "format": "csv"})
     assert r.headers["content-type"].startswith("text/csv")
-    assert DISCLAIMER in r.text
+    assert DISCLAIMER in r.text and "DATO DE MUESTRA" in r.text and "explicacion" in r.text
     assert_error(client.get("/export/report", params={"field_id": "campo-este", "format": "pdf"}), 422, "VALIDATION_ERROR")

@@ -1,0 +1,3087 @@
+{
+  "data": {
+    "field_id": "campo-centro",
+    "priorities": {
+      "water": 9,
+      "soil": 6,
+      "risk": 7,
+      "income": 4,
+      "sustainability": 5
+    },
+    "weights": {
+      "agua": 0.29,
+      "suelo": 0.194,
+      "riesgo": 0.226,
+      "ingreso": 0.129,
+      "sostenibilidad": 0.161
+    },
+    "scenario": {
+      "id": "seco-20-calor-1",
+      "name": "Lluvia -20 % y +1 °C",
+      "rain_delta_pct": -20.0,
+      "temp_delta_c": 1.0,
+      "dry_year": false,
+      "irrigation": false
+    },
+    "inputs": {
+      "location": {
+        "lat": -33.55,
+        "lon": -66.2
+      },
+      "climate": {
+        "origin": "sample",
+        "origin_label": "DATO DE MUESTRA",
+        "period": "2016-2025",
+        "annual_precip_mm": 580.0,
+        "annual_et0_mm": 1414.0,
+        "aridity_index": 0.41,
+        "zone": "semiarido",
+        "precip_cv_pct": 37.0,
+        "heat_days_per_year": 7.4,
+        "scenario": "Lluvia -20 % y +1 °C",
+        "scenario_precip_mm": 464.0,
+        "scenario_et0_mm": 1456.0
+      },
+      "soil": {
+        "texture": "arenosa",
+        "texture_assumed": false,
+        "lab_analysis": false,
+        "available_water_mm": 80.0,
+        "fallow_efficiency": 0.15
+      },
+      "irrigated": false,
+      "current_crop": "sorgo",
+      "history": [
+        "sorgo",
+        "avena",
+        "girasol",
+        "sorgo"
+      ],
+      "priorities_default": false
+    },
+    "ranking": [
+      {
+        "rotation_id": "campo-centro-mixta",
+        "scenario_id": "seco-20-calor-1",
+        "rank": 1,
+        "total": 52.9,
+        "uncertainty_low": 38.5,
+        "uncertainty_high": 67.7,
+        "components": [
+          {
+            "key": "A",
+            "name": "Resiliencia hídrica",
+            "value": 21.2,
+            "weight": 0.29,
+            "drivers": [
+              {
+                "factor": "Demanda cubierta por lluvia y agua almacenada",
+                "effect": "sube",
+                "points": 45.9,
+                "detail": "Los cultivos demandan ~721 mm/año (Kc x ET0); la lluvia efectiva y el perfil cubren 46 %.",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Balance hídrico mensual: Kc FAO-56 x ET0 de NASA POWER, lluvia efectiva USDA-SCS",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Penalización por alta demanda hídrica",
+                "effect": "baja",
+                "points": -30.1,
+                "detail": "La demanda equivale al 155 % de la lluvia anual (se penaliza desde el 80 %).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Tolerancia a sequía de los cultivos",
+                "effect": "sube",
+                "points": 5.4,
+                "detail": "Promedio de tolerancia a sequía: 0,90 (0 = baja, 1 = alta).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "nasa-power",
+              "method": "Balance hídrico mensual: Kc FAO-56 x ET0 de NASA POWER, lluvia efectiva USDA-SCS",
+              "confidence": "media"
+            }
+          },
+          {
+            "key": "S",
+            "name": "Salud del suelo",
+            "value": 50.7,
+            "weight": 0.194,
+            "drivers": [
+              {
+                "factor": "Bonificación por cobertura vegetal",
+                "effect": "sube",
+                "points": 21.4,
+                "detail": "El lote tiene cultivo vivo 69 % de los meses (2,7 de 5 meses de invierno por año); con el déficit hídrico, la biomasa equivale a 54 %.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Aporte de materia orgánica",
+                "effect": "sube",
+                "points": 17.8,
+                "detail": "Aporte de rastrojo y raíces ajustado por agua: 0,71 por año (1,2 o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por leguminosas",
+                "effect": "sube",
+                "points": 10.0,
+                "detail": "0,33 cultivos que fijan nitrógeno por año (0,5 o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Diversidad de profundidad de raíces",
+                "effect": "sube",
+                "points": 7.5,
+                "detail": "2 profundidades de raíz distintas exploran distintas capas del perfil.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Penalización por erosión",
+                "effect": "baja",
+                "points": -6.0,
+                "detail": "3,7 meses por año sin cultivo vivo; exposición ponderada por rastrojo y viento 2,0, textura arenosa.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "catalogo-fieldshift",
+              "method": "Meses cubiertos, aportes cualitativos del catálogo y exposición a erosión",
+              "confidence": "baja"
+            }
+          },
+          {
+            "key": "R",
+            "name": "Resiliencia climática",
+            "value": 88.4,
+            "weight": 0.226,
+            "drivers": [
+              {
+                "factor": "Resiliencia climática base",
+                "effect": "sube",
+                "points": 100.0,
+                "detail": "Se parte de 100 y se descuenta la exposición de cada cultivo.",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a sequía",
+                "effect": "baja",
+                "points": -14.9,
+                "detail": "Déficit en los meses con cultivo x sensibilidad a sequía (índice 0,25; variabilidad de lluvia 37 %).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a calor",
+                "effect": "baja",
+                "points": -1.6,
+                "detail": "Días con Tmax > 35 °C en los meses con cultivo x sensibilidad al calor (índice 0,05).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a heladas",
+                "effect": "baja",
+                "points": -1.1,
+                "detail": "Meses fríos con cultivo x sensibilidad a heladas (índice 0,07).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Antecesores favorables",
+                "effect": "sube",
+                "points": 6.0,
+                "detail": "Girasol después de Cobertura de gramíneas; Cobertura de leguminosas después de Girasol; Sorgo después de Cobertura de leguminosas.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "nasa-power",
+              "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+              "confidence": "media"
+            }
+          },
+          {
+            "key": "I",
+            "name": "Ingreso relativo estimado",
+            "value": 18.8,
+            "weight": 0.129,
+            "drivers": [
+              {
+                "factor": "Ingreso relativo de los cultivos",
+                "effect": "sube",
+                "points": 18.8,
+                "detail": "Ingreso relativo de los cultivos de cosecha, ajustado por rendimiento esperado y déficit hídrico (Ky de FAO-33): 0,19 por año (1,0 = 100 puntos). Es un índice cualitativo, no un margen en pesos.",
+                "provenance": {
+                  "label": "supuesto",
+                  "source_id": "catalogo-fieldshift",
+                  "method": "Ingreso relativo cualitativo, castigado por déficit hídrico; no son precios",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Castigo por déficit hídrico",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Ya incluido arriba: Girasol (57 % de déficit, rinde ~46 % de su potencial), Sorgo (52 % de déficit, rinde ~53 % de su potencial), Mijo (33 % de déficit, rinde ~70 % de su potencial).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Costo de coberturas",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Ya incluido arriba: 2 cobertura(s) sin cosecha restan ingreso.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Mercado local",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Ya incluido arriba: Mijo: mercado local limitado.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "supuesto",
+              "source_id": "catalogo-fieldshift",
+              "method": "Ingreso relativo cualitativo, castigado por déficit hídrico; no son precios",
+              "confidence": "baja"
+            }
+          },
+          {
+            "key": "E",
+            "name": "Sostenibilidad y diversificación",
+            "value": 90.4,
+            "weight": 0.161,
+            "drivers": [
+              {
+                "factor": "Base",
+                "effect": "sube",
+                "points": 20.0,
+                "detail": "Puntaje de partida.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por diversificación de cultivos",
+                "effect": "sube",
+                "points": 30.0,
+                "detail": "5 cultivos distintos.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por familias botánicas",
+                "effect": "sube",
+                "points": 20.0,
+                "detail": "3 familias botánicas: cortan ciclos de plagas y enfermedades.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por leguminosas",
+                "effect": "sube",
+                "points": 10.0,
+                "detail": "Fijan nitrógeno y reducen la dependencia de fertilizantes.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Coberturas y pasturas",
+                "effect": "sube",
+                "points": 10.4,
+                "detail": "28 % de los meses con coberturas o pasturas (40 % o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "catalogo-fieldshift",
+              "method": "Cultivos y familias distintas, leguminosas, coberturas y repeticiones",
+              "confidence": "media"
+            }
+          }
+        ],
+        "relative_water_demand": 0.9,
+        "risk_level": "bajo",
+        "confidence": "baja"
+      },
+      {
+        "rotation_id": "campo-centro-diversificada",
+        "scenario_id": "seco-20-calor-1",
+        "rank": 2,
+        "total": 47.7,
+        "uncertainty_low": 34.6,
+        "uncertainty_high": 62.6,
+        "components": [
+          {
+            "key": "A",
+            "name": "Resiliencia hídrica",
+            "value": 12.9,
+            "weight": 0.29,
+            "drivers": [
+              {
+                "factor": "Demanda cubierta por lluvia y agua almacenada",
+                "effect": "sube",
+                "points": 43.2,
+                "detail": "Los cultivos demandan ~776 mm/año (Kc x ET0); la lluvia efectiva y el perfil cubren 43 %.",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Balance hídrico mensual: Kc FAO-56 x ET0 de NASA POWER, lluvia efectiva USDA-SCS",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Penalización por alta demanda hídrica",
+                "effect": "baja",
+                "points": -34.9,
+                "detail": "La demanda equivale al 167 % de la lluvia anual (se penaliza desde el 80 %).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Tolerancia a sequía de los cultivos",
+                "effect": "sube",
+                "points": 4.6,
+                "detail": "Promedio de tolerancia a sequía: 0,77 (0 = baja, 1 = alta).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "nasa-power",
+              "method": "Balance hídrico mensual: Kc FAO-56 x ET0 de NASA POWER, lluvia efectiva USDA-SCS",
+              "confidence": "media"
+            }
+          },
+          {
+            "key": "S",
+            "name": "Salud del suelo",
+            "value": 46.5,
+            "weight": 0.194,
+            "drivers": [
+              {
+                "factor": "Bonificación por cobertura vegetal",
+                "effect": "sube",
+                "points": 21.9,
+                "detail": "El lote tiene cultivo vivo 72 % de los meses (3,3 de 5 meses de invierno por año); con el déficit hídrico, la biomasa equivale a 55 %.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Aporte de materia orgánica",
+                "effect": "sube",
+                "points": 14.9,
+                "detail": "Aporte de rastrojo y raíces ajustado por agua: 0,60 por año (1,2 o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por leguminosas",
+                "effect": "sube",
+                "points": 10.0,
+                "detail": "0,33 cultivos que fijan nitrógeno por año (0,5 o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Diversidad de profundidad de raíces",
+                "effect": "sube",
+                "points": 7.5,
+                "detail": "2 profundidades de raíz distintas exploran distintas capas del perfil.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Penalización por erosión",
+                "effect": "baja",
+                "points": -7.8,
+                "detail": "3,3 meses por año sin cultivo vivo; exposición ponderada por rastrojo y viento 2,6, textura arenosa.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "catalogo-fieldshift",
+              "method": "Meses cubiertos, aportes cualitativos del catálogo y exposición a erosión",
+              "confidence": "baja"
+            }
+          },
+          {
+            "key": "R",
+            "name": "Resiliencia climática",
+            "value": 78.7,
+            "weight": 0.226,
+            "drivers": [
+              {
+                "factor": "Resiliencia climática base",
+                "effect": "sube",
+                "points": 100.0,
+                "detail": "Se parte de 100 y se descuenta la exposición de cada cultivo.",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a sequía",
+                "effect": "baja",
+                "points": -19.5,
+                "detail": "Déficit en los meses con cultivo x sensibilidad a sequía (índice 0,33; variabilidad de lluvia 37 %).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a calor",
+                "effect": "baja",
+                "points": -1.6,
+                "detail": "Días con Tmax > 35 °C en los meses con cultivo x sensibilidad al calor (índice 0,05).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a heladas",
+                "effect": "baja",
+                "points": -1.2,
+                "detail": "Meses fríos con cultivo x sensibilidad a heladas (índice 0,08).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Antecesores favorables",
+                "effect": "sube",
+                "points": 6.0,
+                "detail": "Avena después de Sorgo; Cobertura de leguminosas después de Girasol; Mijo después de Cobertura de leguminosas.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Inicio desfavorable sobre el cultivo actual",
+                "effect": "baja",
+                "points": -5.0,
+                "detail": "Empieza con Sorgo sobre Sorgo (cultivo actual).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "nasa-power",
+              "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+              "confidence": "media"
+            }
+          },
+          {
+            "key": "I",
+            "name": "Ingreso relativo estimado",
+            "value": 25.3,
+            "weight": 0.129,
+            "drivers": [
+              {
+                "factor": "Ingreso relativo de los cultivos",
+                "effect": "sube",
+                "points": 25.3,
+                "detail": "Ingreso relativo de los cultivos de cosecha, ajustado por rendimiento esperado y déficit hídrico (Ky de FAO-33): 0,25 por año (1,0 = 100 puntos). Es un índice cualitativo, no un margen en pesos.",
+                "provenance": {
+                  "label": "supuesto",
+                  "source_id": "catalogo-fieldshift",
+                  "method": "Ingreso relativo cualitativo, castigado por déficit hídrico; no son precios",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Castigo por déficit hídrico",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Ya incluido arriba: Sorgo (52 % de déficit, rinde ~53 % de su potencial), Avena (74 % de déficit, rinde ~23 % de su potencial), Girasol (58 % de déficit, rinde ~45 % de su potencial), Mijo (35 % de déficit, rinde ~68 % de su potencial).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Costo de coberturas",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Ya incluido arriba: 1 cobertura(s) sin cosecha restan ingreso.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Mercado local",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Ya incluido arriba: Mijo: mercado local limitado.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "supuesto",
+              "source_id": "catalogo-fieldshift",
+              "method": "Ingreso relativo cualitativo, castigado por déficit hídrico; no son precios",
+              "confidence": "baja"
+            }
+          },
+          {
+            "key": "E",
+            "name": "Sostenibilidad y diversificación",
+            "value": 86.2,
+            "weight": 0.161,
+            "drivers": [
+              {
+                "factor": "Base",
+                "effect": "sube",
+                "points": 20.0,
+                "detail": "Puntaje de partida.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por diversificación de cultivos",
+                "effect": "sube",
+                "points": 30.0,
+                "detail": "5 cultivos distintos.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por familias botánicas",
+                "effect": "sube",
+                "points": 20.0,
+                "detail": "3 familias botánicas: cortan ciclos de plagas y enfermedades.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por leguminosas",
+                "effect": "sube",
+                "points": 10.0,
+                "detail": "Fijan nitrógeno y reducen la dependencia de fertilizantes.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Coberturas y pasturas",
+                "effect": "sube",
+                "points": 6.2,
+                "detail": "17 % de los meses con coberturas o pasturas (40 % o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "catalogo-fieldshift",
+              "method": "Cultivos y familias distintas, leguminosas, coberturas y repeticiones",
+              "confidence": "media"
+            }
+          }
+        ],
+        "relative_water_demand": 0.97,
+        "risk_level": "bajo",
+        "confidence": "baja"
+      },
+      {
+        "rotation_id": "campo-centro-agua",
+        "scenario_id": "seco-20-calor-1",
+        "rank": 3,
+        "total": 45.6,
+        "uncertainty_low": 30.4,
+        "uncertainty_high": 59.9,
+        "components": [
+          {
+            "key": "A",
+            "name": "Resiliencia hídrica",
+            "value": 41.7,
+            "weight": 0.29,
+            "drivers": [
+              {
+                "factor": "Demanda cubierta por lluvia y agua almacenada",
+                "effect": "sube",
+                "points": 52.4,
+                "detail": "Los cultivos demandan ~565 mm/año (Kc x ET0); la lluvia efectiva y el perfil cubren 52 %.",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Balance hídrico mensual: Kc FAO-56 x ET0 de NASA POWER, lluvia efectiva USDA-SCS",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Penalización por alta demanda hídrica",
+                "effect": "baja",
+                "points": -16.7,
+                "detail": "La demanda equivale al 122 % de la lluvia anual (se penaliza desde el 80 %).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Tolerancia a sequía de los cultivos",
+                "effect": "sube",
+                "points": 6.0,
+                "detail": "Promedio de tolerancia a sequía: 1,00 (0 = baja, 1 = alta).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "nasa-power",
+              "method": "Balance hídrico mensual: Kc FAO-56 x ET0 de NASA POWER, lluvia efectiva USDA-SCS",
+              "confidence": "media"
+            }
+          },
+          {
+            "key": "S",
+            "name": "Salud del suelo",
+            "value": 12.6,
+            "weight": 0.194,
+            "drivers": [
+              {
+                "factor": "Bonificación por cobertura vegetal",
+                "effect": "sube",
+                "points": 13.8,
+                "detail": "El lote tiene cultivo vivo 42 % de los meses (0,0 de 5 meses de invierno por año); con el déficit hídrico, la biomasa equivale a 35 %.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Aporte de materia orgánica",
+                "effect": "sube",
+                "points": 9.9,
+                "detail": "Aporte de rastrojo y raíces ajustado por agua: 0,39 por año (1,2 o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por leguminosas",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "0,00 cultivos que fijan nitrógeno por año (0,5 o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Diversidad de profundidad de raíces",
+                "effect": "sube",
+                "points": 7.5,
+                "detail": "2 profundidades de raíz distintas exploran distintas capas del perfil.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Penalización por erosión",
+                "effect": "baja",
+                "points": -18.6,
+                "detail": "7,0 meses por año sin cultivo vivo; exposición ponderada por rastrojo y viento 6,2, textura arenosa.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "catalogo-fieldshift",
+              "method": "Meses cubiertos, aportes cualitativos del catálogo y exposición a erosión",
+              "confidence": "baja"
+            }
+          },
+          {
+            "key": "R",
+            "name": "Resiliencia climática",
+            "value": 87.4,
+            "weight": 0.226,
+            "drivers": [
+              {
+                "factor": "Resiliencia climática base",
+                "effect": "sube",
+                "points": 100.0,
+                "detail": "Se parte de 100 y se descuenta la exposición de cada cultivo.",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a sequía",
+                "effect": "baja",
+                "points": -8.9,
+                "detail": "Déficit en los meses con cultivo x sensibilidad a sequía (índice 0,15; variabilidad de lluvia 37 %).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a calor",
+                "effect": "baja",
+                "points": -2.7,
+                "detail": "Días con Tmax > 35 °C en los meses con cultivo x sensibilidad al calor (índice 0,09).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a heladas",
+                "effect": "neutro",
+                "points": -0.0,
+                "detail": "Meses fríos con cultivo x sensibilidad a heladas (índice 0,00).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Antecesores favorables",
+                "effect": "sube",
+                "points": 4.0,
+                "detail": "Girasol después de Sorgo; Mijo después de Girasol.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Inicio desfavorable sobre el cultivo actual",
+                "effect": "baja",
+                "points": -5.0,
+                "detail": "Empieza con Sorgo sobre Sorgo (cultivo actual).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "nasa-power",
+              "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+              "confidence": "media"
+            }
+          },
+          {
+            "key": "I",
+            "name": "Ingreso relativo estimado",
+            "value": 25.1,
+            "weight": 0.129,
+            "drivers": [
+              {
+                "factor": "Ingreso relativo de los cultivos",
+                "effect": "sube",
+                "points": 25.1,
+                "detail": "Ingreso relativo de los cultivos de cosecha, ajustado por rendimiento esperado y déficit hídrico (Ky de FAO-33): 0,25 por año (1,0 = 100 puntos). Es un índice cualitativo, no un margen en pesos.",
+                "provenance": {
+                  "label": "supuesto",
+                  "source_id": "catalogo-fieldshift",
+                  "method": "Ingreso relativo cualitativo, castigado por déficit hídrico; no son precios",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Castigo por déficit hídrico",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Ya incluido arriba: Sorgo (49 % de déficit, rinde ~56 % de su potencial), Girasol (57 % de déficit, rinde ~46 % de su potencial), Mijo (28 % de déficit, rinde ~75 % de su potencial).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Mercado local",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Ya incluido arriba: Mijo: mercado local limitado.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "supuesto",
+              "source_id": "catalogo-fieldshift",
+              "method": "Ingreso relativo cualitativo, castigado por déficit hídrico; no son precios",
+              "confidence": "baja"
+            }
+          },
+          {
+            "key": "E",
+            "name": "Sostenibilidad y diversificación",
+            "value": 50.0,
+            "weight": 0.161,
+            "drivers": [
+              {
+                "factor": "Base",
+                "effect": "sube",
+                "points": 20.0,
+                "detail": "Puntaje de partida.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por diversificación de cultivos",
+                "effect": "sube",
+                "points": 20.0,
+                "detail": "3 cultivos distintos.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por familias botánicas",
+                "effect": "sube",
+                "points": 10.0,
+                "detail": "2 familias botánicas: cortan ciclos de plagas y enfermedades.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por leguminosas",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Fijan nitrógeno y reducen la dependencia de fertilizantes.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Coberturas y pasturas",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "0 % de los meses con coberturas o pasturas (40 % o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "catalogo-fieldshift",
+              "method": "Cultivos y familias distintas, leguminosas, coberturas y repeticiones",
+              "confidence": "media"
+            }
+          }
+        ],
+        "relative_water_demand": 0.7,
+        "risk_level": "bajo",
+        "confidence": "baja"
+      },
+      {
+        "rotation_id": "campo-centro-conservadora",
+        "scenario_id": "seco-20-calor-1",
+        "rank": 4,
+        "total": 43.6,
+        "uncertainty_low": 32.4,
+        "uncertainty_high": 57.1,
+        "components": [
+          {
+            "key": "A",
+            "name": "Resiliencia hídrica",
+            "value": 5.3,
+            "weight": 0.29,
+            "drivers": [
+              {
+                "factor": "Demanda cubierta por lluvia y agua almacenada",
+                "effect": "sube",
+                "points": 40.0,
+                "detail": "Los cultivos demandan ~919 mm/año (Kc x ET0); la lluvia efectiva y el perfil cubren 40 %.",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Balance hídrico mensual: Kc FAO-56 x ET0 de NASA POWER, lluvia efectiva USDA-SCS",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Penalización por alta demanda hídrica",
+                "effect": "baja",
+                "points": -40.0,
+                "detail": "La demanda equivale al 198 % de la lluvia anual (se penaliza desde el 80 %).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Tolerancia a sequía de los cultivos",
+                "effect": "sube",
+                "points": 5.3,
+                "detail": "Promedio de tolerancia a sequía: 0,88 (0 = baja, 1 = alta).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "nasa-power",
+              "method": "Balance hídrico mensual: Kc FAO-56 x ET0 de NASA POWER, lluvia efectiva USDA-SCS",
+              "confidence": "media"
+            }
+          },
+          {
+            "key": "S",
+            "name": "Salud del suelo",
+            "value": 51.6,
+            "weight": 0.194,
+            "drivers": [
+              {
+                "factor": "Bonificación por cobertura vegetal",
+                "effect": "sube",
+                "points": 25.9,
+                "detail": "El lote tiene cultivo vivo 88 % de los meses (4,5 de 5 meses de invierno por año); con el déficit hídrico, la biomasa equivale a 65 %.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Aporte de materia orgánica",
+                "effect": "sube",
+                "points": 21.3,
+                "detail": "Aporte de rastrojo y raíces ajustado por agua: 0,85 por año (1,2 o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por leguminosas",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "0,00 cultivos que fijan nitrógeno por año (0,5 o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Diversidad de profundidad de raíces",
+                "effect": "sube",
+                "points": 7.5,
+                "detail": "2 profundidades de raíz distintas exploran distintas capas del perfil.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Penalización por erosión",
+                "effect": "baja",
+                "points": -3.1,
+                "detail": "1,5 meses por año sin cultivo vivo; exposición ponderada por rastrojo y viento 1,0, textura arenosa.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "catalogo-fieldshift",
+              "method": "Meses cubiertos, aportes cualitativos del catálogo y exposición a erosión",
+              "confidence": "baja"
+            }
+          },
+          {
+            "key": "R",
+            "name": "Resiliencia climática",
+            "value": 77.5,
+            "weight": 0.226,
+            "drivers": [
+              {
+                "factor": "Resiliencia climática base",
+                "effect": "sube",
+                "points": 100.0,
+                "detail": "Se parte de 100 y se descuenta la exposición de cada cultivo.",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a sequía",
+                "effect": "baja",
+                "points": -17.6,
+                "detail": "Déficit en los meses con cultivo x sensibilidad a sequía (índice 0,29; variabilidad de lluvia 37 %).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a calor",
+                "effect": "baja",
+                "points": -1.5,
+                "detail": "Días con Tmax > 35 °C en los meses con cultivo x sensibilidad al calor (índice 0,05).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a heladas",
+                "effect": "baja",
+                "points": -1.4,
+                "detail": "Meses fríos con cultivo x sensibilidad a heladas (índice 0,09).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Intervalo de retorno corto",
+                "effect": "baja",
+                "points": -6.0,
+                "detail": "Girasol vuelve cada 2 años; conviene cada 3 o más.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Antecesores favorables",
+                "effect": "sube",
+                "points": 4.0,
+                "detail": "Avena después de Sorgo; Cobertura de gramíneas después de Girasol.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "nasa-power",
+              "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+              "confidence": "media"
+            }
+          },
+          {
+            "key": "I",
+            "name": "Ingreso relativo estimado",
+            "value": 27.9,
+            "weight": 0.129,
+            "drivers": [
+              {
+                "factor": "Ingreso relativo de los cultivos",
+                "effect": "sube",
+                "points": 27.9,
+                "detail": "Ingreso relativo de los cultivos de cosecha, ajustado por rendimiento esperado y déficit hídrico (Ky de FAO-33): 0,28 por año (1,0 = 100 puntos). Es un índice cualitativo, no un margen en pesos.",
+                "provenance": {
+                  "label": "supuesto",
+                  "source_id": "catalogo-fieldshift",
+                  "method": "Ingreso relativo cualitativo, castigado por déficit hídrico; no son precios",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Castigo por déficit hídrico",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Ya incluido arriba: Sorgo (52 % de déficit, rinde ~53 % de su potencial), Avena (79 % de déficit, rinde ~17 % de su potencial), Girasol (58 % de déficit, rinde ~45 % de su potencial).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Costo de coberturas",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Ya incluido arriba: 1 cobertura(s) sin cosecha restan ingreso.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "supuesto",
+              "source_id": "catalogo-fieldshift",
+              "method": "Ingreso relativo cualitativo, castigado por déficit hídrico; no son precios",
+              "confidence": "baja"
+            }
+          },
+          {
+            "key": "E",
+            "name": "Sostenibilidad y diversificación",
+            "value": 67.8,
+            "weight": 0.161,
+            "drivers": [
+              {
+                "factor": "Base",
+                "effect": "sube",
+                "points": 20.0,
+                "detail": "Puntaje de partida.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por diversificación de cultivos",
+                "effect": "sube",
+                "points": 30.0,
+                "detail": "4 cultivos distintos.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por familias botánicas",
+                "effect": "sube",
+                "points": 10.0,
+                "detail": "2 familias botánicas: cortan ciclos de plagas y enfermedades.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por leguminosas",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Fijan nitrógeno y reducen la dependencia de fertilizantes.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Coberturas y pasturas",
+                "effect": "sube",
+                "points": 7.8,
+                "detail": "21 % de los meses con coberturas o pasturas (40 % o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "catalogo-fieldshift",
+              "method": "Cultivos y familias distintas, leguminosas, coberturas y repeticiones",
+              "confidence": "media"
+            }
+          }
+        ],
+        "relative_water_demand": 1.15,
+        "risk_level": "bajo",
+        "confidence": "baja"
+      },
+      {
+        "rotation_id": "campo-centro-suelo",
+        "scenario_id": "seco-20-calor-1",
+        "rank": 5,
+        "total": 40.3,
+        "uncertainty_low": 31.2,
+        "uncertainty_high": 51.1,
+        "components": [
+          {
+            "key": "A",
+            "name": "Resiliencia hídrica",
+            "value": 0.0,
+            "weight": 0.29,
+            "drivers": [
+              {
+                "factor": "Demanda cubierta por lluvia y agua almacenada",
+                "effect": "sube",
+                "points": 33.6,
+                "detail": "Los cultivos demandan ~1202 mm/año (Kc x ET0); la lluvia efectiva y el perfil cubren 34 %.",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Balance hídrico mensual: Kc FAO-56 x ET0 de NASA POWER, lluvia efectiva USDA-SCS",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Penalización por alta demanda hídrica",
+                "effect": "baja",
+                "points": -40.0,
+                "detail": "La demanda equivale al 259 % de la lluvia anual (se penaliza desde el 80 %).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Tolerancia a sequía de los cultivos",
+                "effect": "sube",
+                "points": 6.0,
+                "detail": "Promedio de tolerancia a sequía: 1,00 (0 = baja, 1 = alta).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "nasa-power",
+              "method": "Balance hídrico mensual: Kc FAO-56 x ET0 de NASA POWER, lluvia efectiva USDA-SCS",
+              "confidence": "media"
+            }
+          },
+          {
+            "key": "S",
+            "name": "Salud del suelo",
+            "value": 46.1,
+            "weight": 0.194,
+            "drivers": [
+              {
+                "factor": "Bonificación por cobertura vegetal",
+                "effect": "sube",
+                "points": 26.0,
+                "detail": "El lote tiene cultivo vivo 96 % de los meses (4,8 de 5 meses de invierno por año); con el déficit hídrico, la biomasa equivale a 65 %.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Aporte de materia orgánica",
+                "effect": "sube",
+                "points": 20.9,
+                "detail": "Aporte de rastrojo y raíces ajustado por agua: 0,84 por año (1,2 o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por leguminosas",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "0,00 cultivos que fijan nitrógeno por año (0,5 o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Diversidad de profundidad de raíces",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "1 profundidades de raíz distintas exploran distintas capas del perfil.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Penalización por erosión",
+                "effect": "baja",
+                "points": -0.8,
+                "detail": "0,5 meses por año sin cultivo vivo; exposición ponderada por rastrojo y viento 0,3, textura arenosa.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "catalogo-fieldshift",
+              "method": "Meses cubiertos, aportes cualitativos del catálogo y exposición a erosión",
+              "confidence": "baja"
+            }
+          },
+          {
+            "key": "R",
+            "name": "Resiliencia climática",
+            "value": 82.2,
+            "weight": 0.226,
+            "drivers": [
+              {
+                "factor": "Resiliencia climática base",
+                "effect": "sube",
+                "points": 100.0,
+                "detail": "Se parte de 100 y se descuenta la exposición de cada cultivo.",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a sequía",
+                "effect": "baja",
+                "points": -16.6,
+                "detail": "Déficit en los meses con cultivo x sensibilidad a sequía (índice 0,28; variabilidad de lluvia 37 %).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a calor",
+                "effect": "baja",
+                "points": -0.9,
+                "detail": "Días con Tmax > 35 °C en los meses con cultivo x sensibilidad al calor (índice 0,03).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a heladas",
+                "effect": "baja",
+                "points": -2.3,
+                "detail": "Meses fríos con cultivo x sensibilidad a heladas (índice 0,16).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Antecesores favorables",
+                "effect": "sube",
+                "points": 2.0,
+                "detail": "Pastura perenne después de Sorgo.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "nasa-power",
+              "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+              "confidence": "media"
+            }
+          },
+          {
+            "key": "I",
+            "name": "Ingreso relativo estimado",
+            "value": 18.3,
+            "weight": 0.129,
+            "drivers": [
+              {
+                "factor": "Ingreso relativo de los cultivos",
+                "effect": "sube",
+                "points": 18.3,
+                "detail": "Ingreso relativo de los cultivos de cosecha, ajustado por rendimiento esperado y déficit hídrico (Ky de FAO-33): 0,18 por año (1,0 = 100 puntos). Es un índice cualitativo, no un margen en pesos.",
+                "provenance": {
+                  "label": "supuesto",
+                  "source_id": "catalogo-fieldshift",
+                  "method": "Ingreso relativo cualitativo, castigado por déficit hídrico; no son precios",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Castigo por déficit hídrico",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Ya incluido arriba: Pastura perenne (68 % de déficit, rinde ~32 % de su potencial), Pastura perenne (68 % de déficit, rinde ~32 % de su potencial), Pastura perenne (68 % de déficit, rinde ~32 % de su potencial), Sorgo (55 % de déficit, rinde ~51 % de su potencial).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Costo de coberturas",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Ya incluido arriba: 1 cobertura(s) sin cosecha restan ingreso.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "supuesto",
+              "source_id": "catalogo-fieldshift",
+              "method": "Ingreso relativo cualitativo, castigado por déficit hídrico; no son precios",
+              "confidence": "baja"
+            }
+          },
+          {
+            "key": "E",
+            "name": "Sostenibilidad y diversificación",
+            "value": 65.0,
+            "weight": 0.161,
+            "drivers": [
+              {
+                "factor": "Base",
+                "effect": "sube",
+                "points": 20.0,
+                "detail": "Puntaje de partida.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por diversificación de cultivos",
+                "effect": "sube",
+                "points": 20.0,
+                "detail": "3 cultivos distintos.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por familias botánicas",
+                "effect": "sube",
+                "points": 10.0,
+                "detail": "2 familias botánicas: cortan ciclos de plagas y enfermedades.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por leguminosas",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Fijan nitrógeno y reducen la dependencia de fertilizantes.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Coberturas y pasturas",
+                "effect": "sube",
+                "points": 15.0,
+                "detail": "85 % de los meses con coberturas o pasturas (40 % o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "catalogo-fieldshift",
+              "method": "Cultivos y familias distintas, leguminosas, coberturas y repeticiones",
+              "confidence": "media"
+            }
+          }
+        ],
+        "relative_water_demand": 1.5,
+        "risk_level": "bajo",
+        "confidence": "baja"
+      },
+      {
+        "rotation_id": "campo-centro-rentabilidad",
+        "scenario_id": "seco-20-calor-1",
+        "rank": 6,
+        "total": 40.2,
+        "uncertainty_low": 26.6,
+        "uncertainty_high": 55.8,
+        "components": [
+          {
+            "key": "A",
+            "name": "Resiliencia hídrica",
+            "value": 12.7,
+            "weight": 0.29,
+            "drivers": [
+              {
+                "factor": "Demanda cubierta por lluvia y agua almacenada",
+                "effect": "sube",
+                "points": 43.0,
+                "detail": "Los cultivos demandan ~755 mm/año (Kc x ET0); la lluvia efectiva y el perfil cubren 43 %.",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Balance hídrico mensual: Kc FAO-56 x ET0 de NASA POWER, lluvia efectiva USDA-SCS",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Penalización por alta demanda hídrica",
+                "effect": "baja",
+                "points": -33.1,
+                "detail": "La demanda equivale al 163 % de la lluvia anual (se penaliza desde el 80 %).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Tolerancia a sequía de los cultivos",
+                "effect": "sube",
+                "points": 2.8,
+                "detail": "Promedio de tolerancia a sequía: 0,47 (0 = baja, 1 = alta).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "nasa-power",
+              "method": "Balance hídrico mensual: Kc FAO-56 x ET0 de NASA POWER, lluvia efectiva USDA-SCS",
+              "confidence": "media"
+            }
+          },
+          {
+            "key": "S",
+            "name": "Salud del suelo",
+            "value": 20.6,
+            "weight": 0.194,
+            "drivers": [
+              {
+                "factor": "Bonificación por cobertura vegetal",
+                "effect": "sube",
+                "points": 15.3,
+                "detail": "El lote tiene cultivo vivo 50 % de los meses (0,3 de 5 meses de invierno por año); con el déficit hídrico, la biomasa equivale a 38 %.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Aporte de materia orgánica",
+                "effect": "sube",
+                "points": 6.2,
+                "detail": "Aporte de rastrojo y raíces ajustado por agua: 0,25 por año (1,2 o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por leguminosas",
+                "effect": "sube",
+                "points": 10.0,
+                "detail": "0,33 cultivos que fijan nitrógeno por año (0,5 o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Diversidad de profundidad de raíces",
+                "effect": "sube",
+                "points": 7.5,
+                "detail": "2 profundidades de raíz distintas exploran distintas capas del perfil.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Penalización por erosión",
+                "effect": "baja",
+                "points": -18.4,
+                "detail": "6,0 meses por año sin cultivo vivo; exposición ponderada por rastrojo y viento 6,1, textura arenosa.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "catalogo-fieldshift",
+              "method": "Meses cubiertos, aportes cualitativos del catálogo y exposición a erosión",
+              "confidence": "baja"
+            }
+          },
+          {
+            "key": "R",
+            "name": "Resiliencia climática",
+            "value": 74.3,
+            "weight": 0.226,
+            "drivers": [
+              {
+                "factor": "Resiliencia climática base",
+                "effect": "sube",
+                "points": 100.0,
+                "detail": "Se parte de 100 y se descuenta la exposición de cada cultivo.",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a sequía",
+                "effect": "baja",
+                "points": -26.9,
+                "detail": "Déficit en los meses con cultivo x sensibilidad a sequía (índice 0,45; variabilidad de lluvia 37 %).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a calor",
+                "effect": "baja",
+                "points": -2.8,
+                "detail": "Días con Tmax > 35 °C en los meses con cultivo x sensibilidad al calor (índice 0,09).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a heladas",
+                "effect": "neutro",
+                "points": -0.0,
+                "detail": "Meses fríos con cultivo x sensibilidad a heladas (índice 0,00).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Antecesores favorables",
+                "effect": "sube",
+                "points": 4.0,
+                "detail": "Maíz después de Maní; Girasol después de Maíz.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "nasa-power",
+              "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+              "confidence": "media"
+            }
+          },
+          {
+            "key": "I",
+            "name": "Ingreso relativo estimado",
+            "value": 34.7,
+            "weight": 0.129,
+            "drivers": [
+              {
+                "factor": "Ingreso relativo de los cultivos",
+                "effect": "sube",
+                "points": 34.7,
+                "detail": "Ingreso relativo de los cultivos de cosecha, ajustado por rendimiento esperado y déficit hídrico (Ky de FAO-33): 0,35 por año (1,0 = 100 puntos). Es un índice cualitativo, no un margen en pesos.",
+                "provenance": {
+                  "label": "supuesto",
+                  "source_id": "catalogo-fieldshift",
+                  "method": "Ingreso relativo cualitativo, castigado por déficit hídrico; no son precios",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Castigo por déficit hídrico",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Ya incluido arriba: Maní (60 % de déficit, rinde ~58 % de su potencial), Maíz (52 % de déficit, rinde ~35 % de su potencial), Girasol (57 % de déficit, rinde ~46 % de su potencial).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "supuesto",
+              "source_id": "catalogo-fieldshift",
+              "method": "Ingreso relativo cualitativo, castigado por déficit hídrico; no son precios",
+              "confidence": "baja"
+            }
+          },
+          {
+            "key": "E",
+            "name": "Sostenibilidad y diversificación",
+            "value": 70.0,
+            "weight": 0.161,
+            "drivers": [
+              {
+                "factor": "Base",
+                "effect": "sube",
+                "points": 20.0,
+                "detail": "Puntaje de partida.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por diversificación de cultivos",
+                "effect": "sube",
+                "points": 20.0,
+                "detail": "3 cultivos distintos.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por familias botánicas",
+                "effect": "sube",
+                "points": 20.0,
+                "detail": "3 familias botánicas: cortan ciclos de plagas y enfermedades.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por leguminosas",
+                "effect": "sube",
+                "points": 10.0,
+                "detail": "Fijan nitrógeno y reducen la dependencia de fertilizantes.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Coberturas y pasturas",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "0 % de los meses con coberturas o pasturas (40 % o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "catalogo-fieldshift",
+              "method": "Cultivos y familias distintas, leguminosas, coberturas y repeticiones",
+              "confidence": "media"
+            }
+          }
+        ],
+        "relative_water_demand": 0.94,
+        "risk_level": "bajo",
+        "confidence": "baja"
+      },
+      {
+        "rotation_id": "campo-centro-actual",
+        "scenario_id": "seco-20-calor-1",
+        "rank": 7,
+        "total": 36.8,
+        "uncertainty_low": 24.2,
+        "uncertainty_high": 52.0,
+        "components": [
+          {
+            "key": "A",
+            "name": "Resiliencia hídrica",
+            "value": 10.5,
+            "weight": 0.29,
+            "drivers": [
+              {
+                "factor": "Demanda cubierta por lluvia y agua almacenada",
+                "effect": "sube",
+                "points": 42.6,
+                "detail": "Los cultivos demandan ~802 mm/año (Kc x ET0); la lluvia efectiva y el perfil cubren 43 %.",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Balance hídrico mensual: Kc FAO-56 x ET0 de NASA POWER, lluvia efectiva USDA-SCS",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Penalización por alta demanda hídrica",
+                "effect": "baja",
+                "points": -37.2,
+                "detail": "La demanda equivale al 173 % de la lluvia anual (se penaliza desde el 80 %).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Tolerancia a sequía de los cultivos",
+                "effect": "sube",
+                "points": 5.1,
+                "detail": "Promedio de tolerancia a sequía: 0,84 (0 = baja, 1 = alta).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "nasa-power",
+              "method": "Balance hídrico mensual: Kc FAO-56 x ET0 de NASA POWER, lluvia efectiva USDA-SCS",
+              "confidence": "media"
+            }
+          },
+          {
+            "key": "S",
+            "name": "Salud del suelo",
+            "value": 27.0,
+            "weight": 0.194,
+            "drivers": [
+              {
+                "factor": "Bonificación por cobertura vegetal",
+                "effect": "sube",
+                "points": 20.1,
+                "detail": "El lote tiene cultivo vivo 67 % de los meses (2,5 de 5 meses de invierno por año); con el déficit hídrico, la biomasa equivale a 50 %.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Aporte de materia orgánica",
+                "effect": "sube",
+                "points": 13.2,
+                "detail": "Aporte de rastrojo y raíces ajustado por agua: 0,53 por año (1,2 o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por leguminosas",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "0,00 cultivos que fijan nitrógeno por año (0,5 o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Diversidad de profundidad de raíces",
+                "effect": "sube",
+                "points": 7.5,
+                "detail": "2 profundidades de raíz distintas exploran distintas capas del perfil.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Penalización por erosión",
+                "effect": "baja",
+                "points": -13.8,
+                "detail": "4,0 meses por año sin cultivo vivo; exposición ponderada por rastrojo y viento 4,6, textura arenosa.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "catalogo-fieldshift",
+              "method": "Meses cubiertos, aportes cualitativos del catálogo y exposición a erosión",
+              "confidence": "baja"
+            }
+          },
+          {
+            "key": "R",
+            "name": "Resiliencia climática",
+            "value": 71.9,
+            "weight": 0.226,
+            "drivers": [
+              {
+                "factor": "Resiliencia climática base",
+                "effect": "sube",
+                "points": 100.0,
+                "detail": "Se parte de 100 y se descuenta la exposición de cada cultivo.",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a sequía",
+                "effect": "baja",
+                "points": -18.1,
+                "detail": "Déficit en los meses con cultivo x sensibilidad a sequía (índice 0,30; variabilidad de lluvia 37 %).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a calor",
+                "effect": "baja",
+                "points": -2.0,
+                "detail": "Días con Tmax > 35 °C en los meses con cultivo x sensibilidad al calor (índice 0,07).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Exposición a heladas",
+                "effect": "baja",
+                "points": -1.0,
+                "detail": "Meses fríos con cultivo x sensibilidad a heladas (índice 0,07).",
+                "provenance": {
+                  "label": "estimado",
+                  "source_id": "nasa-power",
+                  "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                  "confidence": "media"
+                }
+              },
+              {
+                "factor": "Intervalo de retorno corto",
+                "effect": "baja",
+                "points": -6.0,
+                "detail": "Girasol vuelve cada 2 años; conviene cada 3 o más.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Antecesores favorables",
+                "effect": "sube",
+                "points": 4.0,
+                "detail": "Avena después de Sorgo; Sorgo después de Girasol.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Inicio desfavorable sobre el cultivo actual",
+                "effect": "baja",
+                "points": -5.0,
+                "detail": "Empieza con Sorgo sobre Sorgo (cultivo actual).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "nasa-power",
+              "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+              "confidence": "media"
+            }
+          },
+          {
+            "key": "I",
+            "name": "Ingreso relativo estimado",
+            "value": 32.7,
+            "weight": 0.129,
+            "drivers": [
+              {
+                "factor": "Ingreso relativo de los cultivos",
+                "effect": "sube",
+                "points": 32.7,
+                "detail": "Ingreso relativo de los cultivos de cosecha, ajustado por rendimiento esperado y déficit hídrico (Ky de FAO-33): 0,33 por año (1,0 = 100 puntos). Es un índice cualitativo, no un margen en pesos.",
+                "provenance": {
+                  "label": "supuesto",
+                  "source_id": "catalogo-fieldshift",
+                  "method": "Ingreso relativo cualitativo, castigado por déficit hídrico; no son precios",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Castigo por déficit hídrico",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Ya incluido arriba: Sorgo (49 % de déficit, rinde ~56 % de su potencial), Avena (79 % de déficit, rinde ~17 % de su potencial), Girasol (58 % de déficit, rinde ~45 % de su potencial).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "supuesto",
+              "source_id": "catalogo-fieldshift",
+              "method": "Ingreso relativo cualitativo, castigado por déficit hídrico; no son precios",
+              "confidence": "baja"
+            }
+          },
+          {
+            "key": "E",
+            "name": "Sostenibilidad y diversificación",
+            "value": 50.0,
+            "weight": 0.161,
+            "drivers": [
+              {
+                "factor": "Base",
+                "effect": "sube",
+                "points": 20.0,
+                "detail": "Puntaje de partida.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por diversificación de cultivos",
+                "effect": "sube",
+                "points": 20.0,
+                "detail": "3 cultivos distintos.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por familias botánicas",
+                "effect": "sube",
+                "points": 10.0,
+                "detail": "2 familias botánicas: cortan ciclos de plagas y enfermedades.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Bonificación por leguminosas",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "Fijan nitrógeno y reducen la dependencia de fertilizantes.",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              },
+              {
+                "factor": "Coberturas y pasturas",
+                "effect": "neutro",
+                "points": 0.0,
+                "detail": "0 % de los meses con coberturas o pasturas (40 % o más = máximo).",
+                "provenance": {
+                  "label": "supuesto",
+                  "confidence": "baja"
+                }
+              }
+            ],
+            "provenance": {
+              "label": "estimado",
+              "source_id": "catalogo-fieldshift",
+              "method": "Cultivos y familias distintas, leguminosas, coberturas y repeticiones",
+              "confidence": "media"
+            }
+          }
+        ],
+        "relative_water_demand": 1.0,
+        "risk_level": "bajo",
+        "confidence": "baja"
+      }
+    ],
+    "evaluations": [
+      {
+        "rotation": {
+          "id": "campo-centro-mixta",
+          "field_id": "campo-centro",
+          "name": "Mixta recomendada: Cobertura – girasol – vicia – sorgo – mijo",
+          "strategy": "mixta",
+          "duration_years": 3,
+          "steps": [
+            {
+              "crop_id": "cobertura_gramineas",
+              "year": 1,
+              "start_month": 4,
+              "end_month": 8
+            },
+            {
+              "crop_id": "girasol",
+              "year": 1,
+              "start_month": 10,
+              "end_month": 2
+            },
+            {
+              "crop_id": "cobertura_leguminosas",
+              "year": 2,
+              "start_month": 4,
+              "end_month": 8
+            },
+            {
+              "crop_id": "sorgo",
+              "year": 2,
+              "start_month": 11,
+              "end_month": 4
+            },
+            {
+              "crop_id": "mijo",
+              "year": 3,
+              "start_month": 12,
+              "end_month": 3
+            }
+          ],
+          "description": "Cobertura en los dos inviernos con cultivos de verano tolerantes a sequía.",
+          "origin": "generada",
+          "rule_ids": [
+            "plantilla:mixta-sa-2",
+            "seleccion:mejor de 3 variantes mixtas con tus prioridades"
+          ],
+          "management": [
+            "secar la cobertura a tiempo (agosto-septiembre) para que el perfil se recargue antes del cultivo de verano",
+            "conseguir semilla de cobertura y prever el costo de implantación y secado"
+          ]
+        },
+        "profile": {
+          "sequence": [
+            "Cobertura de gramíneas (abr–ago, año 1)",
+            "Girasol (oct–feb, año 1)",
+            "Cobertura de leguminosas (abr–ago, año 2)",
+            "Sorgo (nov–abr, año 2)",
+            "Mijo (dic–mar, año 3)"
+          ],
+          "duration_years": 3,
+          "distinct_crops": 5,
+          "water_demand_mm_year": 721.0,
+          "water_requirement": "alto",
+          "rain_coverage_pct": 45.9,
+          "deficit_mm_year": 390.0,
+          "relative_water_demand": 0.9,
+          "covered_months_pct": 69.4,
+          "bare_months_per_year": 3.7,
+          "soil_impact": {
+            "direction": "mejora",
+            "detail": "Mejora la salud del suelo (+24 puntos en S)."
+          },
+          "erosion_impact": {
+            "direction": "mejora",
+            "detail": "Menos exposición a la erosión eólica que la actual."
+          },
+          "erosion_risk": "bajo",
+          "biodiversity_impact": {
+            "direction": "mejora",
+            "detail": "Más diversidad: 5 cultivos de 3 familias."
+          },
+          "relative_income": "bajo",
+          "implementation_complexity": "alto",
+          "benefits": [
+            "Reduce la demanda hídrica estimada (10 % menos que la actual).",
+            "Diversifica el sistema (5 cultivos distintos frente a 3).",
+            "Incorpora leguminosas que aportan nitrógeno.",
+            "Reduce los meses de suelo desnudo (de 4,0 a 3,7 por año).",
+            "Baja la exposición de los cultivos a sequía, calor y problemas sanitarios."
+          ],
+          "risks": [
+            "Baja el ingreso relativo estimado.",
+            "Requiere secar la cobertura a tiempo (agosto-septiembre) para que el perfil se recargue antes del cultivo de verano.",
+            "Requiere conseguir semilla de cobertura y prever el costo de implantación y secado.",
+            "Hay que validar la disponibilidad de mercado local para Mijo.",
+            "Déficit hídrico estimado alto en Girasol (57 % de déficit, rinde ~46 % de su potencial), Sorgo (52 % de déficit, rinde ~53 % de su potencial) y Mijo (33 % de déficit, rinde ~70 % de su potencial)."
+          ],
+          "justification": "Cobertura en los dos inviernos con cultivos de verano tolerantes a sequía."
+        },
+        "score": {
+          "rotation_id": "campo-centro-mixta",
+          "scenario_id": "seco-20-calor-1",
+          "rank": 1,
+          "total": 52.9,
+          "uncertainty_low": 38.5,
+          "uncertainty_high": 67.7,
+          "components": [
+            {
+              "key": "A",
+              "name": "Resiliencia hídrica",
+              "value": 21.2,
+              "weight": 0.29,
+              "drivers": [
+                {
+                  "factor": "Demanda cubierta por lluvia y agua almacenada",
+                  "effect": "sube",
+                  "points": 45.9,
+                  "detail": "Los cultivos demandan ~721 mm/año (Kc x ET0); la lluvia efectiva y el perfil cubren 46 %.",
+                  "provenance": {
+                    "label": "estimado",
+                    "source_id": "nasa-power",
+                    "method": "Balance hídrico mensual: Kc FAO-56 x ET0 de NASA POWER, lluvia efectiva USDA-SCS",
+                    "confidence": "media"
+                  }
+                },
+                {
+                  "factor": "Penalización por alta demanda hídrica",
+                  "effect": "baja",
+                  "points": -30.1,
+                  "detail": "La demanda equivale al 155 % de la lluvia anual (se penaliza desde el 80 %).",
+                  "provenance": {
+                    "label": "supuesto",
+                    "confidence": "baja"
+                  }
+                },
+                {
+                  "factor": "Tolerancia a sequía de los cultivos",
+                  "effect": "sube",
+                  "points": 5.4,
+                  "detail": "Promedio de tolerancia a sequía: 0,90 (0 = baja, 1 = alta).",
+                  "provenance": {
+                    "label": "supuesto",
+                    "confidence": "baja"
+                  }
+                }
+              ],
+              "provenance": {
+                "label": "estimado",
+                "source_id": "nasa-power",
+                "method": "Balance hídrico mensual: Kc FAO-56 x ET0 de NASA POWER, lluvia efectiva USDA-SCS",
+                "confidence": "media"
+              }
+            },
+            {
+              "key": "S",
+              "name": "Salud del suelo",
+              "value": 50.7,
+              "weight": 0.194,
+              "drivers": [
+                {
+                  "factor": "Bonificación por cobertura vegetal",
+                  "effect": "sube",
+                  "points": 21.4,
+                  "detail": "El lote tiene cultivo vivo 69 % de los meses (2,7 de 5 meses de invierno por año); con el déficit hídrico, la biomasa equivale a 54 %.",
+                  "provenance": {
+                    "label": "supuesto",
+                    "confidence": "baja"
+                  }
+                },
+                {
+                  "factor": "Aporte de materia orgánica",
+                  "effect": "sube",
+                  "points": 17.8,
+                  "detail": "Aporte de rastrojo y raíces ajustado por agua: 0,71 por año (1,2 o más = máximo).",
+                  "provenance": {
+                    "label": "supuesto",
+                    "confidence": "baja"
+                  }
+                },
+                {
+                  "factor": "Bonificación por leguminosas",
+                  "effect": "sube",
+                  "points": 10.0,
+                  "detail": "0,33 cultivos que fijan nitrógeno por año (0,5 o más = máximo).",
+                  "provenance": {
+                    "label": "supuesto",
+                    "confidence": "baja"
+                  }
+                },
+                {
+                  "factor": "Diversidad de profundidad de raíces",
+                  "effect": "sube",
+                  "points": 7.5,
+                  "detail": "2 profundidades de raíz distintas exploran distintas capas del perfil.",
+                  "provenance": {
+                    "label": "supuesto",
+                    "confidence": "baja"
+                  }
+                },
+                {
+                  "factor": "Penalización por erosión",
+                  "effect": "baja",
+                  "points": -6.0,
+                  "detail": "3,7 meses por año sin cultivo vivo; exposición ponderada por rastrojo y viento 2,0, textura arenosa.",
+                  "provenance": {
+                    "label": "supuesto",
+                    "confidence": "baja"
+                  }
+                }
+              ],
+              "provenance": {
+                "label": "estimado",
+                "source_id": "catalogo-fieldshift",
+                "method": "Meses cubiertos, aportes cualitativos del catálogo y exposición a erosión",
+                "confidence": "baja"
+              }
+            },
+            {
+              "key": "R",
+              "name": "Resiliencia climática",
+              "value": 88.4,
+              "weight": 0.226,
+              "drivers": [
+                {
+                  "factor": "Resiliencia climática base",
+                  "effect": "sube",
+                  "points": 100.0,
+                  "detail": "Se parte de 100 y se descuenta la exposición de cada cultivo.",
+                  "provenance": {
+                    "label": "estimado",
+                    "source_id": "nasa-power",
+                    "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                    "confidence": "media"
+                  }
+                },
+                {
+                  "factor": "Exposición a sequía",
+                  "effect": "baja",
+                  "points": -14.9,
+                  "detail": "Déficit en los meses con cultivo x sensibilidad a sequía (índice 0,25; variabilidad de lluvia 37 %).",
+                  "provenance": {
+                    "label": "estimado",
+                    "source_id": "nasa-power",
+                    "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                    "confidence": "media"
+                  }
+                },
+                {
+                  "factor": "Exposición a calor",
+                  "effect": "baja",
+                  "points": -1.6,
+                  "detail": "Días con Tmax > 35 °C en los meses con cultivo x sensibilidad al calor (índice 0,05).",
+                  "provenance": {
+                    "label": "estimado",
+                    "source_id": "nasa-power",
+                    "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                    "confidence": "media"
+                  }
+                },
+                {
+                  "factor": "Exposición a heladas",
+                  "effect": "baja",
+                  "points": -1.1,
+                  "detail": "Meses fríos con cultivo x sensibilidad a heladas (índice 0,07).",
+                  "provenance": {
+                    "label": "estimado",
+                    "source_id": "nasa-power",
+                    "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                    "confidence": "media"
+                  }
+                },
+                {
+                  "factor": "Antecesores favorables",
+                  "effect": "sube",
+                  "points": 6.0,
+                  "detail": "Girasol después de Cobertura de gramíneas; Cobertura de leguminosas después de Girasol; Sorgo después de Cobertura de leguminosas.",
+                  "provenance": {
+                    "label": "supuesto",
+                    "confidence": "baja"
+                  }
+                }
+              ],
+              "provenance": {
+                "label": "estimado",
+                "source_id": "nasa-power",
+                "method": "Exposición climática de NASA POWER x tolerancias del catálogo; reglas de rotación",
+                "confidence": "media"
+              }
+            },
+            {
+              "key": "I",
+              "name": "Ingreso relativo estimado",
+              "value": 18.8,
+              "weight": 0.129,
+              "drivers": [
+                {
+                  "factor": "Ingreso relativo de los cultivos",
+                  "effect": "sube",
+                  "points": 18.8,
+                  "detail": "Ingreso relativo de los cultivos de cosecha, ajustado por rendimiento esperado y déficit hídrico (Ky de FAO-33): 0,19 por año (1,0 = 100 puntos). Es un índice cualitativo, no un margen en pesos.",
+                  "provenance": {
+                    "label": "supuesto",
+                    "source_id": "catalogo-fieldshift",
+                    "method": "Ingreso relativo cualitativo, castigado por déficit hídrico; no son precios",
+                    "confidence": "baja"
+                  }
+                },
+                {
+                  "factor": "Castigo por déficit hídrico",
+                  "effect": "neutro",
+                  "points": 0.0,
+                  "detail": "Ya incluido arriba: Girasol (57 % de déficit, rinde ~46 % de su potencial), Sorgo (52 % de déficit, rinde ~53 % de su potencial), Mijo (33 % de déficit, rinde ~70 % de su potencial).",
+                  "provenance": {
+                    "label": "supuesto",
+                    "confidence": "baja"
+                  }
+                },
+                {
+                  "factor": "Costo de coberturas",
+                  "effect": "neutro",
+                  "points": 0.0,
+                  "detail": "Ya incluido arriba: 2 cobertura(s) sin cosecha restan ingreso.",
+                  "provenance": {
+                    "label": "supuesto",
+                    "confidence": "baja"
+                  }
+                },
+                {
+                  "factor": "Mercado local",
+                  "effect": "neutro",
+                  "points": 0.0,
+                  "detail": "Ya incluido arriba: Mijo: mercado local limitado.",
+                  "provenance": {
+                    "label": "supuesto",
+                    "confidence": "baja"
+                  }
+                }
+              ],
+              "provenance": {
+                "label": "supuesto",
+                "source_id": "catalogo-fieldshift",
+                "method": "Ingreso relativo cualitativo, castigado por déficit hídrico; no son precios",
+                "confidence": "baja"
+              }
+            },
+            {
+              "key": "E",
+              "name": "Sostenibilidad y diversificación",
+              "value": 90.4,
+              "weight": 0.161,
+              "drivers": [
+                {
+                  "factor": "Base",
+                  "effect": "sube",
+                  "points": 20.0,
+                  "detail": "Puntaje de partida.",
+                  "provenance": {
+                    "label": "supuesto",
+                    "confidence": "baja"
+                  }
+                },
+                {
+                  "factor": "Bonificación por diversificación de cultivos",
+                  "effect": "sube",
+                  "points": 30.0,
+                  "detail": "5 cultivos distintos.",
+                  "provenance": {
+                    "label": "supuesto",
+                    "confidence": "baja"
+                  }
+                },
+                {
+                  "factor": "Bonificación por familias botánicas",
+                  "effect": "sube",
+                  "points": 20.0,
+                  "detail": "3 familias botánicas: cortan ciclos de plagas y enfermedades.",
+                  "provenance": {
+                    "label": "supuesto",
+                    "confidence": "baja"
+                  }
+                },
+                {
+                  "factor": "Bonificación por leguminosas",
+                  "effect": "sube",
+                  "points": 10.0,
+                  "detail": "Fijan nitrógeno y reducen la dependencia de fertilizantes.",
+                  "provenance": {
+                    "label": "supuesto",
+                    "confidence": "baja"
+                  }
+                },
+                {
+                  "factor": "Coberturas y pasturas",
+                  "effect": "sube",
+                  "points": 10.4,
+                  "detail": "28 % de los meses con coberturas o pasturas (40 % o más = máximo).",
+                  "provenance": {
+                    "label": "supuesto",
+                    "confidence": "baja"
+                  }
+                }
+              ],
+              "provenance": {
+                "label": "estimado",
+                "source_id": "catalogo-fieldshift",
+                "method": "Cultivos y familias distintas, leguminosas, coberturas y repeticiones",
+                "confidence": "media"
+              }
+            }
+          ],
+          "relative_water_demand": 0.9,
+          "risk_level": "bajo",
+          "confidence": "baja"
+        },
+        "recommendation": {
+          "rotation_id": "campo-centro-mixta",
+          "summary": "Mixta recomendada: Cobertura – girasol – vicia – sorgo – mijo: puesto 1 de 7, 53 puntos (rango 39–68).",
+          "why": "Esta rotación se recomienda porque reduce la demanda hídrica estimada (10 % menos que la actual), diversifica el sistema (5 cultivos distintos frente a 3), incorpora leguminosas que aportan nitrógeno, reduce los meses de suelo desnudo (de 4,0 a 3,7 por año) y baja la exposición de los cultivos a sequía, calor y problemas sanitarios. Es la de mayor puntaje con más peso en agua. Sin embargo, baja el ingreso relativo estimado, requiere secar la cobertura a tiempo (agosto-septiembre) para que el perfil se recargue antes del cultivo de verano, requiere conseguir semilla de cobertura y prever el costo de implantación y secado y hay que validar la disponibilidad de mercado local para Mijo.",
+          "benefits": [
+            "Reduce la demanda hídrica estimada (10 % menos que la actual).",
+            "Diversifica el sistema (5 cultivos distintos frente a 3).",
+            "Incorpora leguminosas que aportan nitrógeno.",
+            "Reduce los meses de suelo desnudo (de 4,0 a 3,7 por año).",
+            "Baja la exposición de los cultivos a sequía, calor y problemas sanitarios."
+          ],
+          "risks": [
+            "Riesgo de déficit hídrico: la lluvia y el agua almacenada cubren solo el 46 % de la demanda.",
+            "Mijo: mercado local limitado; validar comprador antes de sembrar.",
+            "El clima usado es una muestra SIMULADA: los puntajes son ilustrativos hasta consultar NASA POWER."
+          ],
+          "assumptions": [
+            "El clima de 2016-2025 representa las próximas campañas (con el escenario aplicado).",
+            "Coeficientes de cultivo (Kc) estándar de FAO-56; para coberturas, supuestos.",
+            "Fechas de siembra y largo de ciclo típicos de cada cultivo.",
+            "Ingreso relativo cualitativo: no se usan precios ni costos reales."
+          ],
+          "uncertainties": [
+            "El clima usado es una MUESTRA SIMULADA: los números son ilustrativos.",
+            "El puntaje puede variar entre 39 y 68 (lluvia ±15 %, ET0 ±5 % y margen por confianza baja).",
+            "NASA POWER describe el entorno regional (~50 km): la lluvia del lote puede ser distinta.",
+            "No se modelan rendimientos, precios ni costos: el ingreso es un índice relativo."
+          ],
+          "information_gaps": [
+            "Humedad de suelo SMAP del lote.",
+            "Serie de NDVI MODIS del lote.",
+            "Análisis de suelo de laboratorio.",
+            "Pendiente del lote (SRTM)."
+          ],
+          "evidence": {
+            "nasa_data": [
+              "NASA POWER (DATO DE MUESTRA, 2016-2025): lluvia media 580 mm/año, ET0 1414 mm/año, índice de aridez 0,41 (zona semiárido).",
+              "Con estos datos, los cultivos de la rotación demandan ~721 mm/año y la lluvia efectiva más el agua almacenada cubren el 46 %.",
+              "Días con Tmax > 35 °C: 7 por año en promedio.",
+              "Variabilidad de la lluvia anual: 37 % (coeficiente de variación).",
+              "Escenario aplicado 'Lluvia -20 % y +1 °C': lluvia -20 %, temperatura +1,0 °C → lluvia 464 mm/año y ET0 1456 mm/año.",
+              "Humedad de suelo SMAP: no se cargó para este lote (no se usó).",
+              "NDVI MODIS: no se cargó para este lote (no se usó)."
+            ],
+            "local_soil": [
+              "Textura arenosa: agua útil estimada 80 mm y eficiencia de barbecho 0,15.",
+              "Sin análisis de laboratorio: materia orgánica, fósforo y pH no se evaluaron.",
+              "Pendiente no informada: no se evaluó la erosión hídrica."
+            ],
+            "producer": [
+              "Pesos del puntaje según tus prioridades: agua 29 %, suelo 19 %, riesgo 23 %, ingreso 13 %, sostenibilidad 16 %.",
+              "Lote en secano.",
+              "Historial: Sorgo → Avena → Girasol → Sorgo.",
+              "Cultivo actual: Sorgo.",
+              "Manejo necesario: secar la cobertura a tiempo (agosto-septiembre) para que el perfil se recargue antes del cultivo de verano; conseguir semilla de cobertura y prever el costo de implantación y secado."
+            ],
+            "needs_validation": [
+              "Coeficientes de cultivo (Kc) y fechas de siembra para tu zona y variedades.",
+              "Atributos cualitativos del catálogo (tolerancias, aportes e ingreso relativo).",
+              "Momento de secado de las coberturas según el agua disponible.",
+              "Mercado y logística para Mijo.",
+              "Fertilización según análisis de suelo."
+            ]
+          },
+          "validation_note": "Antes de implementarla, validala con un ingeniero agrónomo local: fechas de siembra y variedades para tu zona, manejo y secado de coberturas, fertilización según análisis de suelo, y mercado y logística de cada cultivo.",
+          "requires_agronomist": true,
+          "disclaimer": "FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.",
+          "generated_by": "plantilla"
+        },
+        "risk_flags": [
+          {
+            "id": "campo-centro-mixta-deficit_hidrico-1",
+            "target_type": "rotation",
+            "target_id": "campo-centro-mixta",
+            "kind": "deficit_hidrico",
+            "severity": "alta",
+            "icon": "droplet",
+            "message": "Riesgo de déficit hídrico: la lluvia y el agua almacenada cubren solo el 46 % de la demanda.",
+            "evidence": [
+              "Demanda 721 mm/año; lluvia 464 mm/año (NASA POWER, 2016-2025)."
+            ]
+          },
+          {
+            "id": "campo-centro-mixta-mercado-2",
+            "target_type": "rotation",
+            "target_id": "campo-centro-mixta",
+            "kind": "mercado",
+            "severity": "media",
+            "icon": "store",
+            "message": "Mijo: mercado local limitado; validar comprador antes de sembrar.",
+            "evidence": []
+          },
+          {
+            "id": "campo-centro-mixta-manejo-3",
+            "target_type": "rotation",
+            "target_id": "campo-centro-mixta",
+            "kind": "manejo",
+            "severity": "info",
+            "icon": "clipboard-list",
+            "message": "Las coberturas consumen agua: secarlas a tiempo es clave para no perjudicar al cultivo siguiente.",
+            "evidence": []
+          },
+          {
+            "id": "campo-centro-mixta-dato_faltante-4",
+            "target_type": "rotation",
+            "target_id": "campo-centro-mixta",
+            "kind": "dato_faltante",
+            "severity": "media",
+            "icon": "help-circle",
+            "message": "El clima usado es una muestra SIMULADA: los puntajes son ilustrativos hasta consultar NASA POWER.",
+            "evidence": []
+          }
+        ],
+        "assumption_ids": [
+          "kc",
+          "kc-perfil",
+          "lluvia-efectiva",
+          "agua-util",
+          "eficiencia-barbecho",
+          "almacenaje-bajo-cultivo",
+          "riego",
+          "demanda-alta",
+          "et0-temperatura",
+          "calor-desvio",
+          "heladas",
+          "estres-ingreso",
+          "rendimiento-relativo",
+          "biomasa-agua",
+          "plantillas-riego",
+          "costo-cobertura",
+          "erosion",
+          "atributos-cultivo",
+          "aridez",
+          "textura-por-defecto"
+        ],
+        "source_ids": [
+          "nasa-power",
+          "fao-56",
+          "usda-scs",
+          "unep-aridity",
+          "catalogo-fieldshift"
+        ],
+        "confidence": "baja",
+        "confidence_reasons": [
+          "Clima de muestra simulada, no datos NASA reales.",
+          "Sin análisis de suelo de laboratorio.",
+          "Atributos con confianza baja en el catálogo: Cobertura de leguminosas y Mijo.",
+          "Sin humedad de suelo (SMAP) ni NDVI del lote."
+        ],
+        "warnings": []
+      }
+    ],
+    "recommended_rotation_id": "campo-centro-mixta",
+    "confidence": "baja",
+    "confidence_reasons": [
+      "Clima de muestra simulada, no datos NASA reales.",
+      "Sin análisis de suelo de laboratorio.",
+      "Atributos con confianza baja en el catálogo: Cobertura de leguminosas y Mijo.",
+      "Sin humedad de suelo (SMAP) ni NDVI del lote.",
+      "Atributos con confianza baja en el catálogo: Mijo.",
+      "Atributos con confianza baja en el catálogo: Pastura perenne."
+    ],
+    "assumptions": [
+      {
+        "id": "kc",
+        "text": "Coeficientes de cultivo Kc estándar (inicial, medio, final) para estimar la demanda hídrica.",
+        "value_range": "0,30 a 1,20",
+        "source": "FAO-56 Tabla 12; coberturas: supuesto",
+        "validated": false,
+        "used_in": [
+          "A",
+          "R",
+          "I"
+        ]
+      },
+      {
+        "id": "kc-perfil",
+        "text": "Perfil mensual de Kc: primer mes inicial, segundo mes intermedio, meses centrales medio, último mes final.",
+        "validated": false,
+        "used_in": [
+          "A"
+        ]
+      },
+      {
+        "id": "lluvia-efectiva",
+        "text": "Lluvia efectiva mensual con la fórmula USDA-SCS simplificada.",
+        "source": "USDA-SCS / FAO CROPWAT",
+        "validated": true,
+        "used_in": [
+          "A"
+        ]
+      },
+      {
+        "id": "agua-util",
+        "text": "Agua útil por textura (punto medio del rango) por profundidad de raíces (1 m si no se informa).",
+        "value_range": "80-160 mm/m",
+        "source": "FAO-56 Tabla 19",
+        "validated": false,
+        "used_in": [
+          "A"
+        ]
+      },
+      {
+        "id": "eficiencia-barbecho",
+        "text": "Fracción de la lluvia del barbecho que queda almacenada en el perfil, según la textura.",
+        "value_range": "0,15-0,25",
+        "validated": false,
+        "used_in": [
+          "A"
+        ]
+      },
+      {
+        "id": "almacenaje-bajo-cultivo",
+        "text": "La mitad de la lluvia efectiva que el cultivo no usa se almacena en el perfil.",
+        "value_range": "0,5",
+        "validated": false,
+        "used_in": [
+          "A"
+        ]
+      },
+      {
+        "id": "riego",
+        "text": "El riego cubre el 80 % del déficit del cultivo.",
+        "value_range": "0,8",
+        "validated": false,
+        "used_in": [
+          "A",
+          "I"
+        ]
+      },
+      {
+        "id": "demanda-alta",
+        "text": "Se penaliza la resiliencia hídrica cuando la demanda de los cultivos supera el 80 % de la lluvia anual (40 puntos por cada 100 % de exceso, máximo 40).",
+        "validated": false,
+        "used_in": [
+          "A"
+        ]
+      },
+      {
+        "id": "et0-temperatura",
+        "text": "La ET0 sube 3 % por cada °C de aumento de temperatura en los escenarios.",
+        "value_range": "2-4 %/°C",
+        "validated": false,
+        "used_in": [
+          "A",
+          "R"
+        ]
+      },
+      {
+        "id": "calor-desvio",
+        "text": "La frecuencia de días con Tmax > 35 °C bajo calentamiento se desplaza con un desvío de 5 °C.",
+        "value_range": "5 °C",
+        "validated": false,
+        "used_in": [
+          "R"
+        ]
+      },
+      {
+        "id": "heladas",
+        "text": "Mes con heladas frecuentes si la Tmin media es <= 3 °C; ocasionales si es <= 6 °C.",
+        "validated": false,
+        "used_in": [
+          "R"
+        ]
+      },
+      {
+        "id": "estres-ingreso",
+        "text": "El rendimiento baja según el déficit relativo del cultivo: 1 - Ya/Ym = Ky x (1 - ETa/ETm).",
+        "value_range": "Ky 0,7-1,25",
+        "source": "FAO-33 (Doorenbos y Kassam, 1979); especies no listadas: supuesto",
+        "validated": false,
+        "used_in": [
+          "I"
+        ]
+      },
+      {
+        "id": "rendimiento-relativo",
+        "text": "El ingreso de cada cultivo se multiplica por su rendimiento relativo esperado en San Luis (bajo 0,6; medio 0,85; alto 1).",
+        "validated": false,
+        "used_in": [
+          "I"
+        ]
+      },
+      {
+        "id": "biomasa-agua",
+        "text": "La cobertura y el aporte de materia orgánica de un cultivo bajan a la mitad del déficit relativo que sufre.",
+        "validated": false,
+        "used_in": [
+          "S"
+        ]
+      },
+      {
+        "id": "plantillas-riego",
+        "text": "Con riego, las plantillas de rotación se eligen como en zona subhúmeda.",
+        "validated": false,
+        "used_in": [
+          "generador"
+        ]
+      },
+      {
+        "id": "costo-cobertura",
+        "text": "Cada cobertura sin cosecha tiene un costo relativo de 0,08 unidades de ingreso por año.",
+        "validated": false,
+        "used_in": [
+          "I"
+        ]
+      },
+      {
+        "id": "erosion",
+        "text": "Exposición a erosión: meses de barbecho ponderados por el rastrojo del cultivo anterior, la erodabilidad de la textura y los meses ventosos (julio a noviembre).",
+        "validated": false,
+        "used_in": [
+          "S"
+        ]
+      },
+      {
+        "id": "atributos-cultivo",
+        "text": "Atributos cualitativos del catálogo (tolerancias, aportes, ingreso, mercado).",
+        "source": "Catálogo de FieldShift, a validar con INTA",
+        "validated": false,
+        "used_in": [
+          "A",
+          "S",
+          "R",
+          "I",
+          "E"
+        ]
+      },
+      {
+        "id": "aridez",
+        "text": "Zona por índice de aridez P/ET0 con ET0 FAO-56 de NASA POWER.",
+        "source": "UNEP (1992)",
+        "validated": true,
+        "used_in": [
+          "generador"
+        ]
+      },
+      {
+        "id": "textura-por-defecto",
+        "text": "Si no se informa la textura, se usa franco arenosa.",
+        "validated": false,
+        "used_in": [
+          "A",
+          "S"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "nasa-power",
+        "name": "NASA POWER, datos diarios por punto",
+        "provider": "NASA Langley Research Center",
+        "product": "Comunidad AG: T2M, T2M_MAX, T2M_MIN, PRECTOTCORR, RH2M, WS2M, ALLSKY_SFC_SW_DWN, PS",
+        "endpoint": "https://power.larc.nasa.gov/api/temporal/daily/point",
+        "spatial_resolution": "~0.5° x 0.625° (meteorología); ~1° (radiación)",
+        "temporal_resolution": "diaria",
+        "license": "Datos abiertos de NASA",
+        "citation": "NASA Prediction Of Worldwide Energy Resources (POWER) Project",
+        "limitations": [
+          "Entorno regional (~50 km), no el lote.",
+          "Reanálisis: datos modelados."
+        ]
+      },
+      {
+        "id": "fao-56",
+        "name": "FAO-56: evapotranspiración del cultivo",
+        "provider": "FAO",
+        "product": "Kc (Tabla 12), agua útil por textura (Tabla 19), ET0 Penman-Monteith",
+        "spatial_resolution": "no aplica",
+        "temporal_resolution": "no aplica",
+        "license": "Publicación FAO",
+        "citation": "Allen, R. G., Pereira, L. S., Raes, D., Smith, M. (1998). FAO Irrigation and Drainage Paper 56.",
+        "limitations": [
+          "Kc estándar: no consideran variedades ni manejo local."
+        ]
+      },
+      {
+        "id": "usda-scs",
+        "name": "Lluvia efectiva mensual, método USDA-SCS simplificado",
+        "provider": "USDA Soil Conservation Service (como se usa en FAO CROPWAT)",
+        "spatial_resolution": "no aplica",
+        "temporal_resolution": "mensual",
+        "license": "Método publicado",
+        "citation": "USDA-SCS (1970); fórmula simplificada de FAO CROPWAT.",
+        "limitations": [
+          "Fórmula empírica; no considera intensidad de lluvia ni pendiente."
+        ]
+      },
+      {
+        "id": "unep-aridity",
+        "name": "Índice de aridez P/ET0",
+        "provider": "UNEP",
+        "spatial_resolution": "no aplica",
+        "temporal_resolution": "anual",
+        "license": "Clasificación publicada",
+        "citation": "UNEP (1992). World Atlas of Desertification. Clases: árido < 0,2; semiárido < 0,5; subhúmedo seco < 0,65.",
+        "limitations": [
+          "La ET0 de UNEP se calculó con otro método; los límites son orientativos."
+        ]
+      },
+      {
+        "id": "catalogo-fieldshift",
+        "name": "Catálogo de cultivos de FieldShift",
+        "provider": "FieldShift (app/data/crops.json)",
+        "spatial_resolution": "San Luis, Argentina",
+        "temporal_resolution": "no aplica",
+        "license": "Editable por el equipo",
+        "citation": "Atributos cualitativos; fuentes por cultivo en el campo `sources`.",
+        "limitations": [
+          "Valores cualitativos provisorios, a validar con INTA y agrónomos locales."
+        ]
+      }
+    ],
+    "warnings": [
+      "NASA POWER no respondió (modo sin red).",
+      "Se usan DATOS DE MUESTRA SIMULADOS del sitio 'campo-centro' (-33.55, -66.2); no son observaciones de tus coordenadas."
+    ],
+    "disclaimer": "FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.",
+    "note": "Ejemplo recortado: solo la evaluación de la rotación recomendada. La respuesta real trae todas."
+  },
+  "meta": {
+    "data_status": "sample",
+    "origin_label": "DATO DE MUESTRA"
+  }
+}

@@ -69,8 +69,11 @@ class Severity(StrEnum):
 
 class RotationStrategy(StrEnum):
     ACTUAL = "actual"
+    CONSERVADORA = "conservadora"
+    DIVERSIFICADA = "diversificada"
     AGUA = "agua"
     SUELO = "suelo"
+    RENTABILIDAD = "rentabilidad"
     MIXTA = "mixta"
 
 
@@ -80,6 +83,16 @@ class CropGroup(StrEnum):
     LEGUMINOSA = "leguminosa"
     FORRAJERA = "forrajera"
     COBERTURA = "cobertura"
+
+
+class CropFamily(StrEnum):
+    """Familia botánica: se usa para medir diversificación."""
+
+    GRAMINEA = "graminea"
+    LEGUMINOSA = "leguminosa"
+    ASTERACEA = "asteracea"
+    BRASICACEA = "brasicacea"
+    MEZCLA = "mezcla"
 
 
 class CropCycle(StrEnum):
@@ -110,5 +123,26 @@ class RiskKind(StrEnum):
     HELADA = "helada"
     DEFICIT_HIDRICO = "deficit_hidrico"
     EROSION = "erosion"
+    MONOCULTIVO = "monocultivo"
+    MERCADO = "mercado"
+    MANEJO = "manejo"
     DATO_FALTANTE = "dato_faltante"
     OTRO = "otro"
+
+
+class AridityZone(StrEnum):
+    """Clase de aridez según el índice P/ET0 (UNEP)."""
+
+    ARIDO = "arido"
+    SEMIARIDO = "semiarido"
+    SUBHUMEDO_SECO = "subhumedo_seco"
+    HUMEDO = "humedo"
+
+
+class ImpactDirection(StrEnum):
+    """Impacto de una rotación frente a la rotación actual."""
+
+    MEJORA = "mejora"
+    NEUTRO = "neutro"
+    EMPEORA = "empeora"
+    LINEA_BASE = "linea_base"

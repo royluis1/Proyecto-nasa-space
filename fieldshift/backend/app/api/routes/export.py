@@ -6,41 +6,50 @@ from typing import Literal
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import Response
 
-from app.api.deps import get_repository
+from app.api.deps import get_rotation_service
 from app.models.constants import DISCLAIMER
-from app.models.enums import DataStatus
 from app.schemas.common import ApiResponse, ErrorResponse, ResponseMeta
 from app.schemas.report import Report
-from app.services.mock_scoring import MOCK_WARNING, mock_ranking
-from app.services.repository import Repository
+from app.schemas.rotation import CompareRequest
+from app.services.engine.explain import strategy_label
+from app.services.engine.service import RotationService
 
 router = APIRouter(tags=["reporte"])
 
 
-def _build(repo: Repository, field_id: str) -> Report:
-    field = repo.get_field(field_id)
-    rotations = repo.rotations_for_field(field_id)
-    return Report(
+def _build(service: RotationService, field_id: str) -> tuple[Report, object, list[str]]:
+    result, climate = service.compare(CompareRequest(field_id=field_id))
+    report = Report(
         generated_at=datetime.now(timezone.utc),
-        field=field,
-        rotations=rotations,
-        ranking=mock_ranking(rotations, repo.get_priorities(field_id).priorities),
-        sources=[],
-        assumptions=[],
+        field=service.repo.get_field(field_id),
+        rotations=[ev.rotation for ev in result.evaluations],
+        ranking=result.ranking,
+        explanations={ev.rotation.id: ev.recommendation.why for ev in result.evaluations},
+        recommended_rotation_id=result.recommended_rotation_id,
+        confidence=result.confidence,
+        sources=result.sources,
+        assumptions=result.assumptions,
+        warnings=result.warnings,
         disclaimer=DISCLAIMER,
     )
+    return report, climate, result.warnings
 
 
-def _to_csv(report: Report) -> str:
-    names = {r.id: r.name for r in report.rotations}
+def _to_csv(report: Report, origin_label: str) -> str:
+    rotations = {r.id: r for r in report.rotations}
     buf = io.StringIO()
     w = csv.writer(buf)
     w.writerow(["# " + DISCLAIMER])
-    w.writerow(["# " + MOCK_WARNING])
+    w.writerow(["# Origen del clima: " + origin_label])
+    for warning in report.warnings:
+        w.writerow(["# " + warning])
     w.writerow(["# Lote", report.field.id, report.field.name, f"generado {report.generated_at.isoformat()}"])
-    w.writerow(["puesto", "rotacion_id", "rotacion", "puntaje_total", *[c.key.value for c in report.ranking[0].components]])
+    keys = [c.key.value for c in report.ranking[0].components]
+    w.writerow(["puesto", "rotacion_id", "estrategia", "rotacion", "puntaje_total", "rango_min", "rango_max", "confianza", *keys, "explicacion"])
     for s in report.ranking:
-        w.writerow([s.rank, s.rotation_id, names[s.rotation_id], s.total, *[c.value for c in s.components]])
+        rot = rotations[s.rotation_id]
+        w.writerow([s.rank, s.rotation_id, strategy_label(rot.strategy), rot.name, s.total, s.uncertainty_low, s.uncertainty_high,
+                    s.confidence.value, *[c.value for c in s.components], report.explanations[s.rotation_id]])
     return buf.getvalue()
 
 
@@ -56,17 +65,14 @@ def _to_csv(report: Report) -> str:
 def export_report(
     field_id: str = Query(examples=["campo-este"]),
     format: Literal["json", "csv"] = Query(default="json", description="El PDF llega en una fase posterior."),
-    repo: Repository = Depends(get_repository),
+    service: RotationService = Depends(get_rotation_service),
 ):
-    """Reporte con lote, rotaciones, ranking, fuentes, supuestos y advertencia.
-
-    **Por ahora el ranking es simulado** y fuentes y supuestos van vacíos.
-    """
-    report = _build(repo, field_id)
+    """Reporte con lote, rotaciones, ranking, explicaciones, fuentes, supuestos y advertencia."""
+    report, climate, warnings = _build(service, field_id)
     if format == "csv":
         return Response(
-            content=_to_csv(report),
+            content=_to_csv(report, climate.status.origin_label),
             media_type="text/csv; charset=utf-8",
             headers={"Content-Disposition": f'attachment; filename="fieldshift_{field_id}.csv"'},
         )
-    return ApiResponse(data=report, meta=ResponseMeta(data_status=DataStatus.MOCK, warnings=[MOCK_WARNING]))
+    return ApiResponse(data=report, meta=ResponseMeta(data_status=climate.status, origin_label=climate.status.origin_label, warnings=warnings))

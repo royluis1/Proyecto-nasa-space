@@ -2,186 +2,1250 @@
   {
     "id": "soja",
     "name": "Soja",
+    "scientific_name": "Glycine max",
     "group": "oleaginosa",
+    "family": "leguminosa",
     "cycle": "estival",
+    "cycle_months": {
+      "min": 4,
+      "max": 6,
+      "unit": "meses"
+    },
     "sowing_months": [
       11,
       12
     ],
+    "sowing_window": "Noviembre a diciembre (primera); diciembre después de un cereal de invierno (segunda).",
+    "default_calendar": {
+      "start_month": 11,
+      "end_month": 4
+    },
     "water_requirement": "medio",
     "drought_tolerance": "medio",
     "heat_tolerance": "medio",
     "frost_tolerance": "bajo",
+    "root_depth": "medio",
     "organic_matter_contribution": "bajo",
     "soil_cover": "bajo",
     "fixes_nitrogen": true,
+    "nitrogen_fixation": "medio",
     "erosion_risk": "alto",
     "forage_value": "bajo",
+    "main_use": [
+      "grano",
+      "aceite",
+      "harina proteica"
+    ],
+    "relative_yield": "medio",
     "relative_income": "alto",
-    "kc": null,
-    "source": "Muestra provisoria: valores cualitativos a completar y verificar contra FAO e INTA en la fase de base de cultivos.",
-    "confidence": "baja"
+    "local_market": "alto",
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [
+        "maiz",
+        "sorgo",
+        "trigo",
+        "cebada",
+        "centeno",
+        "avena",
+        "cobertura_gramineas"
+      ],
+      "avoid_predecessors": [
+        "soja",
+        "mani"
+      ],
+      "return_interval_years": {
+        "min": 2,
+        "max": 3,
+        "unit": "años"
+      },
+      "notes": "Repetirla aumenta enfermedades de fin de ciclo y chinches; comparte patógenos con el maní."
+    },
+    "kc": {
+      "ini": 0.4,
+      "mid": 1.15,
+      "end": 0.5
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+    "ky": 0.85,
+    "ky_source": "FAO-33 (Doorenbos y Kassam, 1979): factor de respuesta del rendimiento al agua Ky, ciclo completo",
+    "agronomic_notes": "Fija nitrógeno, pero exporta mucho en el grano: el balance neto de N es cercano a cero. Deja poco rastrojo y de rápida descomposición, por eso el riesgo de erosión eólica es alto. El período crítico es el llenado de granos (R3-R6).",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "FAO-33 (Doorenbos y Kassam, 1979): factor de respuesta del rendimiento al agua Ky, ciclo completo",
+      "FAO Ecocrop: rangos de tolerancia por especie (a verificar)",
+      "INTA EEA San Luis: información regional de cultivos (a verificar)"
+    ],
+    "confidence": "media"
   },
   {
     "id": "maiz",
     "name": "Maíz",
+    "scientific_name": "Zea mays",
     "group": "cereal",
+    "family": "graminea",
     "cycle": "estival",
+    "cycle_months": {
+      "min": 5,
+      "max": 7,
+      "unit": "meses"
+    },
     "sowing_months": [
       9,
       10,
+      11,
       12
     ],
+    "sowing_window": "Temprano: septiembre a octubre. Tardío: diciembre (más usado en secano para evitar sequía en floración).",
+    "default_calendar": {
+      "start_month": 12,
+      "end_month": 5
+    },
     "water_requirement": "alto",
     "drought_tolerance": "bajo",
     "heat_tolerance": "medio",
     "frost_tolerance": "bajo",
+    "root_depth": "alto",
     "organic_matter_contribution": "alto",
-    "soil_cover": "medio",
+    "soil_cover": "alto",
     "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
     "erosion_risk": "bajo",
-    "forage_value": "medio",
+    "forage_value": "alto",
+    "main_use": [
+      "grano",
+      "silaje",
+      "rastrojo para pastoreo"
+    ],
+    "relative_yield": "medio",
     "relative_income": "alto",
-    "kc": null,
-    "source": "Muestra provisoria: valores cualitativos a completar y verificar contra FAO e INTA en la fase de base de cultivos.",
-    "confidence": "baja"
+    "local_market": "alto",
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [
+        "soja",
+        "mani",
+        "alfalfa",
+        "pastura_perenne",
+        "vicia",
+        "cobertura_leguminosas"
+      ],
+      "avoid_predecessors": [
+        "maiz"
+      ],
+      "return_interval_years": {
+        "min": 2,
+        "max": 3,
+        "unit": "años"
+      },
+      "notes": "Repetirlo aumenta plagas (cogollero, barrenador) y la chicharrita del achaparramiento."
+    },
+    "kc": {
+      "ini": 0.3,
+      "mid": 1.2,
+      "end": 0.35
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+    "ky": 1.25,
+    "ky_source": "FAO-33 (Doorenbos y Kassam, 1979): factor de respuesta del rendimiento al agua Ky, ciclo completo",
+    "agronomic_notes": "Es el que más agua consume del catálogo y es muy sensible a la sequía en floración. Deja mucho rastrojo: protege el suelo y aporta carbono. Su rendimiento en secano de San Luis depende mucho del agua almacenada a la siembra.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "FAO-33 (Doorenbos y Kassam, 1979): factor de respuesta del rendimiento al agua Ky, ciclo completo",
+      "FAO Ecocrop: rangos de tolerancia por especie (a verificar)",
+      "INTA EEA San Luis: información regional de cultivos (a verificar)"
+    ],
+    "confidence": "media"
   },
   {
     "id": "trigo",
     "name": "Trigo",
+    "scientific_name": "Triticum aestivum",
     "group": "cereal",
+    "family": "graminea",
     "cycle": "invernal",
+    "cycle_months": {
+      "min": 6,
+      "max": 7,
+      "unit": "meses"
+    },
     "sowing_months": [
       5,
-      6
+      6,
+      7
     ],
+    "sowing_window": "Mayo a julio.",
+    "default_calendar": {
+      "start_month": 6,
+      "end_month": 12
+    },
     "water_requirement": "medio",
     "drought_tolerance": "medio",
     "heat_tolerance": "bajo",
     "frost_tolerance": "alto",
+    "root_depth": "alto",
     "organic_matter_contribution": "medio",
     "soil_cover": "medio",
     "fixes_nitrogen": false,
-    "erosion_risk": "medio",
+    "nitrogen_fixation": null,
+    "erosion_risk": "bajo",
     "forage_value": "medio",
+    "main_use": [
+      "grano",
+      "doble propósito (pastoreo y grano)"
+    ],
+    "relative_yield": "bajo",
     "relative_income": "medio",
-    "kc": null,
-    "source": "Muestra provisoria: valores cualitativos a completar y verificar contra FAO e INTA en la fase de base de cultivos.",
-    "confidence": "baja"
+    "local_market": "alto",
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [
+        "soja",
+        "girasol",
+        "mani",
+        "vicia",
+        "cobertura_leguminosas"
+      ],
+      "avoid_predecessors": [
+        "trigo",
+        "cebada"
+      ],
+      "return_interval_years": {
+        "min": 2,
+        "max": 3,
+        "unit": "años"
+      },
+      "notes": "Comparte enfermedades con la cebada; evitar trigo sobre trigo."
+    },
+    "kc": {
+      "ini": 0.3,
+      "mid": 1.15,
+      "end": 0.3
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+    "ky": 1.05,
+    "ky_source": "FAO-33 (Doorenbos y Kassam, 1979): factor de respuesta del rendimiento al agua Ky, ciclo completo (trigo de invierno)",
+    "agronomic_notes": "En San Luis llueve poco en invierno: el trigo de secano depende del agua almacenada en el perfil, por eso su rendimiento relativo es bajo. Sensible a golpes de calor en el llenado. Permite soja de segunda si sobra agua.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "FAO-33 (Doorenbos y Kassam, 1979): factor de respuesta del rendimiento al agua Ky, ciclo completo",
+      "FAO Ecocrop: rangos de tolerancia por especie (a verificar)",
+      "INTA EEA San Luis: información regional de cultivos (a verificar)"
+    ],
+    "confidence": "media"
   },
   {
-    "id": "girasol",
-    "name": "Girasol",
-    "group": "oleaginosa",
-    "cycle": "estival",
+    "id": "cebada",
+    "name": "Cebada",
+    "scientific_name": "Hordeum vulgare",
+    "group": "cereal",
+    "family": "graminea",
+    "cycle": "invernal",
+    "cycle_months": {
+      "min": 5,
+      "max": 7,
+      "unit": "meses"
+    },
     "sowing_months": [
-      10,
-      11
+      5,
+      6,
+      7
     ],
+    "sowing_window": "Mayo a julio; algo más corta que el trigo.",
+    "default_calendar": {
+      "start_month": 6,
+      "end_month": 11
+    },
     "water_requirement": "medio",
-    "drought_tolerance": "alto",
-    "heat_tolerance": "medio",
-    "frost_tolerance": "bajo",
-    "organic_matter_contribution": "bajo",
-    "soil_cover": "bajo",
+    "drought_tolerance": "medio",
+    "heat_tolerance": "bajo",
+    "frost_tolerance": "alto",
+    "root_depth": "medio",
+    "organic_matter_contribution": "medio",
+    "soil_cover": "medio",
     "fixes_nitrogen": false,
-    "erosion_risk": "alto",
-    "forage_value": "bajo",
+    "nitrogen_fixation": null,
+    "erosion_risk": "bajo",
+    "forage_value": "medio",
+    "main_use": [
+      "grano cervecero",
+      "grano forrajero"
+    ],
+    "relative_yield": "bajo",
     "relative_income": "medio",
-    "kc": null,
-    "source": "Muestra provisoria: valores cualitativos a completar y verificar contra FAO e INTA en la fase de base de cultivos.",
+    "local_market": "bajo",
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [
+        "soja",
+        "girasol",
+        "vicia",
+        "cobertura_leguminosas"
+      ],
+      "avoid_predecessors": [
+        "trigo",
+        "cebada"
+      ],
+      "return_interval_years": {
+        "min": 2,
+        "max": 3,
+        "unit": "años"
+      },
+      "notes": "Comparte enfermedades con el trigo."
+    },
+    "kc": {
+      "ini": 0.3,
+      "mid": 1.15,
+      "end": 0.25
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+    "ky": 1.05,
+    "ky_source": "Supuesto: la especie no figura en FAO-33; se asimila a un cultivo similar (trigo de invierno)",
+    "agronomic_notes": "Ciclo más corto que el trigo: libera antes el lote para un cultivo de segunda. La cebada cervecera suele requerir contrato con malterías, que no están en San Luis.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "Supuesto: la especie no figura en FAO-33; se asimila a un cultivo similar",
+      "FAO Ecocrop: rangos de tolerancia por especie (a verificar)",
+      "INTA EEA San Luis: información regional de cultivos (a verificar)"
+    ],
     "confidence": "baja"
   },
   {
     "id": "sorgo",
     "name": "Sorgo",
+    "scientific_name": "Sorghum bicolor",
     "group": "cereal",
+    "family": "graminea",
     "cycle": "estival",
+    "cycle_months": {
+      "min": 4,
+      "max": 6,
+      "unit": "meses"
+    },
     "sowing_months": [
+      10,
       11,
       12
     ],
-    "water_requirement": "bajo",
+    "sowing_window": "Octubre a diciembre, con el suelo caliente.",
+    "default_calendar": {
+      "start_month": 11,
+      "end_month": 4
+    },
+    "water_requirement": "medio",
     "drought_tolerance": "alto",
     "heat_tolerance": "alto",
     "frost_tolerance": "bajo",
+    "root_depth": "alto",
     "organic_matter_contribution": "alto",
-    "soil_cover": "medio",
+    "soil_cover": "alto",
     "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
     "erosion_risk": "bajo",
     "forage_value": "alto",
+    "main_use": [
+      "grano",
+      "silaje",
+      "pastoreo diferido"
+    ],
+    "relative_yield": "medio",
     "relative_income": "medio",
-    "kc": null,
-    "source": "Muestra provisoria: valores cualitativos a completar y verificar contra FAO e INTA en la fase de base de cultivos.",
+    "local_market": "medio",
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [
+        "soja",
+        "girasol",
+        "mani",
+        "vicia",
+        "cobertura_leguminosas"
+      ],
+      "avoid_predecessors": [
+        "sorgo",
+        "maiz"
+      ],
+      "return_interval_years": {
+        "min": 2,
+        "max": 3,
+        "unit": "años"
+      },
+      "notes": "Comparte plagas con el maíz (pulgón, barrenador)."
+    },
+    "kc": {
+      "ini": 0.3,
+      "mid": 1.05,
+      "end": 0.55
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc (rango 1,00-1,10; se usa el punto medio)",
+    "ky": 0.9,
+    "ky_source": "FAO-33 (Doorenbos y Kassam, 1979): factor de respuesta del rendimiento al agua Ky, ciclo completo",
+    "agronomic_notes": "Más tolerante a sequía y calor que el maíz: puede detener el crecimiento y retomarlo con lluvia. Deja mucho rastrojo. Muy usado para silaje y pastoreo en sistemas mixtos de San Luis.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "FAO-33 (Doorenbos y Kassam, 1979): factor de respuesta del rendimiento al agua Ky, ciclo completo",
+      "FAO Ecocrop: rangos de tolerancia por especie (a verificar)",
+      "INTA EEA San Luis: información regional de cultivos (a verificar)"
+    ],
+    "confidence": "media"
+  },
+  {
+    "id": "girasol",
+    "name": "Girasol",
+    "scientific_name": "Helianthus annuus",
+    "group": "oleaginosa",
+    "family": "asteracea",
+    "cycle": "estival",
+    "cycle_months": {
+      "min": 4,
+      "max": 5,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      9,
+      10,
+      11,
+      12
+    ],
+    "sowing_window": "Septiembre a diciembre.",
+    "default_calendar": {
+      "start_month": 10,
+      "end_month": 2
+    },
+    "water_requirement": "medio",
+    "drought_tolerance": "alto",
+    "heat_tolerance": "medio",
+    "frost_tolerance": "bajo",
+    "root_depth": "alto",
+    "organic_matter_contribution": "bajo",
+    "soil_cover": "bajo",
+    "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
+    "erosion_risk": "alto",
+    "forage_value": "bajo",
+    "main_use": [
+      "aceite",
+      "confitería"
+    ],
+    "relative_yield": "medio",
+    "relative_income": "medio",
+    "local_market": "alto",
+    "pest_risk": "alto",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [
+        "maiz",
+        "sorgo",
+        "trigo",
+        "cebada",
+        "cobertura_gramineas"
+      ],
+      "avoid_predecessors": [
+        "girasol",
+        "colza"
+      ],
+      "return_interval_years": {
+        "min": 3,
+        "max": 4,
+        "unit": "años"
+      },
+      "notes": "Esclerotinia y verticilosis obligan a no repetirlo antes de 3 o 4 años; la colza comparte esclerotinia."
+    },
+    "kc": {
+      "ini": 0.35,
+      "mid": 1.08,
+      "end": 0.35
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc (rango 1,00-1,15; se usa el punto medio)",
+    "ky": 0.95,
+    "ky_source": "FAO-33 (Doorenbos y Kassam, 1979): factor de respuesta del rendimiento al agua Ky, ciclo completo",
+    "agronomic_notes": "Raíz profunda: aprovecha agua de capas profundas y tolera sequía. Deja poco rastrojo: riesgo de erosión alto. Sufre daño por aves.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "FAO-33 (Doorenbos y Kassam, 1979): factor de respuesta del rendimiento al agua Ky, ciclo completo",
+      "FAO Ecocrop: rangos de tolerancia por especie (a verificar)",
+      "INTA EEA San Luis: información regional de cultivos (a verificar)"
+    ],
+    "confidence": "media"
+  },
+  {
+    "id": "mani",
+    "name": "Maní",
+    "scientific_name": "Arachis hypogaea",
+    "group": "oleaginosa",
+    "family": "leguminosa",
+    "cycle": "estival",
+    "cycle_months": {
+      "min": 5,
+      "max": 7,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      10,
+      11
+    ],
+    "sowing_window": "Octubre a noviembre; incluye el arrancado y secado en el lote.",
+    "default_calendar": {
+      "start_month": 10,
+      "end_month": 4
+    },
+    "water_requirement": "medio",
+    "drought_tolerance": "medio",
+    "heat_tolerance": "alto",
+    "frost_tolerance": "bajo",
+    "root_depth": "medio",
+    "organic_matter_contribution": "bajo",
+    "soil_cover": "bajo",
+    "fixes_nitrogen": true,
+    "nitrogen_fixation": "medio",
+    "erosion_risk": "alto",
+    "forage_value": "bajo",
+    "main_use": [
+      "grano confitería",
+      "aceite"
+    ],
+    "relative_yield": "medio",
+    "relative_income": "alto",
+    "local_market": "medio",
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [
+        "maiz",
+        "sorgo",
+        "trigo",
+        "cobertura_gramineas"
+      ],
+      "avoid_predecessors": [
+        "mani",
+        "soja"
+      ],
+      "return_interval_years": {
+        "min": 3,
+        "max": 4,
+        "unit": "años"
+      },
+      "notes": "El carbón del maní obliga a rotaciones largas; comparte patógenos con la soja."
+    },
+    "kc": {
+      "ini": 0.4,
+      "mid": 1.15,
+      "end": 0.6
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+    "ky": 0.7,
+    "ky_source": "FAO-33 (Doorenbos y Kassam, 1979): factor de respuesta del rendimiento al agua Ky, ciclo completo",
+    "agronomic_notes": "Se adapta a suelos arenosos del este de San Luis. El arrancado deja el suelo muy suelto y descubierto: es el cultivo con mayor riesgo de erosión eólica. Suele venderse con contrato a plantas procesadoras.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "FAO-33 (Doorenbos y Kassam, 1979): factor de respuesta del rendimiento al agua Ky, ciclo completo",
+      "FAO Ecocrop: rangos de tolerancia por especie (a verificar)",
+      "INTA EEA San Luis: información regional de cultivos (a verificar)"
+    ],
+    "confidence": "media"
+  },
+  {
+    "id": "alfalfa",
+    "name": "Alfalfa",
+    "scientific_name": "Medicago sativa",
+    "group": "forrajera",
+    "family": "leguminosa",
+    "cycle": "perenne",
+    "cycle_months": {
+      "min": 36,
+      "max": 60,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      3,
+      4,
+      9
+    ],
+    "sowing_window": "Otoño (marzo-abril) o primavera (septiembre).",
+    "default_calendar": {
+      "start_month": 4,
+      "end_month": 3
+    },
+    "water_requirement": "alto",
+    "drought_tolerance": "alto",
+    "heat_tolerance": "medio",
+    "frost_tolerance": "alto",
+    "root_depth": "alto",
+    "organic_matter_contribution": "alto",
+    "soil_cover": "alto",
+    "fixes_nitrogen": true,
+    "nitrogen_fixation": "alto",
+    "erosion_risk": "bajo",
+    "forage_value": "alto",
+    "main_use": [
+      "heno",
+      "pastoreo",
+      "semilla"
+    ],
+    "relative_yield": "medio",
+    "relative_income": "medio",
+    "local_market": "medio",
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [
+        "maiz",
+        "sorgo",
+        "trigo",
+        "avena",
+        "centeno"
+      ],
+      "avoid_predecessors": [
+        "alfalfa"
+      ],
+      "return_interval_years": {
+        "min": 4,
+        "max": 6,
+        "unit": "años"
+      },
+      "notes": "Autotoxicidad: no resembrar alfalfa sobre alfalfa sin varios años de intervalo."
+    },
+    "kc": {
+      "ini": 0.4,
+      "mid": 0.95,
+      "end": 0.9
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc (valor promedio con efecto de cortes)",
+    "ky": 1.1,
+    "ky_source": "FAO-33 (Doorenbos y Kassam, 1979): factor de respuesta del rendimiento al agua Ky, ciclo completo",
+    "agronomic_notes": "Raíz muy profunda: usa agua de capas que otros cultivos no alcanzan, pero consume mucho en el año. Fija nitrógeno y mejora la estructura del suelo. Base de los sistemas mixtos agrícola-ganaderos.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "FAO-33 (Doorenbos y Kassam, 1979): factor de respuesta del rendimiento al agua Ky, ciclo completo",
+      "FAO Ecocrop: rangos de tolerancia por especie (a verificar)",
+      "INTA EEA San Luis: información regional de cultivos (a verificar)"
+    ],
+    "confidence": "media"
+  },
+  {
+    "id": "vicia",
+    "name": "Vicia",
+    "scientific_name": "Vicia villosa",
+    "group": "cobertura",
+    "family": "leguminosa",
+    "cycle": "invernal",
+    "cycle_months": {
+      "min": 5,
+      "max": 7,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      3,
+      4,
+      5
+    ],
+    "sowing_window": "Marzo a mayo.",
+    "default_calendar": {
+      "start_month": 4,
+      "end_month": 9
+    },
+    "water_requirement": "bajo",
+    "drought_tolerance": "medio",
+    "heat_tolerance": "bajo",
+    "frost_tolerance": "alto",
+    "root_depth": "medio",
+    "organic_matter_contribution": "medio",
+    "soil_cover": "alto",
+    "fixes_nitrogen": true,
+    "nitrogen_fixation": "alto",
+    "erosion_risk": "bajo",
+    "forage_value": "medio",
+    "main_use": [
+      "cobertura",
+      "abono verde",
+      "forraje"
+    ],
+    "relative_yield": null,
+    "relative_income": null,
+    "local_market": null,
+    "pest_risk": "bajo",
+    "is_cover_crop": true,
+    "rotation": {
+      "good_predecessors": [
+        "soja",
+        "sorgo",
+        "girasol",
+        "maiz",
+        "mani"
+      ],
+      "avoid_predecessors": [
+        "vicia",
+        "cobertura_leguminosas"
+      ],
+      "return_interval_years": {
+        "min": 1,
+        "max": 2,
+        "unit": "años"
+      },
+      "notes": null
+    },
+    "kc": {
+      "ini": 0.3,
+      "mid": 0.9,
+      "end": 0.7
+    },
+    "kc_source": "Supuesto: la especie no figura en FAO-56 Tabla 12; se asimila a un cultivo similar (leguminosa de invierno; secado antes del pico de consumo)",
+    "ky": null,
+    "ky_source": null,
+    "agronomic_notes": "Cobertura de invierno que fija nitrógeno para el cultivo siguiente (especialmente maíz o sorgo). Hay que secarla a tiempo para no consumir el agua del barbecho.",
+    "sources": [
+      "Supuesto: la especie no figura en FAO-56 Tabla 12; se asimila a un cultivo similar",
+      "INTA: cultivos de cobertura en la región semiárida pampeana (a verificar)",
+      "FAO Ecocrop: rangos de tolerancia por especie (a verificar)"
+    ],
     "confidence": "baja"
   },
   {
     "id": "avena",
     "name": "Avena",
+    "scientific_name": "Avena sativa",
     "group": "forrajera",
+    "family": "graminea",
     "cycle": "invernal",
+    "cycle_months": {
+      "min": 5,
+      "max": 7,
+      "unit": "meses"
+    },
     "sowing_months": [
+      2,
       3,
-      4
+      4,
+      5
     ],
+    "sowing_window": "Febrero a mayo (verdeo de invierno).",
+    "default_calendar": {
+      "start_month": 3,
+      "end_month": 9
+    },
     "water_requirement": "medio",
     "drought_tolerance": "medio",
     "heat_tolerance": "bajo",
     "frost_tolerance": "alto",
+    "root_depth": "medio",
     "organic_matter_contribution": "medio",
     "soil_cover": "alto",
     "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
     "erosion_risk": "bajo",
     "forage_value": "alto",
-    "relative_income": "bajo",
-    "kc": null,
-    "source": "Muestra provisoria: valores cualitativos a completar y verificar contra FAO e INTA en la fase de base de cultivos.",
-    "confidence": "baja"
+    "main_use": [
+      "verdeo para pastoreo",
+      "grano",
+      "cobertura"
+    ],
+    "relative_yield": "medio",
+    "relative_income": "medio",
+    "local_market": "alto",
+    "pest_risk": "bajo",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [
+        "soja",
+        "girasol",
+        "mani",
+        "sorgo",
+        "maiz"
+      ],
+      "avoid_predecessors": [
+        "avena",
+        "trigo"
+      ],
+      "return_interval_years": {
+        "min": 1,
+        "max": 2,
+        "unit": "años"
+      },
+      "notes": "Comparte enfermedades foliares con otros cereales de invierno."
+    },
+    "kc": {
+      "ini": 0.3,
+      "mid": 1.15,
+      "end": 0.25
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+    "ky": 1.05,
+    "ky_source": "Supuesto: la especie no figura en FAO-33; se asimila a un cultivo similar (trigo de invierno)",
+    "agronomic_notes": "Verdeo de invierno clásico en sistemas ganaderos: el ingreso viene por la carne, no por el grano. Protege el suelo en invierno.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "Supuesto: la especie no figura en FAO-33; se asimila a un cultivo similar",
+      "FAO Ecocrop: rangos de tolerancia por especie (a verificar)",
+      "INTA EEA San Luis: información regional de cultivos (a verificar)"
+    ],
+    "confidence": "media"
   },
   {
     "id": "centeno",
-    "name": "Centeno (cobertura)",
-    "group": "cobertura",
+    "name": "Centeno",
+    "scientific_name": "Secale cereale",
+    "group": "forrajera",
+    "family": "graminea",
     "cycle": "invernal",
+    "cycle_months": {
+      "min": 5,
+      "max": 8,
+      "unit": "meses"
+    },
     "sowing_months": [
+      2,
       3,
-      4
+      4,
+      5
     ],
+    "sowing_window": "Febrero a mayo.",
+    "default_calendar": {
+      "start_month": 3,
+      "end_month": 9
+    },
     "water_requirement": "bajo",
     "drought_tolerance": "alto",
     "heat_tolerance": "bajo",
     "frost_tolerance": "alto",
-    "organic_matter_contribution": "medio",
+    "root_depth": "alto",
+    "organic_matter_contribution": "alto",
     "soil_cover": "alto",
     "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
     "erosion_risk": "bajo",
     "forage_value": "medio",
-    "relative_income": null,
-    "kc": null,
-    "source": "Muestra provisoria: valores cualitativos a completar y verificar contra FAO e INTA en la fase de base de cultivos.",
+    "main_use": [
+      "cobertura",
+      "verdeo",
+      "grano"
+    ],
+    "relative_yield": "medio",
+    "relative_income": "bajo",
+    "local_market": "bajo",
+    "pest_risk": "bajo",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [
+        "soja",
+        "girasol",
+        "mani",
+        "maiz",
+        "sorgo"
+      ],
+      "avoid_predecessors": [
+        "centeno",
+        "trigo",
+        "cebada"
+      ],
+      "return_interval_years": {
+        "min": 1,
+        "max": 2,
+        "unit": "años"
+      },
+      "notes": null
+    },
+    "kc": {
+      "ini": 0.3,
+      "mid": 1.1,
+      "end": 0.25
+    },
+    "kc_source": "Supuesto: la especie no figura en FAO-56 Tabla 12; se asimila a un cultivo similar (se asimila a cereales de invierno)",
+    "ky": 1.0,
+    "ky_source": "Supuesto: la especie no figura en FAO-33; se asimila a un cultivo similar (cereal de invierno rústico)",
+    "agronomic_notes": "El cereal de invierno más rústico y eficiente en el uso del agua. Muy usado en suelos arenosos de San Luis para frenar la erosión eólica. Mucha raíz y rastrojo.",
+    "sources": [
+      "Supuesto: la especie no figura en FAO-56 Tabla 12; se asimila a un cultivo similar",
+      "Supuesto: la especie no figura en FAO-33; se asimila a un cultivo similar",
+      "INTA: cultivos de cobertura en la región semiárida pampeana (a verificar)",
+      "FAO Ecocrop: rangos de tolerancia por especie (a verificar)"
+    ],
+    "confidence": "media"
+  },
+  {
+    "id": "mijo",
+    "name": "Mijo",
+    "scientific_name": "Panicum miliaceum",
+    "group": "cereal",
+    "family": "graminea",
+    "cycle": "estival",
+    "cycle_months": {
+      "min": 3,
+      "max": 4,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      11,
+      12,
+      1
+    ],
+    "sowing_window": "Noviembre a enero; ciclo muy corto.",
+    "default_calendar": {
+      "start_month": 12,
+      "end_month": 3
+    },
+    "water_requirement": "bajo",
+    "drought_tolerance": "alto",
+    "heat_tolerance": "alto",
+    "frost_tolerance": "bajo",
+    "root_depth": "medio",
+    "organic_matter_contribution": "medio",
+    "soil_cover": "medio",
+    "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
+    "erosion_risk": "medio",
+    "forage_value": "medio",
+    "main_use": [
+      "grano para aves",
+      "forraje"
+    ],
+    "relative_yield": "medio",
+    "relative_income": "bajo",
+    "local_market": "bajo",
+    "pest_risk": "bajo",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [
+        "soja",
+        "girasol",
+        "trigo",
+        "vicia",
+        "cobertura_leguminosas"
+      ],
+      "avoid_predecessors": [
+        "mijo"
+      ],
+      "return_interval_years": {
+        "min": 2,
+        "max": 3,
+        "unit": "años"
+      },
+      "notes": null
+    },
+    "kc": {
+      "ini": 0.3,
+      "mid": 1.0,
+      "end": 0.3
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+    "ky": 0.9,
+    "ky_source": "Supuesto: la especie no figura en FAO-33; se asimila a un cultivo similar (sorgo)",
+    "agronomic_notes": "Ciclo muy corto y bajo consumo de agua: sirve como cultivo de reemplazo o de siembra tardía. Mercado chico y poco transparente.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "Supuesto: la especie no figura en FAO-33; se asimila a un cultivo similar",
+      "FAO Ecocrop: rangos de tolerancia por especie (a verificar)"
+    ],
     "confidence": "baja"
   },
   {
-    "id": "vicia",
-    "name": "Vicia (cobertura)",
-    "group": "cobertura",
+    "id": "colza",
+    "name": "Colza",
+    "scientific_name": "Brassica napus",
+    "group": "oleaginosa",
+    "family": "brasicacea",
     "cycle": "invernal",
+    "cycle_months": {
+      "min": 6,
+      "max": 8,
+      "unit": "meses"
+    },
     "sowing_months": [
-      3,
-      4
+      4,
+      5
     ],
-    "water_requirement": "bajo",
+    "sowing_window": "Abril a mayo.",
+    "default_calendar": {
+      "start_month": 4,
+      "end_month": 11
+    },
+    "water_requirement": "medio",
     "drought_tolerance": "medio",
     "heat_tolerance": "bajo",
     "frost_tolerance": "medio",
+    "root_depth": "alto",
+    "organic_matter_contribution": "medio",
+    "soil_cover": "medio",
+    "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
+    "erosion_risk": "medio",
+    "forage_value": "bajo",
+    "main_use": [
+      "aceite",
+      "biodiésel"
+    ],
+    "relative_yield": "bajo",
+    "relative_income": "medio",
+    "local_market": "bajo",
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [
+        "soja",
+        "maiz",
+        "sorgo",
+        "cobertura_leguminosas"
+      ],
+      "avoid_predecessors": [
+        "colza",
+        "girasol"
+      ],
+      "return_interval_years": {
+        "min": 3,
+        "max": 4,
+        "unit": "años"
+      },
+      "notes": "Comparte esclerotinia con el girasol."
+    },
+    "kc": {
+      "ini": 0.35,
+      "mid": 1.08,
+      "end": 0.35
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc (rango 1,00-1,15; se usa el punto medio)",
+    "ky": 1.0,
+    "ky_source": "Supuesto: la especie no figura en FAO-33; se asimila a un cultivo similar",
+    "agronomic_notes": "Única crucífera del catálogo: rompe ciclos de enfermedades de cereales. En secano de San Luis su rendimiento es incierto. Necesita contrato de venta; acopio local limitado.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "Supuesto: la especie no figura en FAO-33; se asimila a un cultivo similar",
+      "FAO Ecocrop: rangos de tolerancia por especie (a verificar)"
+    ],
+    "confidence": "baja"
+  },
+  {
+    "id": "pastura_perenne",
+    "name": "Pastura perenne",
+    "scientific_name": "Mezcla según zona: p. ej. Eragrostis curvula, Digitaria eriantha, Medicago sativa",
+    "group": "forrajera",
+    "family": "mezcla",
+    "cycle": "perenne",
+    "cycle_months": {
+      "min": 48,
+      "max": 96,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      3,
+      4,
+      10,
+      11,
+      12
+    ],
+    "sowing_window": "Otoño para mezclas con alfalfa; primavera-verano para megatérmicas (pasto llorón, digitaria).",
+    "default_calendar": {
+      "start_month": 4,
+      "end_month": 3
+    },
+    "water_requirement": "medio",
+    "drought_tolerance": "alto",
+    "heat_tolerance": "alto",
+    "frost_tolerance": "medio",
+    "root_depth": "alto",
+    "organic_matter_contribution": "alto",
+    "soil_cover": "alto",
+    "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
+    "erosion_risk": "bajo",
+    "forage_value": "alto",
+    "main_use": [
+      "pastoreo",
+      "heno",
+      "recuperación de suelo"
+    ],
+    "relative_yield": "medio",
+    "relative_income": "medio",
+    "local_market": "alto",
+    "pest_risk": "bajo",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [
+        "sorgo",
+        "maiz",
+        "avena",
+        "centeno",
+        "cobertura_gramineas"
+      ],
+      "avoid_predecessors": [
+        "pastura_perenne",
+        "alfalfa"
+      ],
+      "return_interval_years": {
+        "min": 4,
+        "max": 8,
+        "unit": "años"
+      },
+      "notes": "Al romper la pastura conviene un cereal de verano que aproveche el nitrógeno liberado."
+    },
+    "kc": {
+      "ini": 0.4,
+      "mid": 0.95,
+      "end": 0.85
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc (pastura con pastoreo rotativo, rango 0,85-1,05)",
+    "ky": 1.0,
+    "ky_source": "Supuesto: la especie no figura en FAO-33; se asimila a un cultivo similar (forrajera perenne)",
+    "agronomic_notes": "Las megatérmicas (pasto llorón, digitaria) son centrales en la ganadería del semiárido de San Luis: cubren el suelo todo el año y recuperan materia orgánica. Si la mezcla incluye alfalfa u otra leguminosa, también aporta nitrógeno (no se computa por defecto).",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "Supuesto: la especie no figura en FAO-33; se asimila a un cultivo similar",
+      "INTA EEA San Luis: información regional de cultivos (a verificar)",
+      "FAO Ecocrop: rangos de tolerancia por especie (a verificar)"
+    ],
+    "confidence": "baja"
+  },
+  {
+    "id": "cobertura_leguminosas",
+    "name": "Cobertura de leguminosas",
+    "scientific_name": "Mezcla: Vicia villosa, Melilotus albus, Trifolium spp.",
+    "group": "cobertura",
+    "family": "leguminosa",
+    "cycle": "invernal",
+    "cycle_months": {
+      "min": 4,
+      "max": 6,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      3,
+      4,
+      5
+    ],
+    "sowing_window": "Marzo a mayo; secado en agosto-septiembre.",
+    "default_calendar": {
+      "start_month": 4,
+      "end_month": 9
+    },
+    "water_requirement": "bajo",
+    "drought_tolerance": "medio",
+    "heat_tolerance": "bajo",
+    "frost_tolerance": "alto",
+    "root_depth": "medio",
     "organic_matter_contribution": "medio",
     "soil_cover": "alto",
     "fixes_nitrogen": true,
+    "nitrogen_fixation": "alto",
     "erosion_risk": "bajo",
     "forage_value": "medio",
+    "main_use": [
+      "cobertura",
+      "abono verde"
+    ],
+    "relative_yield": null,
     "relative_income": null,
-    "kc": null,
-    "source": "Muestra provisoria: valores cualitativos a completar y verificar contra FAO e INTA en la fase de base de cultivos.",
+    "local_market": null,
+    "pest_risk": "bajo",
+    "is_cover_crop": true,
+    "rotation": {
+      "good_predecessors": [
+        "maiz",
+        "sorgo",
+        "soja",
+        "girasol",
+        "mani"
+      ],
+      "avoid_predecessors": [
+        "cobertura_leguminosas",
+        "vicia"
+      ],
+      "return_interval_years": {
+        "min": 1,
+        "max": 2,
+        "unit": "años"
+      },
+      "notes": null
+    },
+    "kc": {
+      "ini": 0.3,
+      "mid": 0.9,
+      "end": 0.7
+    },
+    "kc_source": "Supuesto: la especie no figura en FAO-56 Tabla 12; se asimila a un cultivo similar (leguminosa de invierno; secado antes del pico de consumo)",
+    "ky": null,
+    "ky_source": null,
+    "agronomic_notes": "Aporta nitrógeno y cobertura invernal. En el semiárido hay que secarla temprano (fin de invierno) para que el perfil se recargue antes del cultivo de verano.",
+    "sources": [
+      "Supuesto: la especie no figura en FAO-56 Tabla 12; se asimila a un cultivo similar",
+      "INTA: cultivos de cobertura en la región semiárida pampeana (a verificar)"
+    ],
     "confidence": "baja"
+  },
+  {
+    "id": "cobertura_gramineas",
+    "name": "Cobertura de gramíneas",
+    "scientific_name": "Centeno, avena o triticale como cultivo de servicio",
+    "group": "cobertura",
+    "family": "graminea",
+    "cycle": "invernal",
+    "cycle_months": {
+      "min": 4,
+      "max": 6,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      3,
+      4,
+      5
+    ],
+    "sowing_window": "Marzo a mayo; secado en agosto-septiembre.",
+    "default_calendar": {
+      "start_month": 4,
+      "end_month": 8
+    },
+    "water_requirement": "bajo",
+    "drought_tolerance": "alto",
+    "heat_tolerance": "bajo",
+    "frost_tolerance": "alto",
+    "root_depth": "alto",
+    "organic_matter_contribution": "alto",
+    "soil_cover": "alto",
+    "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
+    "erosion_risk": "bajo",
+    "forage_value": "medio",
+    "main_use": [
+      "cobertura",
+      "control de erosión eólica",
+      "control de malezas"
+    ],
+    "relative_yield": null,
+    "relative_income": null,
+    "local_market": null,
+    "pest_risk": "bajo",
+    "is_cover_crop": true,
+    "rotation": {
+      "good_predecessors": [
+        "soja",
+        "girasol",
+        "mani",
+        "sorgo"
+      ],
+      "avoid_predecessors": [
+        "cobertura_gramineas"
+      ],
+      "return_interval_years": {
+        "min": 1,
+        "max": 2,
+        "unit": "años"
+      },
+      "notes": "Antes de un cereal de verano puede inmovilizar nitrógeno: mejor antes de soja, girasol o maní."
+    },
+    "kc": {
+      "ini": 0.3,
+      "mid": 0.9,
+      "end": 0.7
+    },
+    "kc_source": "Supuesto: la especie no figura en FAO-56 Tabla 12; se asimila a un cultivo similar (gramínea de invierno; secado antes del pico de consumo)",
+    "ky": null,
+    "ky_source": null,
+    "agronomic_notes": "La herramienta más usada contra la erosión eólica en suelos arenosos. Mucha biomasa y raíces. Consume agua del barbecho: el momento de secado es la decisión clave.",
+    "sources": [
+      "Supuesto: la especie no figura en FAO-56 Tabla 12; se asimila a un cultivo similar",
+      "INTA: cultivos de cobertura en la región semiárida pampeana (a verificar)"
+    ],
+    "confidence": "media"
   }
 ]

@@ -43,3 +43,23 @@ def client(repo, offline_power):
     app.dependency_overrides[get_repository] = lambda: repo
     app.dependency_overrides[get_power_service] = lambda: offline_power
     return TestClient(app)
+
+
+@pytest.fixture
+def rotation_service(repo, offline_power):
+    from app.services.engine.service import RotationService
+
+    return RotationService(repo, offline_power, "https://power.larc.nasa.gov/api/temporal/daily/point")
+
+
+@pytest.fixture
+def crops(repo):
+    return repo.crops
+
+
+@pytest.fixture
+def climate():
+    """Clima sintético tipo este de San Luis: ~700 mm de lluvia concentrada en verano, ET0 ~1380 mm."""
+    from app.tests.helpers import make_climate
+
+    return make_climate()

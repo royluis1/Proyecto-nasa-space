@@ -62,14 +62,27 @@ CLIMATE = {
 }
 
 COMPARE = {
-    "todas": {"summary": "Todas las rotaciones del lote", "value": {"field_id": "campo-este"}},
-    "con_prioridades": {
-        "summary": "Con prioridades propias",
+    "todas": {"summary": "Todas las estrategias, prioridades guardadas o por defecto", "value": {"field_id": "campo-este"}},
+    "prioriza_agua_escenario_seco": {
+        "summary": "Prioriza agua, con escenario seco y caluroso",
+        "value": {
+            "field_id": "campo-centro",
+            "priorities": {"water": 9, "soil": 6, "risk": 7, "income": 4, "sustainability": 5},
+            "scenario": {"id": "seco-20-calor-1", "name": "Lluvia -20 % y +1 °C", "rain_delta_pct": -20, "temp_delta_c": 1},
+        },
+    },
+    "con_sensores_e_historial": {
+        "summary": "Con humedad SMAP, NDVI e historial de monocultivo",
         "value": {
             "field_id": "campo-este",
-            "rotation_ids": ["campo-este-actual", "campo-este-agua", "campo-este-suelo"],
-            "priorities": {"water": 9, "soil": 3, "risk": 5, "income": 5, "sustainability": 3},
+            "history": ["maiz", "soja", "soja", "soja"],
+            "soil_moisture": {"product": "SMAP_L3", "anomaly_pct": -25, "period": "2025-09 a 2025-11"},
+            "vegetation": {"bare_soil_fraction": 0.55, "threshold": 0.3, "period": "2021-2025"},
         },
+    },
+    "algunas_estrategias": {
+        "summary": "Solo algunas estrategias (la actual se incluye siempre)",
+        "value": {"field_id": "campo-conlara", "strategies": ["conservadora", "agua", "rentabilidad"]},
     },
 }
 
@@ -79,8 +92,10 @@ SCENARIOS = {
         "value": {
             "field_id": "campo-centro",
             "scenarios": [
+                {"id": "base", "name": "Clima del período"},
                 {"id": "seco-20", "name": "Lluvia -20%", "rain_delta_pct": -20},
                 {"id": "calor-1", "name": "+1 °C", "temp_delta_c": 1},
+                {"id": "anio-seco", "name": "Año más seco observado", "dry_year": True},
             ],
         },
     }

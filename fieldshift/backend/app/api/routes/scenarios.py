@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Body, Depends
 
 from app.api import examples
-from app.api.deps import get_repository
-from app.models.enums import DataStatus
+from app.api.deps import get_rotation_service
 from app.schemas.common import ApiResponse, ErrorResponse, ResponseMeta
+from app.schemas.rotation import CompareRequest
 from app.schemas.scenario import ScenarioRequest, ScenarioResult
-from app.services.repository import Repository
+from app.services.engine.service import RotationService
 
 router = APIRouter(tags=["escenarios"])
 
@@ -18,15 +18,21 @@ router = APIRouter(tags=["escenarios"])
 )
 def run_scenarios(
     req: ScenarioRequest = Body(openapi_examples=examples.SCENARIOS),
-    repo: Repository = Depends(get_repository),
+    service: RotationService = Depends(get_rotation_service),
 ) -> ApiResponse[list[ScenarioResult]]:
-    """Recalcula el ranking bajo cada escenario (lluvia -50 a +30 %, temperatura 0 a +3 °C).
-
-    **Por ahora devuelve rankings vacíos**: un ranking simulado que no cambia con el
-    escenario sería engañoso. Se implementa en la fase de escenarios.
-    """
-    repo.get_field(req.field_id)
+    """Recalcula el ranking bajo cada escenario (lluvia -50 a +30 %, temperatura 0 a +3 °C,
+    año seco análogo, riego). Las rotaciones son las mismas en todos los escenarios, así se
+    pueden comparar. Los escenarios son supuestos de sensibilidad, no proyecciones climáticas."""
+    results = []
+    status = None
+    warnings: list[str] = []
+    for scenario in req.scenarios:
+        result, climate = service.compare(CompareRequest(field_id=req.field_id, priorities=req.priorities), scenario)
+        status = climate.status
+        warnings += result.warnings
+        results.append(ScenarioResult(scenario=scenario, recommended_rotation_id=result.recommended_rotation_id,
+                                      ranking=result.ranking, warnings=result.warnings))
     return ApiResponse(
-        data=[ScenarioResult(scenario=s) for s in req.scenarios],
-        meta=ResponseMeta(data_status=DataStatus.MOCK, warnings=["Simulación de escenarios pendiente."]),
+        data=results,
+        meta=ResponseMeta(data_status=status, origin_label=status.origin_label, warnings=list(dict.fromkeys(warnings))),
     )

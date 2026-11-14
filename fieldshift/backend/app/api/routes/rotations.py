@@ -1,80 +1,58 @@
 from fastapi import APIRouter, Body, Depends
 
 from app.api import examples
-from app.api.deps import get_repository
-from app.models.enums import DataStatus, RotationStrategy
+from app.api.deps import get_rotation_service
 from app.schemas.common import ApiResponse, ErrorResponse, ResponseMeta
-from app.schemas.rotation import CompareRequest, CompareResult, Rotation, RotationDetail
-from app.services.mock_scoring import MOCK_WARNING, mock_ranking
-from app.services.repository import Repository
-from app.utils.exceptions import InvalidInputError
+from app.schemas.rotation import CompareRequest, CompareResult, RotationEvaluation
+from app.services.engine.service import RotationService
 
 router = APIRouter(tags=["rotaciones"])
-
-MIN_ROTATIONS = 3
-
-
-def _select(repo: Repository, req: CompareRequest) -> list[Rotation]:
-    available = {r.id: r for r in repo.rotations_for_field(req.field_id)}
-    ids = req.rotation_ids or list(available)
-    foreign = [i for i in ids if i not in available]
-    if foreign:
-        raise InvalidInputError("Hay rotaciones que no pertenecen a este lote.", {"rotation_ids": foreign})
-    selected = [available[i] for i in dict.fromkeys(ids)]  # sin duplicados, mismo orden
-    if len(selected) < MIN_ROTATIONS:
-        raise InvalidInputError(f"Se necesitan al menos {MIN_ROTATIONS} rotaciones para comparar.")
-    if not any(r.strategy == RotationStrategy.ACTUAL for r in selected):
-        raise InvalidInputError("La comparación debe incluir la rotación actual como línea base.")
-    return selected
 
 
 @router.post(
     "/rotations/compare",
     response_model=ApiResponse[CompareResult],
     summary="Comparar rotaciones de un lote",
-    responses={400: {"model": ErrorResponse}, 404: {"model": ErrorResponse}, 422: {"model": ErrorResponse}},
+    responses={
+        400: {"model": ErrorResponse, "description": "Rotación, historial o período inválido."},
+        404: {"model": ErrorResponse},
+        422: {"model": ErrorResponse},
+        503: {"model": ErrorResponse, "description": "Sin datos climáticos."},
+    },
 )
 def compare_rotations(
     req: CompareRequest = Body(openapi_examples=examples.COMPARE),
-    repo: Repository = Depends(get_repository),
+    service: RotationService = Depends(get_rotation_service),
 ) -> ApiResponse[CompareResult]:
-    """Ranking de al menos 3 rotaciones, incluida la actual.
+    """Genera y compara al menos 3 rotaciones, siempre con la actual como línea base.
 
-    Si no se envían prioridades se usan las guardadas o, si no hay, las por defecto.
-    **Por ahora los puntajes son simulados** (`data_status = mock`).
+    Estrategias: actual, conservadora, diversificada, ahorro de agua, salud del suelo,
+    rentabilidad y mixta recomendada. Cada una trae puntaje total (0-100) con rango de
+    incertidumbre, desglose A/S/R/I/E con bonificaciones y penalizaciones, explicación en
+    lenguaje simple, riesgos, supuestos, fuentes, nivel de confianza y advertencias.
+
+    Clima: NASA POWER de los últimos 10 años completos (con caché y fallback a muestra).
+    Si no se envían prioridades, se usan las guardadas o, si no hay, las por defecto.
     """
-    rotations = _select(repo, req)
-    stored = repo.get_priorities(req.field_id)
-    priorities = req.priorities or stored.priorities
-    warnings = [MOCK_WARNING]
-    if req.priorities is None and stored.is_default:
-        warnings.append("Prioridades por defecto (estimado): el productor no las cargó.")
+    result, climate = service.compare(req)
     return ApiResponse(
-        data=CompareResult(
-            field_id=req.field_id,
-            priorities=priorities,
-            ranking=mock_ranking(rotations, priorities, req.scenario_id),
-        ),
-        meta=ResponseMeta(data_status=DataStatus.MOCK, warnings=warnings),
+        data=result,
+        meta=ResponseMeta(data_status=climate.status, origin_label=climate.status.origin_label, warnings=result.warnings),
     )
 
 
 @router.get(
     "/rotations/{rotation_id}",
-    response_model=ApiResponse[RotationDetail],
+    response_model=ApiResponse[RotationEvaluation],
     summary="Detalle de una rotación",
-    responses={404: {"model": ErrorResponse}},
+    responses={404: {"model": ErrorResponse}, 503: {"model": ErrorResponse}},
 )
-def get_rotation(rotation_id: str, repo: Repository = Depends(get_repository)) -> ApiResponse[RotationDetail]:
-    """Rotación con su puntaje, recomendación, advertencias y supuestos.
-
-    Por ahora: puntaje simulado y recomendación vacía (se generan en fases posteriores).
-    """
-    rotation = repo.get_rotation(rotation_id)
-    siblings = repo.rotations_for_field(rotation.field_id)
-    ranking = mock_ranking(siblings, repo.get_priorities(rotation.field_id).priorities)
-    score = next(s for s in ranking if s.rotation_id == rotation_id)
+def get_rotation(rotation_id: str, service: RotationService = Depends(get_rotation_service)) -> ApiResponse[RotationEvaluation]:
+    """Rotación declarada o generada (por ejemplo `campo-este-suelo`) con su perfil, puntaje,
+    explicación, riesgos y supuestos, calculada con las prioridades guardadas del lote."""
+    evaluation, result, climate = service.evaluation(rotation_id)
     return ApiResponse(
-        data=RotationDetail(rotation=rotation, score=score, recommendation=None, risk_flags=[], assumptions=[]),
-        meta=ResponseMeta(data_status=DataStatus.MOCK, warnings=[MOCK_WARNING]),
+        data=evaluation,
+        meta=ResponseMeta(data_status=climate.status, origin_label=climate.status.origin_label,
+                          warnings=[*result.warnings, *evaluation.warnings]),
     )

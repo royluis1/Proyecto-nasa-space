@@ -7,8 +7,8 @@ Cada fase se hace en un bloque separado y se aprueba antes de pasar a la siguien
 | 1 | Arquitectura y modelo de datos | Hecho (ver architecture.md) |
 | 2 | Backend base y API | Hecho |
 | 3 | Integración NASA: POWER en vivo + NDVI, SMAP y SRTM offline (Módulo 3) | POWER hecho; NDVI, SMAP y SRTM pendientes |
-| 4 | Base de datos de cultivos | Provisoria |
-| 5 | Motor de rotaciones y puntaje | Pendiente |
+| 4 | Base de datos de cultivos | Hecho: 16 cultivos editables (valores cualitativos a validar con INTA) |
+| 5 | Motor de rotaciones y puntaje | Hecho (ver scoring.md); escenarios de clima incluidos |
 | 6 | Frontend y mapa | Pendiente |
 | 7 | Dashboard comparativo | Pendiente |
 | 8 | Calendario, escenarios y monitor de campaña (Módulo 2) | Pendiente |

@@ -3,16 +3,9 @@
 from pydantic import BaseModel, Field
 
 from app.schemas.priority import Priorities
-from app.schemas.rotation import RotationScore
+from app.schemas.rotation import RotationScore, ScenarioInput
 
-
-class Scenario(BaseModel):
-    id: str = Field(examples=["seco-20"])
-    name: str = Field(examples=["Lluvia -20%"])
-    rain_delta_pct: float = Field(default=0, ge=-50, le=30)
-    temp_delta_c: float = Field(default=0, ge=0, le=3)
-    dry_year: bool = Field(default=False, description="Usar el año más seco observado como análogo.")
-    irrigation: bool = False
+Scenario = ScenarioInput
 
 
 class ScenarioRequest(BaseModel):
@@ -23,4 +16,6 @@ class ScenarioRequest(BaseModel):
 
 class ScenarioResult(BaseModel):
     scenario: Scenario
+    recommended_rotation_id: str | None = None
     ranking: list[RotationScore] = []
+    warnings: list[str] = []

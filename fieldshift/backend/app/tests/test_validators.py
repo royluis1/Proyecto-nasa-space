@@ -55,11 +55,10 @@ def test_rotacion_con_paso_fuera_de_duracion():
 
 
 def test_datos_de_muestra_cargan(repo):
-    assert len(repo.list_crops()) >= 8
+    assert len(repo.list_crops()) >= 12
     assert {"campo-este", "campo-centro", "campo-conlara"} <= set(repo.fields)
     for field_id in repo.fields:
-        rots = repo.rotations_for_field(field_id)
-        assert len(rots) >= 3
+        rots = repo.rotations_for_field(field_id)  # las demás rotaciones las genera el motor
         assert sum(r.strategy == "actual" for r in rots) == 1
     crop_ids = set(repo.crops)
     for rot in repo.rotations.values():
@@ -68,4 +67,4 @@ def test_datos_de_muestra_cargan(repo):
 
 def test_cultivos_tienen_fuente_y_confianza(repo):
     for crop in repo.list_crops():
-        assert crop.source and crop.confidence
+        assert crop.sources and crop.confidence

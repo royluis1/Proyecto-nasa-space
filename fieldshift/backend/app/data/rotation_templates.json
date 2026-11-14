@@ -1,0 +1,723 @@
+[
+  {
+    "id": "agua-riego",
+    "strategy": "agua",
+    "name": "Sorgo – trigo con riego complementario",
+    "when": {
+      "zones": [
+        "semiarido",
+        "subhumedo"
+      ],
+      "irrigated": [
+        true
+      ]
+    },
+    "duration_years": 2,
+    "steps": [
+      {
+        "crop_id": "sorgo",
+        "year": 1,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "trigo",
+        "year": 2,
+        "start_month": 6,
+        "end_month": 12
+      }
+    ],
+    "rationale": "Con riego, reemplaza el maíz por sorgo (menor demanda) y usa un cereal de invierno que consume en la época de menor ET0, para bajar el volumen de riego.",
+    "management": [
+      "ajustar la lámina de riego al sorgo, que necesita menos agua que el maíz"
+    ]
+  },
+  {
+    "id": "agua-semiarido",
+    "strategy": "agua",
+    "name": "Sorgo – girasol – mijo con barbechos largos",
+    "when": {
+      "zones": [
+        "semiarido"
+      ],
+      "irrigated": [
+        false
+      ]
+    },
+    "duration_years": 3,
+    "steps": [
+      {
+        "crop_id": "sorgo",
+        "year": 1,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "girasol",
+        "year": 2,
+        "start_month": 10,
+        "end_month": 2
+      },
+      {
+        "crop_id": "mijo",
+        "year": 3,
+        "start_month": 12,
+        "end_month": 3
+      }
+    ],
+    "rationale": "Usa los cultivos de verano más tolerantes a sequía del catálogo, uno de ciclo muy corto, y deja barbechos largos para acumular agua en el perfil.",
+    "management": [
+      "controlar malezas durante el barbecho para que no consuman el agua almacenada"
+    ]
+  },
+  {
+    "id": "agua-subhumedo",
+    "strategy": "agua",
+    "name": "Sorgo – girasol – soja",
+    "when": {
+      "zones": [
+        "subhumedo"
+      ],
+      "irrigated": [
+        false,
+        true
+      ]
+    },
+    "duration_years": 3,
+    "steps": [
+      {
+        "crop_id": "sorgo",
+        "year": 1,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "girasol",
+        "year": 2,
+        "start_month": 10,
+        "end_month": 2
+      },
+      {
+        "crop_id": "soja",
+        "year": 3,
+        "start_month": 11,
+        "end_month": 4
+      }
+    ],
+    "rationale": "Reemplaza el maíz por sorgo y suma girasol (raíz profunda) para bajar la demanda hídrica sin dejar de producir grano.",
+    "management": [
+      "controlar malezas durante los barbechos para que no consuman el agua almacenada"
+    ]
+  },
+  {
+    "id": "suelo-semiarido",
+    "strategy": "suelo",
+    "name": "Pastura perenne (3 años) – cobertura – sorgo",
+    "when": {
+      "zones": [
+        "semiarido"
+      ],
+      "irrigated": [
+        false
+      ]
+    },
+    "duration_years": 4,
+    "steps": [
+      {
+        "crop_id": "pastura_perenne",
+        "year": 1,
+        "start_month": 4,
+        "end_month": 3
+      },
+      {
+        "crop_id": "pastura_perenne",
+        "year": 2,
+        "start_month": 4,
+        "end_month": 3
+      },
+      {
+        "crop_id": "pastura_perenne",
+        "year": 3,
+        "start_month": 4,
+        "end_month": 3
+      },
+      {
+        "crop_id": "cobertura_gramineas",
+        "year": 4,
+        "start_month": 4,
+        "end_month": 8
+      },
+      {
+        "crop_id": "sorgo",
+        "year": 4,
+        "start_month": 11,
+        "end_month": 4
+      }
+    ],
+    "rationale": "Rotación agrícola-ganadera: la pastura perenne cubre el suelo todo el año y recupera materia orgánica; al romperla, el sorgo aprovecha el nitrógeno liberado.",
+    "management": [
+      "hacienda propia o venta de forraje para que la pastura genere ingreso",
+      "secar la cobertura a tiempo (agosto-septiembre) para que el perfil se recargue antes del cultivo de verano"
+    ]
+  },
+  {
+    "id": "suelo-general",
+    "strategy": "suelo",
+    "name": "Cobertura – soja – vicia – maíz",
+    "when": {
+      "zones": [
+        "subhumedo"
+      ],
+      "irrigated": [
+        false,
+        true
+      ]
+    },
+    "duration_years": 2,
+    "steps": [
+      {
+        "crop_id": "cobertura_gramineas",
+        "year": 1,
+        "start_month": 4,
+        "end_month": 8
+      },
+      {
+        "crop_id": "soja",
+        "year": 1,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "cobertura_leguminosas",
+        "year": 2,
+        "start_month": 4,
+        "end_month": 9
+      },
+      {
+        "crop_id": "maiz",
+        "year": 2,
+        "start_month": 10,
+        "end_month": 3
+      }
+    ],
+    "rationale": "Cubre el suelo en los dos inviernos: la gramínea antes de la soja (frena la erosión) y la leguminosa antes del maíz (aporta nitrógeno).",
+    "management": [
+      "secar la cobertura a tiempo (agosto-septiembre) para que el perfil se recargue antes del cultivo de verano",
+      "conseguir semilla de cobertura y prever el costo de implantación y secado"
+    ]
+  },
+  {
+    "id": "div-semiarido",
+    "strategy": "diversificada",
+    "name": "Sorgo – avena – girasol – vicia – mijo",
+    "when": {
+      "zones": [
+        "semiarido"
+      ],
+      "irrigated": [
+        false
+      ]
+    },
+    "duration_years": 3,
+    "steps": [
+      {
+        "crop_id": "sorgo",
+        "year": 1,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "avena",
+        "year": 2,
+        "start_month": 4,
+        "end_month": 9
+      },
+      {
+        "crop_id": "girasol",
+        "year": 2,
+        "start_month": 10,
+        "end_month": 2
+      },
+      {
+        "crop_id": "cobertura_leguminosas",
+        "year": 3,
+        "start_month": 4,
+        "end_month": 9
+      },
+      {
+        "crop_id": "mijo",
+        "year": 3,
+        "start_month": 12,
+        "end_month": 3
+      }
+    ],
+    "rationale": "Cinco cultivos de tres familias, con ciclos cortos y tolerantes a sequía; el verdeo de avena integra la ganadería.",
+    "management": [
+      "planificar cinco cultivos distintos (siembras, insumos y maquinaria)"
+    ]
+  },
+  {
+    "id": "div-general",
+    "strategy": "diversificada",
+    "name": "Soja – trigo – vicia – girasol – maíz",
+    "when": {
+      "zones": [
+        "subhumedo"
+      ],
+      "irrigated": [
+        false,
+        true
+      ]
+    },
+    "duration_years": 4,
+    "steps": [
+      {
+        "crop_id": "soja",
+        "year": 1,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "trigo",
+        "year": 2,
+        "start_month": 6,
+        "end_month": 12
+      },
+      {
+        "crop_id": "cobertura_leguminosas",
+        "year": 3,
+        "start_month": 4,
+        "end_month": 9
+      },
+      {
+        "crop_id": "girasol",
+        "year": 3,
+        "start_month": 10,
+        "end_month": 2
+      },
+      {
+        "crop_id": "maiz",
+        "year": 4,
+        "start_month": 10,
+        "end_month": 3
+      }
+    ],
+    "rationale": "Cinco cultivos de tres familias, alternando verano e invierno; separa el girasol 4 años y antecede el maíz con un cultivo de raíz profunda.",
+    "management": [
+      "planificar una secuencia de cuatro años",
+      "secar la cobertura a tiempo (agosto-septiembre) para que el perfil se recargue antes del cultivo de verano"
+    ]
+  },
+  {
+    "id": "rent-riego",
+    "strategy": "rentabilidad",
+    "name": "Maíz – maní – trigo/soja de segunda",
+    "when": {
+      "zones": [
+        "semiarido",
+        "subhumedo"
+      ],
+      "irrigated": [
+        true
+      ]
+    },
+    "duration_years": 3,
+    "steps": [
+      {
+        "crop_id": "maiz",
+        "year": 1,
+        "start_month": 9,
+        "end_month": 2
+      },
+      {
+        "crop_id": "mani",
+        "year": 2,
+        "start_month": 10,
+        "end_month": 4
+      },
+      {
+        "crop_id": "trigo",
+        "year": 3,
+        "start_month": 6,
+        "end_month": 11
+      },
+      {
+        "crop_id": "soja",
+        "year": 3,
+        "start_month": 12,
+        "end_month": 4
+      }
+    ],
+    "rationale": "Con riego, prioriza los cultivos de mayor ingreso relativo e incluye un doble cultivo trigo/soja.",
+    "management": [
+      "asegurar un contrato de venta para el maní",
+      "sembrar la soja de segunda apenas se cosecha el trigo"
+    ]
+  },
+  {
+    "id": "rent-semiarido",
+    "strategy": "rentabilidad",
+    "name": "Maní – maíz tardío – girasol",
+    "when": {
+      "zones": [
+        "semiarido"
+      ],
+      "irrigated": [
+        false
+      ]
+    },
+    "duration_years": 3,
+    "steps": [
+      {
+        "crop_id": "mani",
+        "year": 1,
+        "start_month": 10,
+        "end_month": 4
+      },
+      {
+        "crop_id": "maiz",
+        "year": 2,
+        "start_month": 12,
+        "end_month": 5
+      },
+      {
+        "crop_id": "girasol",
+        "year": 3,
+        "start_month": 10,
+        "end_month": 2
+      }
+    ],
+    "rationale": "Prioriza cultivos de alto ingreso relativo adaptados a suelos arenosos (maní) y siembra el maíz tarde para evitar la sequía en floración.",
+    "management": [
+      "asegurar un contrato de venta para el maní",
+      "cubrir el suelo después del arrancado del maní, que lo deja muy expuesto a la erosión"
+    ]
+  },
+  {
+    "id": "rent-subhumedo",
+    "strategy": "rentabilidad",
+    "name": "Soja – trigo/soja de segunda – maíz",
+    "when": {
+      "zones": [
+        "subhumedo"
+      ],
+      "irrigated": [
+        false,
+        true
+      ]
+    },
+    "duration_years": 3,
+    "steps": [
+      {
+        "crop_id": "soja",
+        "year": 1,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "trigo",
+        "year": 2,
+        "start_month": 6,
+        "end_month": 11
+      },
+      {
+        "crop_id": "soja",
+        "year": 2,
+        "start_month": 12,
+        "end_month": 4
+      },
+      {
+        "crop_id": "maiz",
+        "year": 3,
+        "start_month": 10,
+        "end_month": 3
+      }
+    ],
+    "rationale": "Secuencia agrícola de alto ingreso con un doble cultivo trigo/soja.",
+    "management": [
+      "verificar el agua del perfil a la siembra del trigo: el doble cultivo solo conviene si hay agua almacenada"
+    ]
+  },
+  {
+    "id": "mixta-sa-1",
+    "strategy": "mixta",
+    "name": "Sorgo – vicia – girasol – soja",
+    "when": {
+      "zones": [
+        "semiarido"
+      ],
+      "irrigated": [
+        false
+      ]
+    },
+    "duration_years": 3,
+    "steps": [
+      {
+        "crop_id": "sorgo",
+        "year": 1,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "cobertura_leguminosas",
+        "year": 2,
+        "start_month": 4,
+        "end_month": 8
+      },
+      {
+        "crop_id": "girasol",
+        "year": 2,
+        "start_month": 10,
+        "end_month": 2
+      },
+      {
+        "crop_id": "soja",
+        "year": 3,
+        "start_month": 11,
+        "end_month": 4
+      }
+    ],
+    "rationale": "Combina un cultivo tolerante a sequía, una cobertura corta de leguminosas y un cultivo de raíz profunda.",
+    "management": [
+      "secar la cobertura a tiempo (agosto-septiembre) para que el perfil se recargue antes del cultivo de verano"
+    ]
+  },
+  {
+    "id": "mixta-sa-2",
+    "strategy": "mixta",
+    "name": "Cobertura – girasol – vicia – sorgo – mijo",
+    "when": {
+      "zones": [
+        "semiarido"
+      ],
+      "irrigated": [
+        false
+      ]
+    },
+    "duration_years": 3,
+    "steps": [
+      {
+        "crop_id": "cobertura_gramineas",
+        "year": 1,
+        "start_month": 4,
+        "end_month": 8
+      },
+      {
+        "crop_id": "girasol",
+        "year": 1,
+        "start_month": 10,
+        "end_month": 2
+      },
+      {
+        "crop_id": "cobertura_leguminosas",
+        "year": 2,
+        "start_month": 4,
+        "end_month": 8
+      },
+      {
+        "crop_id": "sorgo",
+        "year": 2,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "mijo",
+        "year": 3,
+        "start_month": 12,
+        "end_month": 3
+      }
+    ],
+    "rationale": "Cobertura en los dos inviernos con cultivos de verano tolerantes a sequía.",
+    "management": [
+      "secar la cobertura a tiempo (agosto-septiembre) para que el perfil se recargue antes del cultivo de verano",
+      "conseguir semilla de cobertura y prever el costo de implantación y secado"
+    ]
+  },
+  {
+    "id": "mixta-sa-3",
+    "strategy": "mixta",
+    "name": "Verdeo de avena – sorgo – girasol – soja",
+    "when": {
+      "zones": [
+        "semiarido"
+      ],
+      "irrigated": [
+        false
+      ]
+    },
+    "duration_years": 3,
+    "steps": [
+      {
+        "crop_id": "avena",
+        "year": 1,
+        "start_month": 4,
+        "end_month": 9
+      },
+      {
+        "crop_id": "sorgo",
+        "year": 1,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "girasol",
+        "year": 2,
+        "start_month": 10,
+        "end_month": 2
+      },
+      {
+        "crop_id": "soja",
+        "year": 3,
+        "start_month": 11,
+        "end_month": 4
+      }
+    ],
+    "rationale": "Integra ganadería con un verdeo de invierno y dos cultivos de verano tolerantes a sequía.",
+    "management": [
+      "tener hacienda para aprovechar el verdeo"
+    ]
+  },
+  {
+    "id": "mixta-sh-1",
+    "strategy": "mixta",
+    "name": "Cobertura – soja – vicia – sorgo",
+    "when": {
+      "zones": [
+        "subhumedo"
+      ],
+      "irrigated": [
+        false,
+        true
+      ]
+    },
+    "duration_years": 2,
+    "steps": [
+      {
+        "crop_id": "cobertura_gramineas",
+        "year": 1,
+        "start_month": 4,
+        "end_month": 8
+      },
+      {
+        "crop_id": "soja",
+        "year": 1,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "cobertura_leguminosas",
+        "year": 2,
+        "start_month": 4,
+        "end_month": 8
+      },
+      {
+        "crop_id": "sorgo",
+        "year": 2,
+        "start_month": 11,
+        "end_month": 4
+      }
+    ],
+    "rationale": "Coberturas cortas en invierno y sorgo en lugar de maíz para bajar la demanda hídrica.",
+    "management": [
+      "secar la cobertura a tiempo (agosto-septiembre) para que el perfil se recargue antes del cultivo de verano",
+      "conseguir semilla de cobertura y prever el costo de implantación y secado"
+    ]
+  },
+  {
+    "id": "mixta-sh-2",
+    "strategy": "mixta",
+    "name": "Trigo/soja de segunda – vicia – maíz",
+    "when": {
+      "zones": [
+        "subhumedo"
+      ],
+      "irrigated": [
+        false,
+        true
+      ]
+    },
+    "duration_years": 2,
+    "steps": [
+      {
+        "crop_id": "trigo",
+        "year": 1,
+        "start_month": 6,
+        "end_month": 11
+      },
+      {
+        "crop_id": "soja",
+        "year": 1,
+        "start_month": 12,
+        "end_month": 4
+      },
+      {
+        "crop_id": "cobertura_leguminosas",
+        "year": 2,
+        "start_month": 4,
+        "end_month": 9
+      },
+      {
+        "crop_id": "maiz",
+        "year": 2,
+        "start_month": 10,
+        "end_month": 3
+      }
+    ],
+    "rationale": "Doble cultivo para el ingreso y una leguminosa antes del maíz para aportar nitrógeno.",
+    "management": [
+      "secar la cobertura a tiempo (agosto-septiembre) para que el perfil se recargue antes del cultivo de verano",
+      "verificar el agua del perfil a la siembra del trigo: el doble cultivo solo conviene si hay agua almacenada"
+    ]
+  },
+  {
+    "id": "mixta-sh-3",
+    "strategy": "mixta",
+    "name": "Soja – cobertura – girasol – vicia – maíz",
+    "when": {
+      "zones": [
+        "subhumedo"
+      ],
+      "irrigated": [
+        false,
+        true
+      ]
+    },
+    "duration_years": 3,
+    "steps": [
+      {
+        "crop_id": "soja",
+        "year": 1,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "cobertura_gramineas",
+        "year": 2,
+        "start_month": 4,
+        "end_month": 8
+      },
+      {
+        "crop_id": "girasol",
+        "year": 2,
+        "start_month": 10,
+        "end_month": 2
+      },
+      {
+        "crop_id": "cobertura_leguminosas",
+        "year": 3,
+        "start_month": 4,
+        "end_month": 8
+      },
+      {
+        "crop_id": "maiz",
+        "year": 3,
+        "start_month": 10,
+        "end_month": 3
+      }
+    ],
+    "rationale": "Tres cultivos de renta de tres familias con cobertura en dos de los tres inviernos.",
+    "management": [
+      "secar la cobertura a tiempo (agosto-septiembre) para que el perfil se recargue antes del cultivo de verano"
+    ]
+  }
+]

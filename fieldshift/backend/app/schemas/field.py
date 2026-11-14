@@ -45,6 +45,9 @@ class FieldOut(FieldCreate):
 
     id: str
     current_rotation_id: str | None = None
+    crop_history: list[str] = Field(
+        default=[], description="Cultivos principales de campañas anteriores, del más antiguo al más reciente."
+    )
     sample_note: str | None = Field(
         default=None, description="Indica si los datos del lote son reales o ilustrativos."
     )

@@ -4,16 +4,18 @@ API de FieldShift para el NASA Space Apps Challenge 2026 (*Field Shift: Adapting
 
 > FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
 
-## Estado de esta versión (backend base)
+## Estado de esta versión
 
 | Endpoint | Estado |
 |---|---|
-| `GET /health`, `GET /crops`, `POST /fields`, `GET /fields/{id}`, `POST /priorities` | Funcionan con datos de muestra |
+| `GET /health`, `POST /fields`, `GET /fields/{id}`, `POST /priorities` | Funcionan con datos de muestra |
+| `GET /crops` | Catálogo editable de 16 cultivos y coberturas |
 | `POST /climate-summary` | **NASA POWER integrado**, con caché y fallback a muestra simulada |
-| `POST /rotations/compare`, `GET /rotations/{id}`, `GET /export/report` | Puntajes **simulados** (`data_status: "mock"`) |
-| `POST /scenarios` | Valida y devuelve rankings **vacíos** |
+| `POST /rotations/compare`, `GET /rotations/{id}` | **Motor de rotaciones**: 7 estrategias, puntaje explicable A/S/R/I/E |
+| `POST /scenarios` | Ranking por escenario (lluvia, temperatura, año seco, riego) |
+| `GET /export/report` | JSON y CSV con ranking, explicaciones, fuentes y supuestos |
 
-Los datos de muestra (`app/data/*.json`) son **ilustrativos**: coordenadas aproximadas, suelos y rotaciones de ejemplo, catálogo de cultivos provisorio. Lo creado con `POST` se guarda en memoria y se pierde al reiniciar.
+Los datos de muestra (`app/data/fields.json` y `rotations.json`) son **ilustrativos**: coordenadas aproximadas, suelos y rotaciones de ejemplo. Lo creado con `POST` se guarda en memoria y se pierde al reiniciar.
 
 ## Requisitos
 
@@ -49,7 +51,7 @@ Abrí **http://127.0.0.1:8000/docs** (Swagger, con ejemplos de cada request).
 ```bash
 pytest -q
 ```
-`test_validators.py` corre sin FastAPI. `test_api.py` necesita las dependencias instaladas.
+`test_api.py` necesita FastAPI y httpx instalados (si faltan, se saltean). Los tests del motor (`test_catalog.py`, `test_engine_units.py`, `test_engine.py`) no usan red.
 
 ## Resumen climático con NASA POWER
 
@@ -84,6 +86,25 @@ curl -X POST http://127.0.0.1:8000/climate-summary \
 - **Tendencias:** con 10–11 años son orientativas; casi nunca resultan significativas.
 - **Uso responsable:** POWER advierte que puede bloquear aplicaciones que consultan repetidamente el mismo punto. Por eso la caché.
 
+## Motor de rotaciones
+
+```bash
+curl -X POST http://127.0.0.1:8000/rotations/compare \
+  -H "Content-Type: application/json" \
+  -d '{"field_id": "campo-centro", "priorities": {"water": 9, "soil": 6, "risk": 7, "income": 4, "sustainability": 5},
+       "scenario": {"id": "seco", "name": "Lluvia -20 %", "rain_delta_pct": -20}}'
+```
+
+Genera y compara la rotación actual, la conservadora, la diversificada, la de ahorro de agua, la de salud del suelo, la de rentabilidad y la mixta recomendada. Cada una trae:
+
+- puntaje total de 0 a 100 con rango de incertidumbre, y desglose en A (agua), S (suelo), R (riesgo climático), I (ingreso) y E (sostenibilidad), con cada bonificación y penalización;
+- perfil: secuencia, demanda de agua, meses cubiertos, impacto en suelo, erosión y biodiversidad, ingreso relativo y complejidad;
+- explicación en lenguaje simple, riesgos, supuestos, incertidumbres, evidencia separada en datos NASA / suelo / productor / a validar, nivel de confianza y advertencia profesional.
+
+Cómo se calcula cada puntaje: [`docs/scoring.md`](../docs/scoring.md). Ejemplos de salida: [`docs/examples/`](../docs/examples/README.md).
+
+Archivos editables: `app/data/crops.json` (catálogo) y `app/data/rotation_templates.json` (reglas de rotación). El servidor no arranca si nombran cultivos inexistentes.
+
 ## Configuración
 
 Todo por variables de entorno con prefijo `FIELDSHIFT_` (ver `.env.example`). No hay claves en el código; NASA POWER no requiere clave.
@@ -95,7 +116,7 @@ app/
 ├── main.py          crea la app: CORS, request_id, logging, handlers, rutas
 ├── config.py        Settings (pydantic-settings)
 ├── api/             rutas HTTP, dependencias y ejemplos de Swagger
-├── services/        repositorio de datos y puntaje simulado
+├── services/        repositorio de datos, NASA POWER, clima y motor de rotaciones (services/engine/)
 ├── models/          enums, procedencia (Provenance/Valued) y constantes
 ├── schemas/         contratos de request/response (Pydantic v2)
 ├── data/            JSON de muestra
