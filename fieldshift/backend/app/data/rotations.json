@@ -1,0 +1,254 @@
+[
+  {
+    "id": "campo-este-actual",
+    "field_id": "campo-este",
+    "name": "Soja – maíz con barbecho invernal",
+    "strategy": "actual",
+    "duration_years": 2,
+    "steps": [
+      {
+        "crop_id": "soja",
+        "year": 1,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "maiz",
+        "year": 2,
+        "start_month": 10,
+        "end_month": 3
+      }
+    ],
+    "description": "Rotación actual declarada (ilustrativa)."
+  },
+  {
+    "id": "campo-este-agua",
+    "field_id": "campo-este",
+    "name": "Sorgo – soja, barbecho para acumular agua",
+    "strategy": "agua",
+    "duration_years": 2,
+    "steps": [
+      {
+        "crop_id": "sorgo",
+        "year": 1,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "soja",
+        "year": 2,
+        "start_month": 11,
+        "end_month": 4
+      }
+    ],
+    "description": "Orientada a menor demanda hídrica (ilustrativa)."
+  },
+  {
+    "id": "campo-este-suelo",
+    "field_id": "campo-este",
+    "name": "Centeno – soja – vicia – maíz",
+    "strategy": "suelo",
+    "duration_years": 2,
+    "steps": [
+      {
+        "crop_id": "centeno",
+        "year": 1,
+        "start_month": 5,
+        "end_month": 9
+      },
+      {
+        "crop_id": "soja",
+        "year": 1,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "vicia",
+        "year": 2,
+        "start_month": 5,
+        "end_month": 9
+      },
+      {
+        "crop_id": "maiz",
+        "year": 2,
+        "start_month": 10,
+        "end_month": 3
+      }
+    ],
+    "description": "Orientada a cobertura y aporte de materia orgánica (ilustrativa)."
+  },
+  {
+    "id": "campo-centro-actual",
+    "field_id": "campo-centro",
+    "name": "Sorgo – verdeo de avena – girasol",
+    "strategy": "actual",
+    "duration_years": 2,
+    "steps": [
+      {
+        "crop_id": "sorgo",
+        "year": 1,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "avena",
+        "year": 2,
+        "start_month": 5,
+        "end_month": 9
+      },
+      {
+        "crop_id": "girasol",
+        "year": 2,
+        "start_month": 10,
+        "end_month": 3
+      }
+    ],
+    "description": "Rotación actual declarada (ilustrativa)."
+  },
+  {
+    "id": "campo-centro-agua",
+    "field_id": "campo-centro",
+    "name": "Sorgo – sorgo con barbecho largo",
+    "strategy": "agua",
+    "duration_years": 2,
+    "steps": [
+      {
+        "crop_id": "sorgo",
+        "year": 1,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "sorgo",
+        "year": 2,
+        "start_month": 11,
+        "end_month": 4
+      }
+    ],
+    "description": "Orientada a menor demanda hídrica (ilustrativa)."
+  },
+  {
+    "id": "campo-centro-suelo",
+    "field_id": "campo-centro",
+    "name": "Centeno – sorgo – vicia – girasol",
+    "strategy": "suelo",
+    "duration_years": 2,
+    "steps": [
+      {
+        "crop_id": "centeno",
+        "year": 1,
+        "start_month": 5,
+        "end_month": 9
+      },
+      {
+        "crop_id": "sorgo",
+        "year": 1,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "vicia",
+        "year": 2,
+        "start_month": 5,
+        "end_month": 9
+      },
+      {
+        "crop_id": "girasol",
+        "year": 2,
+        "start_month": 10,
+        "end_month": 3
+      }
+    ],
+    "description": "Orientada a cobertura (ilustrativa)."
+  },
+  {
+    "id": "campo-conlara-actual",
+    "field_id": "campo-conlara",
+    "name": "Maíz – trigo – soja de segunda",
+    "strategy": "actual",
+    "duration_years": 2,
+    "steps": [
+      {
+        "crop_id": "maiz",
+        "year": 1,
+        "start_month": 10,
+        "end_month": 3
+      },
+      {
+        "crop_id": "trigo",
+        "year": 2,
+        "start_month": 6,
+        "end_month": 11
+      },
+      {
+        "crop_id": "soja",
+        "year": 2,
+        "start_month": 12,
+        "end_month": 4
+      }
+    ],
+    "description": "Rotación actual declarada (ilustrativa)."
+  },
+  {
+    "id": "campo-conlara-agua",
+    "field_id": "campo-conlara",
+    "name": "Sorgo – trigo – soja de segunda",
+    "strategy": "agua",
+    "duration_years": 2,
+    "steps": [
+      {
+        "crop_id": "sorgo",
+        "year": 1,
+        "start_month": 11,
+        "end_month": 4
+      },
+      {
+        "crop_id": "trigo",
+        "year": 2,
+        "start_month": 6,
+        "end_month": 11
+      },
+      {
+        "crop_id": "soja",
+        "year": 2,
+        "start_month": 12,
+        "end_month": 4
+      }
+    ],
+    "description": "Orientada a menor demanda hídrica (ilustrativa)."
+  },
+  {
+    "id": "campo-conlara-suelo",
+    "field_id": "campo-conlara",
+    "name": "Centeno – maíz – vicia – soja",
+    "strategy": "suelo",
+    "duration_years": 2,
+    "steps": [
+      {
+        "crop_id": "centeno",
+        "year": 1,
+        "start_month": 5,
+        "end_month": 9
+      },
+      {
+        "crop_id": "maiz",
+        "year": 1,
+        "start_month": 10,
+        "end_month": 3
+      },
+      {
+        "crop_id": "vicia",
+        "year": 2,
+        "start_month": 4,
+        "end_month": 9
+      },
+      {
+        "crop_id": "soja",
+        "year": 2,
+        "start_month": 11,
+        "end_month": 4
+      }
+    ],
+    "description": "Orientada a cobertura (ilustrativa)."
+  }
+]
