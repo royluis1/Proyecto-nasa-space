@@ -1,0 +1,110 @@
+# FieldShift · Backend (FastAPI)
+
+API de FieldShift para el NASA Space Apps Challenge 2026 (*Field Shift: Adapting Farms with NASA Data*).
+
+> FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
+
+## Estado de esta versión (backend base)
+
+| Endpoint | Estado |
+|---|---|
+| `GET /health`, `GET /crops`, `POST /fields`, `GET /fields/{id}`, `POST /priorities` | Funcionan con datos de muestra |
+| `POST /climate-summary` | **NASA POWER integrado**, con caché y fallback a muestra simulada |
+| `POST /rotations/compare`, `GET /rotations/{id}`, `GET /export/report` | Puntajes **simulados** (`data_status: "mock"`) |
+| `POST /scenarios` | Valida y devuelve rankings **vacíos** |
+
+Los datos de muestra (`app/data/*.json`) son **ilustrativos**: coordenadas aproximadas, suelos y rotaciones de ejemplo, catálogo de cultivos provisorio. Lo creado con `POST` se guarda en memoria y se pierde al reiniciar.
+
+## Requisitos
+
+Python 3.11 o superior.
+
+## Instalación y ejecución
+
+**macOS / Linux**
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+uvicorn app.main:app --reload
+```
+
+**Windows (PowerShell)**
+```powershell
+cd backend
+py -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+copy .env.example .env
+uvicorn app.main:app --reload
+```
+Si PowerShell bloquea el script de activación: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
+
+Abrí **http://127.0.0.1:8000/docs** (Swagger, con ejemplos de cada request).
+
+## Tests
+
+```bash
+pytest -q
+```
+`test_validators.py` corre sin FastAPI. `test_api.py` necesita las dependencias instaladas.
+
+## Resumen climático con NASA POWER
+
+```bash
+curl -X POST http://127.0.0.1:8000/climate-summary \
+  -H "Content-Type: application/json" \
+  -d '{"latitude": -33.85, "longitude": -65.2, "start_date": "2015-01-01", "end_date": "2025-12-31", "include_daily": false}'
+```
+
+- También acepta `field_id` (por ejemplo `"campo-este"`) en lugar de coordenadas.
+- `parameters` es opcional: por defecto pide T2M, T2M_MAX, T2M_MIN, PRECTOTCORR, RH2M, WS2M, ALLSKY_SFC_SW_DWN y PS. Los 4 primeros se agregan siempre.
+- `include_daily: false` omite la serie diaria (11 años ≈ 0,8 MB de JSON).
+
+**Origen del dato** (`meta.origin_label`), en este orden de búsqueda:
+
+1. **DATO CACHEADO**: caché vigente en `data/cache/` (los pedidos históricos no vencen; los recientes, a las 24 h).
+2. **DATO NASA EN VIVO**: consulta a POWER (timeout 30 s, 3 reintentos con backoff ante 429, 5xx o timeout).
+3. **DATO CACHEADO** vencido, con advertencia, si POWER no responde.
+4. **DATO DE MUESTRA**: datos **simulados** de `data/samples/power_sample_san_luis.csv`, solo si el punto está a menos de 1° de un campo de ejemplo.
+5. Si no hay nada: error 503 `NO_DATA_AVAILABLE`.
+
+**Qué devuelve:** serie diaria (con ET₀), resumen mensual, climatología mensual, resumen estacional, resumen anual (con clasificación seco/normal/húmedo y estrés térmico), extremos con fecha, tendencias (Sen + Mann-Kendall), días calurosos, lluvia acumulada, variabilidad (CV), déficit hídrico climático, reporte de faltantes, fuente, fecha de consulta y limitaciones.
+
+### Limitaciones de resolución y datos
+
+- **Resolución:** la meteorología de POWER es de ~0,5° x 0,625° (~50 km) y la radiación de ~1°. Describe el entorno regional, no el lote.
+- **Tipo de dato:** es un reanálisis (MERRA-2 / GEOS), o sea, datos **modelados** con asimilación de observaciones. No reemplaza un pluviómetro propio.
+- **Datos recientes:** los últimos días o meses vienen de productos preliminares y pueden corregirse.
+- **−999:** se trata como faltante. Un mes con más de 20 % de días sin lluvia registrada no se usa; un año con algún mes inválido se excluye de tendencias y clasificación.
+- **ET₀ y déficit:** estimaciones FAO-56 con datos regionales. El déficit es climático (ET₀ − lluvia), no el de un cultivo.
+- **Años secos/húmedos:** relativos al período pedido (|z| ≥ 1), no a una normal oficial. Con pocos años la clasificación es inestable.
+- **Tendencias:** con 10–11 años son orientativas; casi nunca resultan significativas.
+- **Uso responsable:** POWER advierte que puede bloquear aplicaciones que consultan repetidamente el mismo punto. Por eso la caché.
+
+## Configuración
+
+Todo por variables de entorno con prefijo `FIELDSHIFT_` (ver `.env.example`). No hay claves en el código; NASA POWER no requiere clave.
+
+## Arquitectura
+
+```
+app/
+├── main.py          crea la app: CORS, request_id, logging, handlers, rutas
+├── config.py        Settings (pydantic-settings)
+├── api/             rutas HTTP, dependencias y ejemplos de Swagger
+├── services/        repositorio de datos y puntaje simulado
+├── models/          enums, procedencia (Provenance/Valued) y constantes
+├── schemas/         contratos de request/response (Pydantic v2)
+├── data/            JSON de muestra
+├── utils/           validadores, excepciones, handlers de error, logging JSON
+└── tests/
+```
+
+- **Rutas finas:** validan, llaman a servicios y envuelven la respuesta. No tienen lógica.
+- **Sobre de respuesta único:** `{"data": ..., "meta": {data_status, as_of, warnings, disclaimer}}`. `data_status` es `live`, `cached`, `sample` o `mock`.
+- **Errores consistentes:** `{"error": {code, message, details, request_id}}` para validación (422), dominio (400/404), HTTP y errores no controlados (500, sin filtrar detalles internos).
+- **Procedencia:** los valores usan `Provenance` con etiqueta *observado / modelado / estimado / supuesto*, fuente, resolución y confianza.
+- **Trazabilidad:** cada request tiene `X-Request-ID` (se respeta si lo manda el cliente) y se registra en logs JSON con método, ruta, estado y duración.
