@@ -27,6 +27,7 @@ from app.services.power.service import PowerService, resolve_parameters  # noqa:
 from app.services.repository import Repository  # noqa: E402
 from app.services.satellite.provider import SatelliteProvider  # noqa: E402
 from app.services.satellite.service import SatelliteService  # noqa: E402
+from app.services.terrain.service import TerrainProvider, terrain_for_field  # noqa: E402
 from app.utils.exceptions import UpstreamError  # noqa: E402
 
 OUT = ROOT / "frontend" / "lib" / "demo" / "data"
@@ -53,7 +54,8 @@ def main() -> None:
     power = PowerService(failing, PowerCache(Path(tempfile.mkdtemp()), 24), SampleProvider(s.nasa_samples_dir / s.power_sample_file))
     samples = {"SPL4SMGP_rootzone": s.nasa_samples_dir / s.smap_sample_file, "MOD13Q1": s.nasa_samples_dir / s.ndvi_sample_file}
     satellite = SatelliteService(repo, SatelliteProvider(Path(tempfile.mkdtemp()), samples))
-    service = RotationService(repo, power, s.power_base_url, satellite)
+    terrain = TerrainProvider(Path(tempfile.mkdtemp()), s.nasa_samples_dir / s.srtm_sample_file)  # sin credenciales: muestra
+    service = RotationService(repo, power, s.power_base_url, satellite, terrain)
 
     write("fields.json", [dump(f) for f in repo.list_fields()])
     write("crops.json", [dump(c) for c in repo.list_crops()])
@@ -72,6 +74,8 @@ def main() -> None:
         write(f"soil-moisture-{fid}.json", dump(sm))
         veg, _ = satellite.vegetation(VegetationRequest(field_id=fid))
         write(f"vegetation-{fid}.json", dump(veg))
+        relief, _ = terrain_for_field(terrain, field)
+        write(f"terrain-{fid}.json", dump(relief))
         results = []
         for preset in PRESETS:
             res, _ = service.compare(CompareRequest(field_id=fid), preset.scenario)

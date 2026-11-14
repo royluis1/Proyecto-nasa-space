@@ -29,7 +29,7 @@ fieldshift/
 | Parte | Estado |
 |---|---|
 | Backend base y API | Hecho |
-| Integración NASA | POWER, SMAP y MODIS NDVI hechos ([satellite.md](docs/satellite.md)); SRTM pendiente |
+| Integración NASA | POWER, SMAP, MODIS NDVI ([satellite.md](docs/satellite.md)) y SRTM con Earthdata Login ([earthdata.md](docs/earthdata.md)) |
 | Base de cultivos | Hecho: 16 cultivos editables, a validar con INTA |
 | Motor de rotaciones y puntaje | Hecho: ver [docs/scoring.md](docs/scoring.md) y [ejemplos](docs/examples/README.md) |
 | Frontend y mapa | Hecho: [frontend/README.md](frontend/README.md) |

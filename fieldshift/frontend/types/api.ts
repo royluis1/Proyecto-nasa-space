@@ -61,6 +61,8 @@ export type SoilMoistureRequest = Optional<S["SoilMoistureRequest"]>;
 export type VegetationSummary = S["VegetationSummary"];
 export type VegetationRequest = Optional<S["VegetationRequest"]>;
 export type DataTrace = S["DataTrace"];
+export type TerrainSummary = S["TerrainSummary"];
+export type TerrainRequest = Optional<S["TerrainRequest"]>;
 
 export type ResponseMeta = S["ResponseMeta"];
 

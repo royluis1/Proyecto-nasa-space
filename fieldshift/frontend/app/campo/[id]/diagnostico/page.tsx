@@ -1,6 +1,6 @@
 "use client";
 
-import { CloudSun, Flame, Leaf, Satellite, Thermometer } from "lucide-react";
+import { CloudSun, Flame, Leaf, Mountain, Satellite, Thermometer } from "lucide-react";
 import { useMemo } from "react";
 import { useCampo } from "@/components/campo/campo-provider";
 import { AsyncBlock } from "@/components/async-block";
@@ -16,7 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAsync } from "@/hooks/use-async";
 import { api } from "@/lib/api";
 import { MONTHS_LONG, num, pct, signed } from "@/lib/format";
-import type { ApiResult, ClimateSummary, SoilMoistureSummary, VegetationSummary } from "@/types/api";
+import type { ApiResult, ClimateSummary, SoilMoistureSummary, TerrainSummary, VegetationSummary } from "@/types/api";
 
 const ZONES: Record<string, string> = { arido: "árida", semiarido: "semiárida", subhumedo_seco: "subhúmeda seca", humedo: "húmeda" };
 
@@ -156,6 +156,33 @@ function VegetationSection({ r }: { r: ApiResult<VegetationSummary> }) {
   );
 }
 
+const SLOPE_WORD: Record<TerrainSummary["slope_class"], string> = { plano: "Plano", suave: "Suave", moderada: "Moderada", fuerte: "Fuerte" };
+
+function TerrainSection({ r }: { r: ApiResult<TerrainSummary> }) {
+  const t = r.data;
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <OriginBadge status={r.demo ? "demo" : t.origin} label={r.demo ? undefined : t.origin_label} />
+        <span className="text-sm text-muted-foreground">{t.product} · baldosa {t.tile} · {t.area} · píxel de ~{num(t.resolution_m)} m</span>
+      </div>
+      <p className="text-lg">{t.interpretation}</p>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Stat label="Pendiente media" value={`${num(t.slope_mean_pct, 1)} %`} hint={`Relieve ${SLOPE_WORD[t.slope_class].toLowerCase()}`} />
+        <Stat label="Pendiente en los sectores más inclinados" value={`${num(t.slope_p90_pct, 1)} %`} hint={`El 10 % del lote supera este valor. Máxima: ${num(t.slope_max_pct, 1)} %`} />
+        <Stat label="Altura media" value={`${num(t.elevation_mean_m)} m`} hint="Sobre el nivel del mar" />
+        <Stat label="Desnivel" value={`${num(t.elevation_max_m - t.elevation_min_m)} m`} hint={`De ${num(t.elevation_min_m)} a ${num(t.elevation_max_m)} m`} />
+      </div>
+      <p className="text-sm">La pendiente se usa en el puntaje de suelo: con más pendiente, el suelo desnudo pierde más por el agua.</p>
+      <details className="rounded-lg border p-4 text-sm">
+        <summary className="cursor-pointer font-medium">Limitaciones de SRTM</summary>
+        <ul className="mt-2 list-disc space-y-1 pl-5">{t.limitations.map((l) => <li key={l}>{l}</li>)}</ul>
+      </details>
+      <WarningsList warnings={r.meta.warnings} />
+    </div>
+  );
+}
+
 export default function DiagnosticoPage() {
   const { fieldId, field, compare } = useCampo();
   const period = useMemo(() => {
@@ -165,6 +192,7 @@ export default function DiagnosticoPage() {
   const climate = useAsync<ApiResult<ClimateSummary>>((signal) => api.climate({ field_id: fieldId, ...period, include_daily: false }, { signal }), [fieldId]);
   const soil = useAsync<ApiResult<SoilMoistureSummary>>((signal) => api.soilMoisture({ field_id: fieldId }, { signal }), [fieldId]);
   const veg = useAsync<ApiResult<VegetationSummary>>((signal) => api.vegetation({ field_id: fieldId }, { signal }), [fieldId]);
+  const terrain = useAsync<ApiResult<TerrainSummary>>((signal) => api.terrain({ field_id: fieldId }, { signal }), [fieldId]);
   const zone = compare.result?.inputs.climate;
 
   return (
@@ -206,6 +234,16 @@ export default function DiagnosticoPage() {
         </CardHeader>
         <CardContent>
           <AsyncBlock state={veg} what="la vegetación">{(r) => <VegetationSection r={r} />}</AsyncBlock>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle as="h2" className="flex items-center gap-2"><Mountain aria-hidden className="size-6 text-tierra-600" /> Relieve (NASA SRTM)</CardTitle>
+          <CardDescription>Altura y pendiente del lote con píxeles de 30 m, descargadas con Earthdata Login.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AsyncBlock state={terrain} what="el relieve">{(r) => <TerrainSection r={r} />}</AsyncBlock>
         </CardContent>
       </Card>
       <p className="flex items-start gap-2 text-sm text-muted-foreground">

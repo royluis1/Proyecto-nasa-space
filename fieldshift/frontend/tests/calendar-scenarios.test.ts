@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { demoCalendar, demoCompare, demoScenarios, nextCampaignYear, shiftTimeline } from "@/lib/demo";
+import { demoCalendar, demoCompare, demoScenarios, demoTerrain, nextCampaignYear, shiftTimeline } from "@/lib/demo";
+import { friendlyWarning } from "@/lib/plain";
 import { DEFAULT_UI_PRIORITIES, componentWeights, toBackendPriorities } from "@/lib/priorities";
 import { rerank } from "@/lib/ranking";
 import { buildReportModel, pdfSafe, reportCsv, reportPdf } from "@/lib/report";
@@ -227,5 +228,22 @@ describe("reporte exportable", () => {
     for (const t of ["Recomendaci", "Datos del campo", "Prioridades del productor", "Resumen clim", "Rotaciones comparadas", "Supuestos", "Fuentes", "Advertencias", "Resistencia", "Calendario del plan"]) {
       expect(raw).toContain(t);
     }
+  });
+});
+
+describe("relieve (SRTM vía Earthdata)", () => {
+  it("de ejemplo: pendiente y altura de cada campo, marcadas como muestra", async () => {
+    const r = await demoTerrain("campo-conlara");
+    expect(r.data).toMatchObject({ tile: "S33W066", product: "SRTMGL1", slope_class: "suave", origin: "sample" });
+    expect(r.data.elevation_max_m).toBeGreaterThan(r.data.elevation_min_m);
+    expect(r.meta.warnings.join(" ")).toMatch(/MUESTRA SIMULADA/);
+  });
+  it("traduce los avisos de SRTM", () => {
+    expect(friendlyWarning("SRTM: SRTM no disponible (sin credenciales de Earthdata (FIELDSHIFT_EARTHDATA_USERNAME y _PASSWORD)).")).toMatch(/cuenta de Earthdata/);
+    expect(friendlyWarning("SRTM: Se usa un relieve de MUESTRA SIMULADA del sitio 'x': no es una medición de tu lote.")).toMatch(/SIMULADA/);
+  });
+  it("el motor usa la pendiente del relieve", async () => {
+    const r = (await demoCompare("campo-conlara")).data;
+    expect(r.inputs.soil.slope_pct).toBe(2.3);
   });
 });

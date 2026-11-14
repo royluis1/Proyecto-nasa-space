@@ -7,7 +7,9 @@ from app.config import get_settings
 from app.services.engine.service import RotationService
 from app.services.power.cache import PowerCache
 from app.services.power.sample import SampleProvider
+from app.services.earthdata.session import credentials_from_settings
 from app.services.power.service import Cooldown, PowerService
+from app.services.terrain.service import TerrainProvider
 from app.services.repository import Repository
 from app.services.satellite.provider import SatelliteProvider
 from app.services.satellite.service import SatelliteService
@@ -70,9 +72,26 @@ def get_satellite_service(
     return SatelliteService(repo, provider)
 
 
+@lru_cache
+def get_terrain_provider() -> TerrainProvider:
+    s = get_settings()
+    creds = credentials_from_settings(s)
+    factory = None
+    if creds.configured:
+        from app.services.earthdata.session import EarthdataSession
+
+        def factory() -> EarthdataSession:
+            return EarthdataSession(creds, timeout_s=max(60.0, s.request_timeout_s))
+
+    return TerrainProvider(
+        s.cache_dir / "srtm", s.nasa_samples_dir / s.srtm_sample_file, factory, s.srtm_product, Cooldown(s.power_cooldown_s)
+    )
+
+
 def get_rotation_service(
     repo: Repository = Depends(get_repository),
     power: PowerService = Depends(get_power_service),
     satellite: SatelliteService = Depends(get_satellite_service),
+    terrain: TerrainProvider = Depends(get_terrain_provider),
 ) -> RotationService:
-    return RotationService(repo, power, get_settings().power_base_url, satellite)
+    return RotationService(repo, power, get_settings().power_base_url, satellite, terrain)

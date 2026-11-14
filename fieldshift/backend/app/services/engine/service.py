@@ -11,6 +11,7 @@ from app.services.climate_summary import build_summary, missing_warnings
 from app.services.engine.context import ClimateContext, apply_scenario, climate_from_summary, soil_from_field
 from app.services.engine.engine import EngineRequest, run
 from app.services.engine.timeline import build_timeline
+from app.services.terrain.service import TerrainProvider, terrain_for_field
 from app.services.power.service import PowerService, resolve_parameters
 from app.services.repository import Repository
 from app.services.satellite.service import SatelliteService, soil_moisture_input, vegetation_input
@@ -50,9 +51,15 @@ def load_climate(
 
 class RotationService:
     def __init__(
-        self, repo: Repository, power: PowerService, endpoint: str, satellite: "SatelliteService | None" = None
+        self,
+        repo: Repository,
+        power: PowerService,
+        endpoint: str,
+        satellite: "SatelliteService | None" = None,
+        terrain: "TerrainProvider | None" = None,
     ) -> None:
         self.repo = repo
+        self.terrain = terrain
         self.power = power
         self.endpoint = endpoint
         self.satellite = satellite
@@ -85,6 +92,8 @@ class RotationService:
                 extra.append(rot)
         history = req.history if req.history is not None else field.crop_history
         soil_moisture, vegetation, sat_warnings = self._satellite_inputs(req)
+        field, terrain_warnings = self._with_terrain(field, req.use_satellite)
+        sat_warnings += terrain_warnings
         engine_req = EngineRequest(
             field=field,
             climate=bundle.context,
@@ -101,6 +110,19 @@ class RotationService:
             warnings=[*bundle.warnings, *sat_warnings],
         )
         return run(engine_req, self.repo.crops, self.repo.templates), bundle
+
+    def _with_terrain(self, field, use_satellite: bool):
+        """Si el lote no tiene pendiente cargada, la toma de SRTM (Earthdata) o de la muestra, y lo avisa."""
+        if field.location.slope_pct is not None or self.terrain is None or not use_satellite:
+            return field, []
+        try:
+            summary, w = terrain_for_field(self.terrain, field)
+        except (NoDataError, InvalidInputError) as exc:
+            return field, [f"SRTM no disponible para el lote: {exc.message}"]
+        location = field.location.model_copy(
+            update={"slope_pct": summary.slope_mean_pct, "elevation_m": field.location.elevation_m or summary.elevation_mean_m}
+        )
+        return field.model_copy(update={"location": location}), [f"SRTM: {x}" for x in w]
 
     def _satellite_inputs(self, req: CompareRequest):
         """SMAP y NDVI del lote: los del pedido o, si faltan, los del servicio satelital (con su respaldo)."""

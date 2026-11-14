@@ -8,7 +8,7 @@
 | MODIS | **MOD13Q1 v6.1** (NDVI, compuesto 16 días); MYD13Q1 y MOD13A1 como alternativas | 250 m (500 m en A1) | Vigor, cobertura, barbechos, tendencia de biomasa, campañas | observado | **Integrado** (AppEEARS, CSV/GeoTIFF, muestra) |
 | SMAP | **SPL4SMGP v8** (zona de raíces 0-100 cm, por defecto) | 9 km, cada 3 h | Humedad en raíces, sequías, estrés hídrico | **modelado** | **Integrado** (AppEEARS, CSV, muestra) |
 | SMAP | SPL3SMP_E v6 (superficial ~5 cm) | 9 km, diaria con huecos | Humedad superficial | observado | Admitido (CSV o AppEEARS) |
-| SRTM | Elevación | ~30 m | Pendiente y riesgo relativo de erosión hídrica | observado | Precalculado, pendiente |
+| SRTM | **SRTMGL1 v3** (elevación, LP DAAC, con Earthdata Login); SRTMGL3 (90 m) opcional | ~30 m | Pendiente del lote (método de Horn) para el riesgo de erosión hídrica del puntaje de suelo | observado (año 2000) | **Integrado** (Earthdata Login + CMR, caché, muestra) |
 
 ## Referencias del motor de rotaciones
 

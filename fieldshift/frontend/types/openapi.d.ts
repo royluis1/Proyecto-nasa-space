@@ -299,6 +299,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/terrain": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Elevación y pendiente del lote (SRTM)
+         * @description SRTM v3 (NASA, 30 m) descargado con Earthdata Login: elevación y pendiente (método de Horn) dentro del
+         *     polígono del lote o en un círculo con su superficie. Sin credenciales usa una muestra simulada y lo avisa.
+         */
+        post: operations["terrain_terrain_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/earthdata/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * ¿Hay credenciales de Earthdata?
+         * @description Dice si el servidor tiene credenciales de Earthdata Login y de qué tipo. Nunca devuelve el usuario ni la clave.
+         */
+        get: operations["earthdata_status_earthdata_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/export/report": {
         parameters: {
             query?: never;
@@ -370,6 +411,11 @@ export interface components {
             data: components["schemas"]["CompareResult"];
             meta: components["schemas"]["ResponseMeta"];
         };
+        /** ApiResponse[EarthdataStatus] */
+        ApiResponse_EarthdataStatus_: {
+            data: components["schemas"]["EarthdataStatus"];
+            meta: components["schemas"]["ResponseMeta"];
+        };
         /** ApiResponse[FarmerPriority] */
         ApiResponse_FarmerPriority_: {
             data: components["schemas"]["FarmerPriority"];
@@ -393,6 +439,11 @@ export interface components {
         /** ApiResponse[SoilMoistureSummary] */
         ApiResponse_SoilMoistureSummary_: {
             data: components["schemas"]["SoilMoistureSummary"];
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[TerrainSummary] */
+        ApiResponse_TerrainSummary_: {
+            data: components["schemas"]["TerrainSummary"];
             meta: components["schemas"]["ResponseMeta"];
         };
         /** ApiResponse[VegetationSummary] */
@@ -1065,6 +1116,18 @@ export interface components {
             months: number;
             /** Min Anomaly Z */
             min_anomaly_z: number;
+        };
+        /** EarthdataStatus */
+        EarthdataStatus: {
+            /** Configured */
+            configured: boolean;
+            /**
+             * Method
+             * @enum {string}
+             */
+            method: "token" | "usuario" | "ninguno";
+            /** Note */
+            note: string;
         };
         /** EngineInputsSummary */
         EngineInputsSummary: {
@@ -2299,6 +2362,74 @@ export interface components {
          * @enum {string}
          */
         SoilTexture: "arenosa" | "franco_arenosa" | "franca" | "franco_limosa" | "franco_arcillosa" | "arcillosa";
+        /** TerrainRequest */
+        TerrainRequest: {
+            /** Field Id */
+            field_id?: string | null;
+            /**
+             * Latitude
+             * @description SRTM cubre de 60° S a 60° N.
+             */
+            latitude?: number | null;
+            /** Longitude */
+            longitude?: number | null;
+            /**
+             * Radius M
+             * @description Por defecto, según la superficie del lote (o 300 m).
+             */
+            radius_m?: number | null;
+        };
+        /** TerrainSummary */
+        TerrainSummary: {
+            /**
+             * Product
+             * @enum {string}
+             */
+            product: "SRTMGL1" | "SRTMGL3";
+            /**
+             * Tile
+             * @example S34W066
+             */
+            tile: string;
+            /** Latitude */
+            latitude: number;
+            /** Longitude */
+            longitude: number;
+            /**
+             * Area
+             * @description Zona analizada: polígono del lote o círculo alrededor del punto.
+             */
+            area: string;
+            /** Elevation Mean M */
+            elevation_mean_m: number;
+            /** Elevation Min M */
+            elevation_min_m: number;
+            /** Elevation Max M */
+            elevation_max_m: number;
+            /** Slope Mean Pct */
+            slope_mean_pct: number;
+            /**
+             * Slope P90 Pct
+             * @description El 10 % del lote tiene más pendiente que esto.
+             */
+            slope_p90_pct: number;
+            /** Slope Max Pct */
+            slope_max_pct: number;
+            /**
+             * Slope Class
+             * @enum {string}
+             */
+            slope_class: "plano" | "suave" | "moderada" | "fuerte";
+            /** Resolution M */
+            resolution_m: number;
+            origin: components["schemas"]["DataStatus"];
+            /** Origin Label */
+            origin_label: string;
+            /** Interpretation */
+            interpretation: string;
+            /** Limitations */
+            limitations: string[];
+        };
         /** TimelineAdvice */
         TimelineAdvice: {
             /**
@@ -3308,6 +3439,77 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    terrain_terrain_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TerrainRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_TerrainSummary_"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    earthdata_status_earthdata_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_EarthdataStatus_"];
                 };
             };
         };

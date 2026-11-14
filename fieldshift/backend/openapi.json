@@ -1007,6 +1007,106 @@
     }
    }
   },
+  "/terrain": {
+   "post": {
+    "tags": [
+     "relieve"
+    ],
+    "summary": "Elevación y pendiente del lote (SRTM)",
+    "description": "SRTM v3 (NASA, 30 m) descargado con Earthdata Login: elevación y pendiente (método de Horn) dentro del\npolígono del lote o en un círculo con su superficie. Sin credenciales usa una muestra simulada y lo avisa.",
+    "operationId": "terrain_terrain_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/TerrainRequest"
+       },
+       "examples": {
+        "lote": {
+         "summary": "Lote precargado",
+         "value": {
+          "field_id": "campo-conlara"
+         }
+        },
+        "punto": {
+         "summary": "Por coordenadas, 500 m de radio",
+         "value": {
+          "latitude": -33.85,
+          "longitude": -65.2,
+          "radius_m": 500
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_TerrainSummary_"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not Found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Unprocessable Content",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "503": {
+      "description": "Service Unavailable",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/earthdata/status": {
+   "get": {
+    "tags": [
+     "relieve"
+    ],
+    "summary": "¿Hay credenciales de Earthdata?",
+    "description": "Dice si el servidor tiene credenciales de Earthdata Login y de qué tipo. Nunca devuelve el usuario ni la clave.",
+    "operationId": "earthdata_status_earthdata_status_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_EarthdataStatus_"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/export/report": {
    "get": {
     "tags": [
@@ -1323,6 +1423,22 @@
     ],
     "title": "ApiResponse[CompareResult]"
    },
+   "ApiResponse_EarthdataStatus_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/EarthdataStatus"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[EarthdataStatus]"
+   },
    "ApiResponse_FarmerPriority_": {
     "properties": {
      "data": {
@@ -1402,6 +1518,22 @@
      "meta"
     ],
     "title": "ApiResponse[SoilMoistureSummary]"
+   },
+   "ApiResponse_TerrainSummary_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/TerrainSummary"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[TerrainSummary]"
    },
    "ApiResponse_VegetationSummary_": {
     "properties": {
@@ -3268,6 +3400,34 @@
      "min_anomaly_z"
     ],
     "title": "DroughtEvent"
+   },
+   "EarthdataStatus": {
+    "properties": {
+     "configured": {
+      "type": "boolean",
+      "title": "Configured"
+     },
+     "method": {
+      "type": "string",
+      "enum": [
+       "token",
+       "usuario",
+       "ninguno"
+      ],
+      "title": "Method"
+     },
+     "note": {
+      "type": "string",
+      "title": "Note"
+     }
+    },
+    "type": "object",
+    "required": [
+     "configured",
+     "method",
+     "note"
+    ],
+    "title": "EarthdataStatus"
    },
    "EngineInputsSummary": {
     "properties": {
@@ -6442,6 +6602,174 @@
      "arcillosa"
     ],
     "title": "SoilTexture"
+   },
+   "TerrainRequest": {
+    "properties": {
+     "field_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Field Id"
+     },
+     "latitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 60.0,
+        "minimum": -60.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Latitude",
+      "description": "SRTM cubre de 60° S a 60° N."
+     },
+     "longitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 180.0,
+        "minimum": -180.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Longitude"
+     },
+     "radius_m": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 5000.0,
+        "minimum": 60.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Radius M",
+      "description": "Por defecto, según la superficie del lote (o 300 m)."
+     }
+    },
+    "type": "object",
+    "title": "TerrainRequest"
+   },
+   "TerrainSummary": {
+    "properties": {
+     "product": {
+      "type": "string",
+      "enum": [
+       "SRTMGL1",
+       "SRTMGL3"
+      ],
+      "title": "Product"
+     },
+     "tile": {
+      "type": "string",
+      "title": "Tile",
+      "examples": [
+       "S34W066"
+      ]
+     },
+     "latitude": {
+      "type": "number",
+      "title": "Latitude"
+     },
+     "longitude": {
+      "type": "number",
+      "title": "Longitude"
+     },
+     "area": {
+      "type": "string",
+      "title": "Area",
+      "description": "Zona analizada: polígono del lote o círculo alrededor del punto."
+     },
+     "elevation_mean_m": {
+      "type": "number",
+      "title": "Elevation Mean M"
+     },
+     "elevation_min_m": {
+      "type": "number",
+      "title": "Elevation Min M"
+     },
+     "elevation_max_m": {
+      "type": "number",
+      "title": "Elevation Max M"
+     },
+     "slope_mean_pct": {
+      "type": "number",
+      "title": "Slope Mean Pct"
+     },
+     "slope_p90_pct": {
+      "type": "number",
+      "title": "Slope P90 Pct",
+      "description": "El 10 % del lote tiene más pendiente que esto."
+     },
+     "slope_max_pct": {
+      "type": "number",
+      "title": "Slope Max Pct"
+     },
+     "slope_class": {
+      "type": "string",
+      "enum": [
+       "plano",
+       "suave",
+       "moderada",
+       "fuerte"
+      ],
+      "title": "Slope Class"
+     },
+     "resolution_m": {
+      "type": "number",
+      "title": "Resolution M"
+     },
+     "origin": {
+      "$ref": "#/components/schemas/DataStatus"
+     },
+     "origin_label": {
+      "type": "string",
+      "title": "Origin Label"
+     },
+     "interpretation": {
+      "type": "string",
+      "title": "Interpretation"
+     },
+     "limitations": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Limitations"
+     }
+    },
+    "type": "object",
+    "required": [
+     "product",
+     "tile",
+     "latitude",
+     "longitude",
+     "area",
+     "elevation_mean_m",
+     "elevation_min_m",
+     "elevation_max_m",
+     "slope_mean_pct",
+     "slope_p90_pct",
+     "slope_max_pct",
+     "slope_class",
+     "resolution_m",
+     "origin",
+     "origin_label",
+     "interpretation",
+     "limitations"
+    ],
+    "title": "TerrainSummary"
    },
    "TimelineAdvice": {
     "properties": {

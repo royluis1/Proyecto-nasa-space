@@ -55,19 +55,28 @@ def satellite_service(repo, satellite_provider):
 
 
 @pytest.fixture
-def client(repo, offline_power, satellite_provider):
+def terrain_provider(tmp_path):
+    """Relieve sin credenciales de Earthdata: usa la muestra del repo."""
+    from app.services.terrain.service import TerrainProvider
+
+    return TerrainProvider(tmp_path / "srtm", SAMPLES_DIR / "srtm_sample_san_luis.json")
+
+
+@pytest.fixture
+def client(repo, offline_power, satellite_provider, terrain_provider):
     """Cliente de la API con repositorio nuevo y POWER sin red, por test."""
     pytest.importorskip("fastapi")
     pytest.importorskip("httpx")
     from fastapi.testclient import TestClient
 
-    from app.api.deps import get_power_service, get_repository, get_satellite_provider
+    from app.api.deps import get_power_service, get_repository, get_satellite_provider, get_terrain_provider
     from app.main import create_app
 
     app = create_app()
     app.dependency_overrides[get_repository] = lambda: repo
     app.dependency_overrides[get_power_service] = lambda: offline_power
     app.dependency_overrides[get_satellite_provider] = lambda: satellite_provider
+    app.dependency_overrides[get_terrain_provider] = lambda: terrain_provider
     return TestClient(app)
 
 

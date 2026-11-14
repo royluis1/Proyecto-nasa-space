@@ -4,7 +4,7 @@
  */
 import type {
   ApiEnvelope, CalendarRequest, CalendarTimeline, ClimateSummary, CompareResult, Crop, FieldOut, ResponseMeta, Rotation,
-  ScenarioInput, ScenarioResult, SoilMoistureSummary, VegetationSummary,
+  ScenarioInput, ScenarioResult, SoilMoistureSummary, TerrainSummary, VegetationSummary,
 } from "@/types/api";
 import { isBaseline, sameEffect } from "../scenarios";
 import { DEMO_NOTICE, DISCLAIMER } from "../content";
@@ -118,6 +118,14 @@ export async function demoSoilMoisture(fieldId: string): Promise<ApiEnvelope<Soi
 export async function demoVegetation(fieldId: string): Promise<ApiEnvelope<VegetationSummary>> {
   const { id, note } = await exampleIdFor(fieldId);
   return env(await load<VegetationSummary>(`vegetation-${id}`), note ? [note] : []);
+}
+
+export async function demoTerrain(fieldId: string): Promise<ApiEnvelope<TerrainSummary>> {
+  const { id, note } = await exampleIdFor(fieldId);
+  return env(await load<TerrainSummary>(`terrain-${id}`), [
+    ...(note ? [note] : []),
+    "Relieve de MUESTRA SIMULADA: con credenciales de Earthdata, el servidor descarga SRTM real.",
+  ]);
 }
 
 export async function demoScenarios(fieldId: string, requested: ScenarioInput[]): Promise<ApiEnvelope<ScenarioResult[]>> {

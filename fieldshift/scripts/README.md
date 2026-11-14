@@ -7,7 +7,7 @@ Se corren offline, no forman parte de la API. Acá sí se usan librerías pesada
 | `fetch_appeears` | Pide a AppEEARS (requiere cuenta Earthdata) la extracción por punto de MOD13A1 y SMAP | archivos crudos |
 | `preprocess_ndvi` | Aplica factor de escala, QA y faltantes al NDVI | `data/samples/ndvi_<campo>.csv` |
 | `preprocess_smap` | Filtra por calidad la humedad SMAP L3 y L4 | `data/samples/smap_<campo>.csv` |
-| `srtm_slope` | Calcula elevación y pendiente por campo | `data/samples/srtm_<campo>.json` |
+| `srtm_slope` | Ya no hace falta: el backend descarga SRTM con Earthdata Login (`POST /terrain`, ver docs/earthdata.md) | `data/samples/srtm_sample_san_luis.json` (muestra simulada) |
 | `warm_cache` | Precarga NASA POWER de los 3 campos antes del demo | `data/cache/` |
 
 Scripts ya disponibles:

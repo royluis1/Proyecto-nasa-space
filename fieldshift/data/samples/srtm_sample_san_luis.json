@@ -1,0 +1,8 @@
+{
+  "note": "MUESTRA SIMULADA para demostración y tests: valores ilustrativos aproximados para la zona, NO son mediciones de SRTM. Con credenciales de Earthdata el backend descarga SRTMGL1 real.",
+  "sites": [
+    {"site_id": "campo-este", "lat": -33.85, "lon": -65.2, "elevation_mean_m": 505, "elevation_min_m": 498, "elevation_max_m": 513, "slope_mean_pct": 0.6, "slope_p90_pct": 1.1, "slope_max_pct": 2.4},
+    {"site_id": "campo-centro", "lat": -33.55, "lon": -66.2, "elevation_mean_m": 640, "elevation_min_m": 618, "elevation_max_m": 667, "slope_mean_pct": 1.4, "slope_p90_pct": 2.6, "slope_max_pct": 5.2},
+    {"site_id": "campo-conlara", "lat": -32.45, "lon": -65.25, "elevation_mean_m": 790, "elevation_min_m": 762, "elevation_max_m": 829, "slope_mean_pct": 2.3, "slope_p90_pct": 4.1, "slope_max_pct": 8.7}
+  ]
+}

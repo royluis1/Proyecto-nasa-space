@@ -49,7 +49,12 @@ class Settings(BaseSettings):
     appeears_username: str | None = None
     appeears_password: SecretStr | None = None
 
+    # Earthdata Login (SRTM y otros archivos protegidos). Si faltan, se usan los de AppEEARS (misma cuenta).
     earthdata_token: SecretStr | None = None
+    earthdata_username: str | None = None
+    earthdata_password: SecretStr | None = None
+    srtm_product: Literal["SRTMGL1", "SRTMGL3"] = "SRTMGL1"
+    srtm_sample_file: str = "srtm_sample_san_luis.json"
     llm_enabled: bool = False
     llm_api_key: SecretStr | None = None
 

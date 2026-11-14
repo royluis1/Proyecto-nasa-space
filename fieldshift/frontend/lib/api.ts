@@ -4,7 +4,7 @@
  */
 import type {
   ApiEnvelope, ApiResult, CalendarRequest, CalendarTimeline, ClimateSummary, ClimateSummaryRequest, CompareRequest, CompareResult, Crop, FieldCreate, FieldOut,
-  ResponseMeta, ScenarioInput, ScenarioResult, SoilMoistureRequest, SoilMoistureSummary, VegetationRequest, VegetationSummary,
+  ResponseMeta, ScenarioInput, ScenarioResult, SoilMoistureRequest, SoilMoistureSummary, TerrainRequest, TerrainSummary, VegetationRequest, VegetationSummary,
 } from "@/types/api";
 import { API_URL, DEMO_FALLBACK, REQUEST_TIMEOUT_MS } from "./config";
 import * as demo from "./demo";
@@ -229,6 +229,12 @@ export const api = {
     if (isLocalId(id)) return viaDemo(() => demo.demoCalendar(id, req));
     const body = { ...req, scenario: req.scenario ? toRequest(req.scenario) : null };
     return call(() => request<CalendarTimeline>("/calendar", { method: "POST", body, ...o }), () => demo.demoCalendar(id, req));
+  },
+
+  async terrain(req: TerrainRequest, o: Opts = {}): Promise<ApiResult<TerrainSummary>> {
+    const id = fieldIdOf(req);
+    if (isLocalId(id)) return viaDemo(() => demo.demoTerrain(id));
+    return call(() => request<TerrainSummary>("/terrain", { method: "POST", body: req, ...o }), () => demo.demoTerrain(id));
   },
 
   async climate(req: ClimateSummaryRequest, o: Opts = {}): Promise<ApiResult<ClimateSummary>> {
