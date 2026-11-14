@@ -21,11 +21,12 @@ import pandas as pd
 from app.models.enums import DataStatus
 from app.services.satellite.parsers import ParsedSeries, parse_csv
 from app.services.satellite.products import Product
-from app.utils.exceptions import NoDataError, UpstreamError
+from app.utils.exceptions import InvalidInputError, NoDataError, UpstreamError
 
 logger = logging.getLogger("fieldshift.satellite")
 
 SAMPLE_MAX_DISTANCE_DEG = 1.0
+POINT_MATCH_DEG = 0.005  # ~500 m: en pedidos de varios puntos, cada serie tiene que ser de ese punto
 
 
 @dataclass
@@ -41,6 +42,22 @@ class SatelliteData:
 def cache_key(product: Product, lat: float, lon: float, start: date, end: date) -> str:
     payload = f"{product.appeears_id}|{product.layer}|{lat:.3f}|{lon:.3f}|{start}|{end}"
     return hashlib.sha256(payload.encode()).hexdigest()[:20]
+
+
+@dataclass
+class MultiPointData:
+    """Series de varios puntos pedidos juntos (por ejemplo, los sectores de un lote)."""
+
+    series: dict[str, ParsedSeries]  # id del punto -> serie
+    status: DataStatus
+    retrieved_at: datetime
+    task_id: str | None = None
+    warnings: list[str] = field(default_factory=list)
+
+
+def multi_key(product: Product, points: list[tuple[str, float, float]], start: date, end: date) -> str:
+    payload = f"{product.appeears_id}|{product.layer}|" + ";".join(f"{i}:{a:.5f}:{b:.5f}" for i, a, b in points) + f"|{start}|{end}"
+    return "multi_" + hashlib.sha256(payload.encode()).hexdigest()[:20]
 
 
 class SatelliteProvider:
@@ -190,3 +207,72 @@ class SatelliteProvider:
         if series.df["value"].notna().sum() == 0:
             raise NoDataError("La serie no tiene datos válidos en el período pedido.")
         return series
+
+    # --- varios puntos en una tarea ---
+    def _parse_points(self, text: str, product: Product, points, start: date, end: date) -> dict[str, ParsedSeries]:
+        out = {}
+        for pid, lat, lon in points:
+            try:
+                ser = parse_csv(text, product, lat, lon)
+                if ser.site_lat is not None and np.hypot(ser.site_lat - lat, ser.site_lon - lon) > POINT_MATCH_DEG:
+                    continue  # el punto del archivo no es este (otro lote): no se usa
+                out[pid] = self._clip(ser, start, end)
+            except (NoDataError, InvalidInputError):
+                continue
+        if not out:
+            raise NoDataError(f"No hay datos válidos de {product.name} en los puntos pedidos.")
+        return out
+
+    def get_points(self, product: Product, points: list[tuple[str, float, float]], start: date, end: date) -> MultiPointData:
+        """Caché -> AppEEARS (una tarea con todos los puntos, asincrónica) -> muestra simulada del sitio."""
+        key = multi_key(product, points, start, end)
+        cached = self._csv_path(key)
+        if cached.exists():
+            series = self._parse_points(cached.read_text(encoding="utf-8"), product, points, start, end)
+            return MultiPointData(series, DataStatus.CACHED, datetime.fromtimestamp(cached.stat().st_mtime, tz=timezone.utc))
+        warnings: list[str] = []
+        task_id = None
+        if self.client_factory is not None:
+            try:
+                client = self.client_factory()
+                tasks = self._tasks()
+                task_id = tasks.get(key)
+                if task_id is None:
+                    layers = [product.layer] + ([product.qa_layer] if product.qa_layer else [])
+                    task_id = client.submit_point_task(f"fieldshift-{key}", product.appeears_id, layers, points[0][1],
+                                                       points[0][2], start, end, points=points)
+                    tasks[key] = task_id
+                    self._save_tasks(tasks)
+                    warnings.append(f"Se pidió la extracción a AppEEARS (tarea {task_id}); suele tardar de minutos a horas. "
+                                    "Mientras tanto se usan datos de muestra.")
+                else:
+                    status = client.task_status(task_id)
+                    if status == "done":
+                        text = client.download_csv(task_id, product.layer)
+                        series = self._parse_points(text, product, points, start, end)
+                        self.cache_dir.mkdir(parents=True, exist_ok=True)
+                        cached.write_text(text, encoding="utf-8")
+                        tasks.pop(key, None)
+                        self._save_tasks(tasks)
+                        return MultiPointData(series, DataStatus.LIVE, self.now(), task_id=task_id)
+                    if status == "error":
+                        tasks.pop(key, None)
+                        self._save_tasks(tasks)
+                        raise UpstreamError(f"la tarea {task_id} terminó con error")
+                    warnings.append(f"La extracción de AppEEARS (tarea {task_id}) sigue en proceso ({status}): se usan datos de muestra.")
+            except (UpstreamError, OSError) as exc:
+                msg = getattr(exc, "message", str(exc))
+                logger.warning("AppEEARS no disponible: %s", msg)
+                warnings.append(f"AppEEARS no disponible ({msg}).")
+        else:
+            warnings.append("Sin credenciales de AppEEARS: no se consultaron datos en vivo.")
+
+        path = self.samples.get(product.key)
+        if path is not None and path.exists():
+            try:
+                series = self._parse_points(path.read_text(encoding="utf-8"), product, points, start, end)
+                warnings.append(f"Se usan DATOS DE MUESTRA SIMULADOS de {product.variable}: no son observaciones de tu lote.")
+                return MultiPointData(series, DataStatus.SAMPLE, self.now(), task_id=task_id, warnings=warnings)
+            except NoDataError:
+                pass
+        raise NoDataError(f"No hay datos de {product.name} para esta ubicación.", {"warnings": warnings})

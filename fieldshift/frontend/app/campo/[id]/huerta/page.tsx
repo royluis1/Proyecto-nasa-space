@@ -5,6 +5,7 @@ import { AlertList } from "@/components/alerts/alert-list";
 import { ForecastTable } from "@/components/alerts/forecast-table";
 import { useCampo } from "@/components/campo/campo-provider";
 import { TodaySatellite } from "@/components/map/today-satellite";
+import { HeatStressCard } from "@/components/satellite/heat-stress-card";
 import { PageHeader } from "@/components/page-header";
 import { SourceLine } from "@/components/provenance/source-line";
 import { WarningsList } from "@/components/provenance/warnings";
@@ -92,6 +93,7 @@ function Panel({ r }: { r: ApiResult<HuertaPanel> }) {
         )}
       </div>
 
+      {field && <HeatStressCard fieldId={field.id} compact />}
       {field && <TodaySatellite field={field} title="Tu zona hoy, vista desde el espacio" />}
 
       <Card>

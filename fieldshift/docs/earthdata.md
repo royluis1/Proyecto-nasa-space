@@ -27,6 +27,11 @@ Si quedan vacías, se usan `FIELDSHIFT_APPEEARS_USERNAME` y `_PASSWORD`, que son
   - pendiente media (con suavizado de 3 x 3): Este 1,9 %, Centro 2,6 %, Conlara 2,5 %.
 - URS a veces responde 502 por un rato: el servidor vuelve a probar después del enfriamiento y, mientras tanto, usa la caché o la muestra.
 
+**AppEEARS en un entorno de Claude Code:**
+- Si la credencial de `appeears.earthdatacloud.nasa.gov` se guarda como usuario y contraseña, el proxy la agrega a **todos** los pedidos, también a los que necesitan el token de sesión. Por eso AppEEARS responde 403 al pedir tareas.
+- Para probar ahí, guardá un **token** de AppEEARS (dura 48 h) en lugar de usuario y contraseña.
+- **En Render no pasa**: se usan `FIELDSHIFT_APPEEARS_USERNAME` y `_PASSWORD` y el código maneja el token.
+
 **En un entorno de Claude Code**, las credenciales las agrega el proxy de red (secretos de red de `urs.earthdata.nasa.gov` y `appeears.earthdatacloud.nasa.gov`). Para que el backend intente la descarga en vivo hay que poner valores de relleno en `FIELDSHIFT_EARTHDATA_USERNAME=proxy-injected` y `FIELDSHIFT_EARTHDATA_PASSWORD=proxy-injected`: el proxy los reemplaza por los reales. **En Render**, en cambio, se cargan el usuario y la contraseña reales como variables de entorno.
 
 ## Cómo funciona la descarga

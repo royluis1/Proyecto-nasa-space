@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Depends, Path, Query
 
-from app.api.deps import get_region_repository, get_repository, get_satellite_service
+from app.api.deps import get_region_repository, get_repository, get_satellite_provider, get_satellite_service
 from app.models.enums import DataStatus
 from app.schemas.common import ApiResponse, ErrorResponse, ResponseMeta
-from app.schemas.regions import FieldSoilMoisture, ProvincesOut, ZoneAt, ZonesOut, ZoneSuitability
+from app.schemas.regions import FieldHeatStress, FieldSectors, FieldSoilMoisture, ProvincesOut, ZoneAt, ZonesOut, ZoneSuitability
 from app.services.regions.repository import RegionRepository
 from app.services.repository import Repository
+from app.services.satellite.ecostress import field_heat_stress
+from app.services.satellite.provider import SatelliteProvider
+from app.services.satellite.sectors import field_sectors
 from app.services.satellite.service import SatelliteService
 from app.services.soil_moisture_field import field_soil_moisture
 
@@ -78,3 +81,25 @@ def soil_moisture(
     r = field_soil_moisture(satellite, field_id, recent_days)
     origin = r.products[0].origin
     return ApiResponse(data=r, meta=ResponseMeta(data_status=origin, origin_label=origin.origin_label, warnings=r.warnings))
+
+
+@router.get("/fields/{field_id}/sectors", response_model=ApiResponse[FieldSectors],
+            summary="Vigor y suelo desnudo por sector del lote (Landsat 30 m)", responses={**NOT_FOUND, 503: {"model": ErrorResponse}})
+def sectors(field_id: str, repo: Repository = Depends(get_repository),
+            provider: SatelliteProvider = Depends(get_satellite_provider)) -> ApiResponse[FieldSectors]:
+    """Grilla de 3 x 3 sectores sobre el lote (o dentro de su polígono) con el NDVI de Landsat HLS L30 (30 m) de los
+    últimos 2 años: NDVI medio, pico, % de tiempo con suelo desnudo y diferencia contra la mediana del lote. AppEEARS es
+    asincrónico: la primera vez se pide la tarea y, mientras tanto, se usa la muestra rotulada (si la hay)."""
+    r = field_sectors(provider, repo.get_field(field_id))
+    return ApiResponse(data=r, meta=ResponseMeta(data_status=r.origin, origin_label=r.origin_label, warnings=r.warnings))
+
+
+@router.get("/fields/{field_id}/heat-stress", response_model=ApiResponse[FieldHeatStress],
+            summary="Calor y estrés de la zona (ECOSTRESS)", responses={**NOT_FOUND, 503: {"model": ErrorResponse}})
+def heat_stress(field_id: str, repo: Repository = Depends(get_repository),
+                provider: SatelliteProvider = Depends(get_satellite_provider)) -> ApiResponse[FieldHeatStress]:
+    """Temperatura de la superficie (ECOSTRESS LST, observada, 70 m) e índice de estrés evaporativo (ESI, modelado):
+    verano, máximos, observaciones con la superficie a más de 45 °C y estrés de los últimos 3 meses frente a lo normal."""
+    r = field_heat_stress(provider, repo.get_field(field_id))
+    st = (r.lst or r.esi).origin
+    return ApiResponse(data=r, meta=ResponseMeta(data_status=st, origin_label=st.origin_label, warnings=r.warnings))

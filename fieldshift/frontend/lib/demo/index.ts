@@ -4,7 +4,7 @@
  */
 import type {
   ApiEnvelope, CalendarRequest, CalendarTimeline, ClimateSummary, CompareResult, Crop, FieldOut, ResponseMeta, Rotation,
-  AlertsResult, FieldSoilMoisture, HuertaPanel, ProvincesOut, ZoneAt, ZoneSuitability, ZonesOut, ScenarioInput, ScenarioResult, SoilMoistureSummary, TerrainSummary, VegetationSummary,
+  AlertsResult, FieldHeatStress, FieldSectors, FieldSoilMoisture, HuertaPanel, ProvincesOut, ZoneAt, ZoneSuitability, ZonesOut, ScenarioInput, ScenarioResult, SoilMoistureSummary, TerrainSummary, VegetationSummary,
 } from "@/types/api";
 import { isBaseline, sameEffect } from "../scenarios";
 import { DEMO_NOTICE, DISCLAIMER } from "../content";
@@ -166,6 +166,18 @@ export async function demoZoneAt(fieldId: string): Promise<ApiEnvelope<ZoneAt>> 
 export async function demoFieldSoilMoisture(fieldId: string): Promise<ApiEnvelope<FieldSoilMoisture>> {
   const { id, note } = await exampleIdFor(fieldId);
   const d = await load<FieldSoilMoisture>(`soil-moisture-field-${id}`);
+  return env({ ...d, field_id: fieldId }, [...(note ? [note] : []), ...d.warnings]);
+}
+
+export async function demoSectors(fieldId: string): Promise<ApiEnvelope<FieldSectors>> {
+  const { id, note } = await exampleIdFor(fieldId);
+  const d = await load<FieldSectors>(`sectors-${id}`);
+  return env({ ...d, field_id: fieldId }, [...(note ? [note] : []), ...d.warnings]);
+}
+
+export async function demoHeatStress(fieldId: string): Promise<ApiEnvelope<FieldHeatStress>> {
+  const { id, note } = await exampleIdFor(fieldId);
+  const d = await load<FieldHeatStress>(`heat-stress-${id}`);
   return env({ ...d, field_id: fieldId }, [...(note ? [note] : []), ...d.warnings]);
 }
 

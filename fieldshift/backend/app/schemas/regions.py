@@ -186,3 +186,68 @@ class FieldSoilMoisture(BaseModel):
     products: list[SoilMoistureProduct]
     sensors: str = "Sensores propios del productor: todavía no están conectados (punto de entrada preparado para el futuro)."
     warnings: list[str]
+
+
+# --- Landsat/HLS por sectores y ECOSTRESS ---
+
+
+class Sector(BaseModel):
+    id: str
+    name: str = Field(examples=["Noreste"])
+    latitude: float
+    longitude: float
+    observations: int
+    mean_ndvi: float | None
+    peak_ndvi: float | None = Field(description="Percentil 90 del NDVI del período.")
+    bare_pct: float | None = Field(description="% de observaciones con NDVI por debajo del umbral de suelo desnudo.")
+    vs_field_pct: float | None = Field(description="Diferencia del NDVI medio contra la mediana del lote, en %.")
+    vigor: Literal["más débil", "parecido", "más vigoroso"] | None
+
+
+class FieldSectors(BaseModel):
+    field_id: str
+    title: str = "Vigor y suelo desnudo por sector (Landsat, 30 m)"
+    product: str
+    resolution: str
+    label: Literal["observado"] = "observado"
+    period: str
+    bare_threshold: float
+    sectors: list[Sector]
+    weakest: str | None
+    barest: str | None
+    reading: str
+    method: str
+    origin: DataStatus
+    origin_label: str
+    retrieved_at: dt.datetime | None
+    task_id: str | None = None
+    limitations: list[str]
+    warnings: list[str]
+
+
+class HeatReading(BaseModel):
+    product: str
+    name: str
+    label: Literal["observado", "modelado"]
+    resolution: str
+    observations: int
+    last_observation: dt.date | None
+    origin: DataStatus
+    origin_label: str
+    limitations: list[str]
+
+
+class FieldHeatStress(BaseModel):
+    field_id: str
+    title: str = "Calor y estrés de la zona (ECOSTRESS)"
+    period: str
+    lst: HeatReading | None
+    lst_summer_mean_c: float | None = Field(description="Temperatura media de la superficie en verano (dic-feb), °C.")
+    lst_max_c: float | None
+    hot_surface_obs: int | None = Field(description="Observaciones con la superficie a más de 45 °C.")
+    esi: HeatReading | None
+    esi_recent: float | None = Field(description="ESI medio de los últimos 90 días con dato.")
+    esi_normal: float | None = Field(description="ESI medio de los mismos meses en los otros años.")
+    stress_level: Literal["bajo", "medio", "alto"] | None
+    reading: str
+    warnings: list[str]

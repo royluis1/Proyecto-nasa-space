@@ -33,6 +33,8 @@ from app.services.satellite.service import SatelliteService  # noqa: E402
 from app.services.terrain.service import TerrainProvider, terrain_for_field  # noqa: E402
 from app.services.regions.repository import RegionRepository  # noqa: E402
 from app.services.soil_moisture_field import field_soil_moisture  # noqa: E402
+from app.services.satellite.sectors import field_sectors  # noqa: E402
+from app.services.satellite.ecostress import field_heat_stress  # noqa: E402
 from app.utils.exceptions import UpstreamError  # noqa: E402
 
 OUT = ROOT / "frontend" / "lib" / "demo" / "data"
@@ -59,7 +61,10 @@ def main() -> None:
     power = PowerService(failing, PowerCache(Path(tempfile.mkdtemp()), 24), SampleProvider(s.nasa_samples_dir / s.power_sample_file),
                          files=PowerFileProvider([s.nasa_samples_dir / n for n in s.power_fallback_files]))
     samples = {"SPL4SMGP_rootzone": s.nasa_samples_dir / s.smap_sample_file, "MOD13Q1": s.nasa_samples_dir / s.ndvi_sample_file,
-               "SPL3SMP_E": s.nasa_samples_dir / "smap_l3_sample_san_luis.csv"}
+               "SPL3SMP_E": s.nasa_samples_dir / "smap_l3_sample_san_luis.csv",
+               "HLSL30_VI": s.nasa_samples_dir / "hls_sectors_sample_san_luis.csv",
+               "ECO_L2T_LSTE": s.nasa_samples_dir / "ecostress_sample_san_luis.csv",
+               "ECO_L4T_ESI": s.nasa_samples_dir / "ecostress_sample_san_luis.csv"}
     satellite = SatelliteService(repo, SatelliteProvider(Path(tempfile.mkdtemp()), samples))
     terrain = TerrainProvider(Path(tempfile.mkdtemp()), s.nasa_samples_dir / s.srtm_sample_file)  # sin credenciales: muestra
     service = RotationService(repo, power, s.power_base_url, satellite, terrain)
@@ -96,6 +101,8 @@ def main() -> None:
             write(f"alerts-{fid}-{profile}.json", dump(ews.alerts(profile, field_id=fid)))
         write(f"zone-at-{fid}.json", dump(regions.zone_at(field.location.lat, field.location.lon)))
         write(f"soil-moisture-field-{fid}.json", dump(field_soil_moisture(satellite, fid)))
+        write(f"sectors-{fid}.json", dump(field_sectors(satellite.provider, field)))
+        write(f"heat-stress-{fid}.json", dump(field_heat_stress(satellite.provider, field)))
         relief, _ = terrain_for_field(terrain, field)
         write(f"terrain-{fid}.json", dump(relief))
         results = []

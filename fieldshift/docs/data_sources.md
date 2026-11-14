@@ -8,6 +8,8 @@
 | MODIS | **MOD13Q1 v6.1** (NDVI, compuesto 16 días); MYD13Q1 y MOD13A1 como alternativas | 250 m (500 m en A1) | Vigor, cobertura, barbechos, tendencia de biomasa, campañas | observado | **Integrado** (AppEEARS, CSV/GeoTIFF, muestra) |
 | SMAP | **SPL4SMGP v8** (zona de raíces 0-100 cm, por defecto) | 9 km, cada 3 h | Humedad en raíces, sequías, estrés hídrico | **modelado** | **Integrado** (AppEEARS, CSV, muestra) |
 | SMAP | SPL3SMP_E v6 (superficial ~5 cm) | 9 km, diaria con huecos | Humedad superficial | observado | Admitido (CSV o AppEEARS) |
+| Landsat (HLS) | **HLSL30_VI v2.0** (NDVI de Landsat 8/9 armonizado, LP DAAC) | 30 m, cada 8-16 días | Vigor y suelo desnudo por sector del lote (grilla de 3 x 3 puntos en una tarea de AppEEARS) | observado | **Integrado** (AppEEARS multipunto, caché, muestra simulada `hls_sectors_sample_san_luis.csv`) |
+| ECOSTRESS | **ECO_L2T_LSTE v2** (temperatura de la superficie) y **ECO_L4T_ESI v2** (índice de estrés evaporativo, PT-JPL) | 70 m, cada 1-5 días a distintas horas | Calor de la superficie y estrés de la vegetación del lote y su entorno | LST observado; ESI **modelado** | **Integrado** (AppEEARS, caché, muestra simulada `ecostress_sample_san_luis.csv`) |
 | SRTM | **SRTMGL1 v3** (elevación, LP DAAC, con Earthdata Login); SRTMGL3 (90 m) opcional | ~30 m | Pendiente del lote (método de Horn) para el riesgo de erosión hídrica del puntaje de suelo | observado (año 2000) | **Integrado** (Earthdata Login + CMR, caché, muestra) |
 
 ### Zonas, suelo y humedad satelital

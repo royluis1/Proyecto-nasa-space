@@ -130,6 +130,49 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/fields/{field_id}/sectors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Vigor y suelo desnudo por sector del lote (Landsat 30 m)
+         * @description Grilla de 3 x 3 sectores sobre el lote (o dentro de su polígono) con el NDVI de Landsat HLS L30 (30 m) de los
+         *     últimos 2 años: NDVI medio, pico, % de tiempo con suelo desnudo y diferencia contra la mediana del lote. AppEEARS es
+         *     asincrónico: la primera vez se pide la tarea y, mientras tanto, se usa la muestra rotulada (si la hay).
+         */
+        get: operations["sectors_fields__field_id__sectors_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/fields/{field_id}/heat-stress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Calor y estrés de la zona (ECOSTRESS)
+         * @description Temperatura de la superficie (ECOSTRESS LST, observada, 70 m) e índice de estrés evaporativo (ESI, modelado):
+         *     verano, máximos, observaciones con la superficie a más de 45 °C y estrés de los últimos 3 meses frente a lo normal.
+         */
+        get: operations["heat_stress_fields__field_id__heat_stress_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/crops": {
         parameters: {
             query?: never;
@@ -661,9 +704,19 @@ export interface components {
             data: components["schemas"]["FarmerPriority"];
             meta: components["schemas"]["ResponseMeta"];
         };
+        /** ApiResponse[FieldHeatStress] */
+        ApiResponse_FieldHeatStress_: {
+            data: components["schemas"]["FieldHeatStress"];
+            meta: components["schemas"]["ResponseMeta"];
+        };
         /** ApiResponse[FieldOut] */
         ApiResponse_FieldOut_: {
             data: components["schemas"]["FieldOut"];
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[FieldSectors] */
+        ApiResponse_FieldSectors_: {
+            data: components["schemas"]["FieldSectors"];
             meta: components["schemas"]["ResponseMeta"];
         };
         /** ApiResponse[FieldSoilMoisture] */
@@ -1587,6 +1640,48 @@ export interface components {
             budget?: components["schemas"]["Level"] | null;
             boundary?: components["schemas"]["Boundary"] | null;
         };
+        /** FieldHeatStress */
+        FieldHeatStress: {
+            /** Field Id */
+            field_id: string;
+            /**
+             * Title
+             * @default Calor y estrés de la zona (ECOSTRESS)
+             */
+            title: string;
+            /** Period */
+            period: string;
+            lst: components["schemas"]["HeatReading"] | null;
+            /**
+             * Lst Summer Mean C
+             * @description Temperatura media de la superficie en verano (dic-feb), °C.
+             */
+            lst_summer_mean_c: number | null;
+            /** Lst Max C */
+            lst_max_c: number | null;
+            /**
+             * Hot Surface Obs
+             * @description Observaciones con la superficie a más de 45 °C.
+             */
+            hot_surface_obs: number | null;
+            esi: components["schemas"]["HeatReading"] | null;
+            /**
+             * Esi Recent
+             * @description ESI medio de los últimos 90 días con dato.
+             */
+            esi_recent: number | null;
+            /**
+             * Esi Normal
+             * @description ESI medio de los mismos meses en los otros años.
+             */
+            esi_normal: number | null;
+            /** Stress Level */
+            stress_level: ("bajo" | "medio" | "alto") | null;
+            /** Reading */
+            reading: string;
+            /** Warnings */
+            warnings: string[];
+        };
         /**
          * FieldOut
          * @description Campo/lote guardado.
@@ -1638,6 +1733,51 @@ export interface components {
             sample_note?: string | null;
             /** @description Perfil automático: suelo estimado, zona climática, cultivos más aptos y transición. */
             auto_profile?: components["schemas"]["AutoProfile"] | null;
+        };
+        /** FieldSectors */
+        FieldSectors: {
+            /** Field Id */
+            field_id: string;
+            /**
+             * Title
+             * @default Vigor y suelo desnudo por sector (Landsat, 30 m)
+             */
+            title: string;
+            /** Product */
+            product: string;
+            /** Resolution */
+            resolution: string;
+            /**
+             * Label
+             * @default observado
+             * @constant
+             */
+            label: "observado";
+            /** Period */
+            period: string;
+            /** Bare Threshold */
+            bare_threshold: number;
+            /** Sectors */
+            sectors: components["schemas"]["Sector"][];
+            /** Weakest */
+            weakest: string | null;
+            /** Barest */
+            barest: string | null;
+            /** Reading */
+            reading: string;
+            /** Method */
+            method: string;
+            origin: components["schemas"]["DataStatus"];
+            /** Origin Label */
+            origin_label: string;
+            /** Retrieved At */
+            retrieved_at: string | null;
+            /** Task Id */
+            task_id?: string | null;
+            /** Limitations */
+            limitations: string[];
+            /** Warnings */
+            warnings: string[];
         };
         /** FieldSoilMoisture */
         FieldSoilMoisture: {
@@ -1759,6 +1899,29 @@ export interface components {
              */
             next_hot_days: number;
             source: components["schemas"]["SourceInfo"];
+        };
+        /** HeatReading */
+        HeatReading: {
+            /** Product */
+            product: string;
+            /** Name */
+            name: string;
+            /**
+             * Label
+             * @enum {string}
+             */
+            label: "observado" | "modelado";
+            /** Resolution */
+            resolution: string;
+            /** Observations */
+            observations: number;
+            /** Last Observation */
+            last_observation: string | null;
+            origin: components["schemas"]["DataStatus"];
+            /** Origin Label */
+            origin_label: string;
+            /** Limitations */
+            limitations: string[];
         };
         /** HeatSummary */
         HeatSummary: {
@@ -2691,6 +2854,41 @@ export interface components {
             heat_days: number | null;
             /** Years */
             years: number;
+        };
+        /** Sector */
+        Sector: {
+            /** Id */
+            id: string;
+            /**
+             * Name
+             * @example Noreste
+             */
+            name: string;
+            /** Latitude */
+            latitude: number;
+            /** Longitude */
+            longitude: number;
+            /** Observations */
+            observations: number;
+            /** Mean Ndvi */
+            mean_ndvi: number | null;
+            /**
+             * Peak Ndvi
+             * @description Percentil 90 del NDVI del período.
+             */
+            peak_ndvi: number | null;
+            /**
+             * Bare Pct
+             * @description % de observaciones con NDVI por debajo del umbral de suelo desnudo.
+             */
+            bare_pct: number | null;
+            /**
+             * Vs Field Pct
+             * @description Diferencia del NDVI medio contra la mediana del lote, en %.
+             */
+            vs_field_pct: number | null;
+            /** Vigor */
+            vigor: ("más débil" | "parecido" | "más vigoroso") | null;
         };
         /**
          * Severity
@@ -3863,6 +4061,104 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_FieldSoilMoisture_"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    sectors_fields__field_id__sectors_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                field_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_FieldSectors_"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    heat_stress_fields__field_id__heat_stress_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                field_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_FieldHeatStress_"];
                 };
             };
             /** @description Not Found */

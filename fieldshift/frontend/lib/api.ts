@@ -3,7 +3,7 @@
  * errores normalizados y paso automático a datos de ejemplo si el servidor no responde.
  */
 import type {
-  AlertsResult, ApiEnvelope, ApiResult, CalendarRequest, FieldSoilMoisture, HuertaPanel, ProvincesOut, ZoneAt, ZoneSuitability, ZonesOut, CalendarTimeline, ClimateSummary, ClimateSummaryRequest, CompareRequest, CompareResult, Crop, FieldCreate, FieldOut,
+  AlertsResult, ApiEnvelope, ApiResult, CalendarRequest, FieldHeatStress, FieldSectors, FieldSoilMoisture, HuertaPanel, ProvincesOut, ZoneAt, ZoneSuitability, ZonesOut, CalendarTimeline, ClimateSummary, ClimateSummaryRequest, CompareRequest, CompareResult, Crop, FieldCreate, FieldOut,
   ResponseMeta, ScenarioInput, ScenarioResult, SoilMoistureRequest, SoilMoistureSummary, TerrainRequest, TerrainSummary, VegetationRequest, VegetationSummary,
 } from "@/types/api";
 import { API_URL, DEMO_FALLBACK, REQUEST_TIMEOUT_MS } from "./config";
@@ -267,6 +267,16 @@ export const api = {
   async zoneAt(fieldId: string, lat: number, lon: number, o: Opts = {}): Promise<ApiResult<ZoneAt>> {
     if (isLocalId(fieldId)) return viaDemo(() => demo.demoZoneAt(fieldId));
     return call(() => request<ZoneAt>(`/zones/at?lat=${lat}&lon=${lon}`, o), () => demo.demoZoneAt(fieldId));
+  },
+
+  async fieldSectors(fieldId: string, o: Opts = {}): Promise<ApiResult<FieldSectors>> {
+    if (isLocalId(fieldId)) return viaDemo(() => demo.demoSectors(fieldId));
+    return call(() => request<FieldSectors>(`/fields/${encodeURIComponent(fieldId)}/sectors`, o), () => demo.demoSectors(fieldId));
+  },
+
+  async fieldHeatStress(fieldId: string, o: Opts = {}): Promise<ApiResult<FieldHeatStress>> {
+    if (isLocalId(fieldId)) return viaDemo(() => demo.demoHeatStress(fieldId));
+    return call(() => request<FieldHeatStress>(`/fields/${encodeURIComponent(fieldId)}/heat-stress`, o), () => demo.demoHeatStress(fieldId));
   },
 
   async fieldSoilMoisture(fieldId: string, o: Opts = {}): Promise<ApiResult<FieldSoilMoisture>> {

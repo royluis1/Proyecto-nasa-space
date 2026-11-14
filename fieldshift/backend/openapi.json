@@ -309,6 +309,132 @@
     }
    }
   },
+  "/fields/{field_id}/sectors": {
+   "get": {
+    "tags": [
+     "zonas y suelo"
+    ],
+    "summary": "Vigor y suelo desnudo por sector del lote (Landsat 30 m)",
+    "description": "Grilla de 3 x 3 sectores sobre el lote (o dentro de su polígono) con el NDVI de Landsat HLS L30 (30 m) de los\núltimos 2 años: NDVI medio, pico, % de tiempo con suelo desnudo y diferencia contra la mediana del lote. AppEEARS es\nasincrónico: la primera vez se pide la tarea y, mientras tanto, se usa la muestra rotulada (si la hay).",
+    "operationId": "sectors_fields__field_id__sectors_get",
+    "parameters": [
+     {
+      "name": "field_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Field Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_FieldSectors_"
+        }
+       }
+      }
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      },
+      "description": "Not Found"
+     },
+     "503": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      },
+      "description": "Service Unavailable"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/fields/{field_id}/heat-stress": {
+   "get": {
+    "tags": [
+     "zonas y suelo"
+    ],
+    "summary": "Calor y estrés de la zona (ECOSTRESS)",
+    "description": "Temperatura de la superficie (ECOSTRESS LST, observada, 70 m) e índice de estrés evaporativo (ESI, modelado):\nverano, máximos, observaciones con la superficie a más de 45 °C y estrés de los últimos 3 meses frente a lo normal.",
+    "operationId": "heat_stress_fields__field_id__heat_stress_get",
+    "parameters": [
+     {
+      "name": "field_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Field Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_FieldHeatStress_"
+        }
+       }
+      }
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      },
+      "description": "Not Found"
+     },
+     "503": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      },
+      "description": "Service Unavailable"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/crops": {
    "get": {
     "tags": [
@@ -2178,6 +2304,22 @@
     ],
     "title": "ApiResponse[FarmerPriority]"
    },
+   "ApiResponse_FieldHeatStress_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/FieldHeatStress"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[FieldHeatStress]"
+   },
    "ApiResponse_FieldOut_": {
     "properties": {
      "data": {
@@ -2193,6 +2335,22 @@
      "meta"
     ],
     "title": "ApiResponse[FieldOut]"
+   },
+   "ApiResponse_FieldSectors_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/FieldSectors"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[FieldSectors]"
    },
    "ApiResponse_FieldSoilMoisture_": {
     "properties": {
@@ -4754,6 +4912,145 @@
     ],
     "title": "FieldCreate"
    },
+   "FieldHeatStress": {
+    "properties": {
+     "field_id": {
+      "type": "string",
+      "title": "Field Id"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title",
+      "default": "Calor y estrés de la zona (ECOSTRESS)"
+     },
+     "period": {
+      "type": "string",
+      "title": "Period"
+     },
+     "lst": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/HeatReading"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "lst_summer_mean_c": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lst Summer Mean C",
+      "description": "Temperatura media de la superficie en verano (dic-feb), °C."
+     },
+     "lst_max_c": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lst Max C"
+     },
+     "hot_surface_obs": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Hot Surface Obs",
+      "description": "Observaciones con la superficie a más de 45 °C."
+     },
+     "esi": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/HeatReading"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "esi_recent": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Esi Recent",
+      "description": "ESI medio de los últimos 90 días con dato."
+     },
+     "esi_normal": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Esi Normal",
+      "description": "ESI medio de los mismos meses en los otros años."
+     },
+     "stress_level": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "bajo",
+         "medio",
+         "alto"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Stress Level"
+     },
+     "reading": {
+      "type": "string",
+      "title": "Reading"
+     },
+     "warnings": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Warnings"
+     }
+    },
+    "type": "object",
+    "required": [
+     "field_id",
+     "period",
+     "lst",
+     "lst_summer_mean_c",
+     "lst_max_c",
+     "hot_surface_obs",
+     "esi",
+     "esi_recent",
+     "esi_normal",
+     "stress_level",
+     "reading",
+     "warnings"
+    ],
+    "title": "FieldHeatStress"
+   },
    "FieldOut": {
     "properties": {
      "name": {
@@ -4906,6 +5203,141 @@
     ],
     "title": "FieldOut",
     "description": "Campo/lote guardado."
+   },
+   "FieldSectors": {
+    "properties": {
+     "field_id": {
+      "type": "string",
+      "title": "Field Id"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title",
+      "default": "Vigor y suelo desnudo por sector (Landsat, 30 m)"
+     },
+     "product": {
+      "type": "string",
+      "title": "Product"
+     },
+     "resolution": {
+      "type": "string",
+      "title": "Resolution"
+     },
+     "label": {
+      "type": "string",
+      "const": "observado",
+      "title": "Label",
+      "default": "observado"
+     },
+     "period": {
+      "type": "string",
+      "title": "Period"
+     },
+     "bare_threshold": {
+      "type": "number",
+      "title": "Bare Threshold"
+     },
+     "sectors": {
+      "items": {
+       "$ref": "#/components/schemas/Sector"
+      },
+      "type": "array",
+      "title": "Sectors"
+     },
+     "weakest": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Weakest"
+     },
+     "barest": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Barest"
+     },
+     "reading": {
+      "type": "string",
+      "title": "Reading"
+     },
+     "method": {
+      "type": "string",
+      "title": "Method"
+     },
+     "origin": {
+      "$ref": "#/components/schemas/DataStatus"
+     },
+     "origin_label": {
+      "type": "string",
+      "title": "Origin Label"
+     },
+     "retrieved_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Retrieved At"
+     },
+     "task_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Task Id"
+     },
+     "limitations": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Limitations"
+     },
+     "warnings": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Warnings"
+     }
+    },
+    "type": "object",
+    "required": [
+     "field_id",
+     "product",
+     "resolution",
+     "period",
+     "bare_threshold",
+     "sectors",
+     "weakest",
+     "barest",
+     "reading",
+     "method",
+     "origin",
+     "origin_label",
+     "retrieved_at",
+     "limitations",
+     "warnings"
+    ],
+    "title": "FieldSectors"
    },
    "FieldSoilMoisture": {
     "properties": {
@@ -5259,6 +5691,73 @@
      "source"
     ],
     "title": "HeatInfo"
+   },
+   "HeatReading": {
+    "properties": {
+     "product": {
+      "type": "string",
+      "title": "Product"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "label": {
+      "type": "string",
+      "enum": [
+       "observado",
+       "modelado"
+      ],
+      "title": "Label"
+     },
+     "resolution": {
+      "type": "string",
+      "title": "Resolution"
+     },
+     "observations": {
+      "type": "integer",
+      "title": "Observations"
+     },
+     "last_observation": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Observation"
+     },
+     "origin": {
+      "$ref": "#/components/schemas/DataStatus"
+     },
+     "origin_label": {
+      "type": "string",
+      "title": "Origin Label"
+     },
+     "limitations": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Limitations"
+     }
+    },
+    "type": "object",
+    "required": [
+     "product",
+     "name",
+     "label",
+     "resolution",
+     "observations",
+     "last_observation",
+     "origin",
+     "origin_label",
+     "limitations"
+    ],
+    "title": "HeatReading"
    },
    "HeatSummary": {
     "properties": {
@@ -7712,6 +8211,110 @@
      "years"
     ],
     "title": "SeasonalSummary"
+   },
+   "Sector": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name",
+      "examples": [
+       "Noreste"
+      ]
+     },
+     "latitude": {
+      "type": "number",
+      "title": "Latitude"
+     },
+     "longitude": {
+      "type": "number",
+      "title": "Longitude"
+     },
+     "observations": {
+      "type": "integer",
+      "title": "Observations"
+     },
+     "mean_ndvi": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Mean Ndvi"
+     },
+     "peak_ndvi": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Peak Ndvi",
+      "description": "Percentil 90 del NDVI del período."
+     },
+     "bare_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Bare Pct",
+      "description": "% de observaciones con NDVI por debajo del umbral de suelo desnudo."
+     },
+     "vs_field_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Vs Field Pct",
+      "description": "Diferencia del NDVI medio contra la mediana del lote, en %."
+     },
+     "vigor": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "más débil",
+         "parecido",
+         "más vigoroso"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Vigor"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "name",
+     "latitude",
+     "longitude",
+     "observations",
+     "mean_ndvi",
+     "peak_ndvi",
+     "bare_pct",
+     "vs_field_pct",
+     "vigor"
+    ],
+    "title": "Sector"
    },
    "Severity": {
     "type": "string",

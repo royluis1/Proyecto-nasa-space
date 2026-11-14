@@ -43,6 +43,9 @@ def satellite_provider(tmp_path):
             "SPL4SMGP_rootzone": SAMPLES_DIR / "smap_sample_san_luis.csv",
             "SPL4SMGP_surface": SAMPLES_DIR / "smap_sample_san_luis.csv",
             "SPL3SMP_E": SAMPLES_DIR / "smap_l3_sample_san_luis.csv",
+            "HLSL30_VI": SAMPLES_DIR / "hls_sectors_sample_san_luis.csv",
+            "ECO_L2T_LSTE": SAMPLES_DIR / "ecostress_sample_san_luis.csv",
+            "ECO_L4T_ESI": SAMPLES_DIR / "ecostress_sample_san_luis.csv",
             "MOD13Q1": SAMPLES_DIR / "ndvi_sample_san_luis.csv",
         },
     )

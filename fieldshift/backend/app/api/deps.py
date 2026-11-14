@@ -75,6 +75,9 @@ def get_satellite_provider() -> SatelliteProvider:
         **{k: s.nasa_samples_dir / s.smap_sample_file for k in ("SPL4SMGP_rootzone", "SPL4SMGP_surface")},
         **{k: s.nasa_samples_dir / s.ndvi_sample_file for k in ("MOD13Q1",)},
         "SPL3SMP_E": s.nasa_samples_dir / "smap_l3_sample_san_luis.csv",
+        "HLSL30_VI": s.nasa_samples_dir / "hls_sectors_sample_san_luis.csv",
+        "ECO_L2T_LSTE": s.nasa_samples_dir / "ecostress_sample_san_luis.csv",
+        "ECO_L4T_ESI": s.nasa_samples_dir / "ecostress_sample_san_luis.csv",
     }
     return SatelliteProvider(s.cache_dir / "appeears", samples, factory)
 

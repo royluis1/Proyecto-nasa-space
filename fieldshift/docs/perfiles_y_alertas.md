@@ -30,7 +30,7 @@ En `/ingresar` el usuario elige **Huerta** o **Agricultor**. No hay contraseña:
 | Lluvia pasada | NASA POWER | Funcionando (GPM/IMERG, próximamente) |
 | Lluvia futura | Open-Meteo, **no es NASA** (se aclara) | Funcionando |
 | Vegetación de la zona | MODIS | Funcionando (Landsat, próximamente) |
-| Calor de la zona (extra) | ECOSTRESS | Próximamente (mientras tanto, días de calor de POWER) |
+| Calor de la zona (extra) | ECOSTRESS (temperatura de la superficie) | Funcionando |
 
 **Agricultor**
 
@@ -40,10 +40,10 @@ En `/ingresar` el usuario elige **Huerta** o **Agricultor**. No hay contraseña:
 | Balance de agua (demanda del cultivo) | NASA POWER | Funcionando |
 | Lluvia pasada y eventos extremos | GPM/IMERG | Próximamente (mientras tanto, POWER) |
 | Lluvia futura | Open-Meteo, **no es NASA** | Funcionando |
-| Vigor, barbechos y suelo desnudo por sector del lote | Landsat (30 m) | Próximamente (mientras tanto, MODIS 250 m) |
+| Vigor, barbechos y suelo desnudo por sector del lote | Landsat (HLS, 30 m), 9 sectores | Funcionando |
 | Historial largo de vegetación y años secos | MODIS | Funcionando |
 | Humedad del suelo | SMAP | Funcionando |
-| Calor y estrés de la zona (extra) | ECOSTRESS | Próximamente |
+| Calor y estrés de la zona (extra) | ECOSTRESS (temperatura y estrés evaporativo) | Funcionando |
 | Relieve y riesgo de erosión | SRTM | Funcionando |
 
 ## NASA POWER: en vivo, con respaldo
@@ -121,4 +121,4 @@ El mismo evento tiene un mensaje distinto según el perfil. A la huerta le dice,
 ## Próximos pasos
 
 - **GPM/IMERG**: lluvia satelital diaria de 10 km, desde GES DISC con Earthdata Login. La sesión de Earthdata ya está hecha (`docs/earthdata.md`).
-- **Landsat y HLS (30 m) y ECOSTRESS (temperatura de superficie)**: por AppEEARS, con el mismo conector que SMAP y MODIS.
+- ~~Landsat y ECOSTRESS~~: hechos (`GET /fields/{id}/sectors` y `GET /fields/{id}/heat-stress`; tarjetas en Diagnóstico y Mi huerta).

@@ -68,14 +68,17 @@ class AppEEARSClient:
         start: date,
         end: date,
         point_id: str = "lote",
+        points: list[tuple[str, float, float]] | None = None,
     ) -> str:
+        """Tarea por punto. Con `points` se piden varios puntos (por ejemplo, sectores de un lote) en una sola tarea."""
+        coords = points or [(point_id, lat, lon)]
         body = {
             "task_type": "point",
             "task_name": name,
             "params": {
                 "dates": [{"startDate": start.strftime("%m-%d-%Y"), "endDate": end.strftime("%m-%d-%Y")}],
                 "layers": [{"product": appeears_id, "layer": layer} for layer in layers],
-                "coordinates": [{"id": point_id, "latitude": lat, "longitude": lon}],
+                "coordinates": [{"id": pid, "latitude": la, "longitude": lo} for pid, la, lo in coords],
             },
         }
         return self._request("POST", "/task", json=body).json()["task_id"]

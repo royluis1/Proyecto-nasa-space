@@ -54,6 +54,8 @@ def _qa_ok(qa: pd.Series, rule: str | None) -> pd.Series:
         return qa.isin([0, 1])
     if rule == "bit0_clear":
         return qa.notna() & ((qa.fillna(1).astype("int64") & 1) == 0)
+    if rule == "zero_clear":  # máscara de nubes de ECOSTRESS: 0 = despejado, 1 = nube, 255 = sin dato
+        return qa == 0
     return pd.Series(True, index=qa.index)
 
 

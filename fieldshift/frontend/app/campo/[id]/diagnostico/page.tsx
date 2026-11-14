@@ -8,6 +8,8 @@ import {
   AnnualRainChart, CampaignsChart, HeatChart, MonthlyClimateChart, NdviClimatologyChart, SoilMoistureAnomalyChart, SoilMoistureClimatologyChart,
 } from "@/components/charts/diagnostic-charts";
 import { TodaySatellite } from "@/components/map/today-satellite";
+import { HeatStressCard } from "@/components/satellite/heat-stress-card";
+import { SectorsCard } from "@/components/satellite/sectors-card";
 import { PageHeader } from "@/components/page-header";
 import { SoilMoistureIndicator } from "@/components/zones/soil-moisture-indicator";
 import { LabelBadge, OriginBadge, RiskLevelBadge } from "@/components/provenance/badges";
@@ -258,6 +260,8 @@ export default function DiagnosticoPage() {
           <AsyncBlock state={terrain} what="el relieve">{(r) => <TerrainSection r={r} />}</AsyncBlock>
         </CardContent>
       </Card>
+      <SectorsCard fieldId={fieldId} />
+      <HeatStressCard fieldId={fieldId} />
       {field && <TodaySatellite field={field} />}
       <p className="flex items-start gap-2 text-sm text-muted-foreground">
         <Flame aria-hidden className="mt-0.5 size-4 shrink-0" />

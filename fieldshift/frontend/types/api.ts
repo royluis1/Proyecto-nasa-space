@@ -80,6 +80,9 @@ export type Transition = S["Transition"];
 export type SoilEstimate = S["SoilEstimate"];
 export type AutoProfile = S["AutoProfile"];
 export type FieldSoilMoisture = S["FieldSoilMoisture"];
+export type FieldSectors = S["FieldSectors"];
+export type Sector = S["Sector"];
+export type FieldHeatStress = S["FieldHeatStress"];
 export type SoilMoistureProduct = S["SoilMoistureProduct"];
 export type TerrainRequest = Optional<S["TerrainRequest"]>;
 

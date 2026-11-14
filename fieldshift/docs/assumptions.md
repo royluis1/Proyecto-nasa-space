@@ -94,6 +94,10 @@ Todo lo que no está respaldado por un dato observado o una fuente verificada se
 | Materia orgánica: baja < 1 %; media 1-2,5 %; alta > 2,5 % | Criterio general | ⚠️ a validar para suelos de San Luis |
 | Textura USDA -> clases de FieldShift (areno franco -> arenosa; franco arcillo arenoso, franco arcilloso y franco arcillo limoso -> franco arcillosa; arcillo arenoso y arcillo limoso -> arcillosa; limoso -> franco limosa) | Simplificación | Supuesto |
 | Humedad SMAP en palabras: anomalía ≤ -15 % "más seco", ≥ +15 % "más húmedo" que lo normal para el mes | Supuesto | ⚠️ |
+| Sectores del lote: grilla de 3 x 3 sobre el lote (o su polígono), un píxel de Landsat de 30 m por sector, últimos 2 años | Supuesto de diseño | ⚠️ |
+| Suelo desnudo: NDVI < 0,3; sector "más débil" o "más vigoroso" si su NDVI medio difiere 10 % o más de la mediana del lote | Supuesto | ⚠️ a validar |
+| ECOSTRESS: superficie "muy caliente" > 45 °C; estrés de la vegetación por ESI: < 0,3 alto, 0,3-0,6 medio, > 0,6 bajo | Supuesto | ⚠️ a validar |
+| Muestras `hls_sectors_sample_san_luis.csv` y `ecostress_sample_san_luis.csv` | — | **Simuladas** |
 | Muestras `zonas_san_luis_muestra.geojson`, `soil_sample_san_luis.json`, `smap_l3_sample_san_luis.csv` | — | **Simuladas** |
 
 ## A verificar con la fuente

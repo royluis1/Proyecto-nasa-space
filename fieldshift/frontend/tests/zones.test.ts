@@ -71,3 +71,26 @@ describe("zonas y perfil (datos de ejemplo)", () => {
     expect(m.context).toMatch(/no es tiempo real/);
   });
 });
+
+describe("Landsat por sectores y ECOSTRESS (datos de ejemplo)", () => {
+  it("9 sectores con NDVI, suelo desnudo y el más débil señalado", async () => {
+    const { demoSectors } = await import("@/lib/demo");
+    const d = (await demoSectors("campo-este")).data;
+    expect(d.sectors).toHaveLength(9);
+    expect(d.label).toBe("observado");
+    expect(d.resolution).toBe("30 m");
+    const weak = d.sectors.find((s) => s.id === d.weakest)!;
+    expect(weak.vigor).toBe("más débil");
+    expect(d.reading).toMatch(new RegExp(weak.name));
+    expect(d.origin).toBe("sample");
+  });
+  it("ECOSTRESS: temperatura observada, estrés modelado y lectura en palabras", async () => {
+    const { demoHeatStress } = await import("@/lib/demo");
+    const d = (await demoHeatStress("campo-conlara")).data;
+    expect(d.lst?.label).toBe("observado");
+    expect(d.esi?.label).toBe("modelado");
+    expect(d.lst_summer_mean_c).toBeGreaterThan(d.lst_max_c! - 40);
+    expect(["bajo", "medio", "alto"]).toContain(d.stress_level);
+    expect(d.reading).toMatch(/ESI/);
+  });
+});

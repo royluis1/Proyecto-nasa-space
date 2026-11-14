@@ -105,3 +105,12 @@
   font-size: 0.8rem;
   box-shadow: none;
 }
+
+/* Créditos del mapa legibles en modo oscuro */
+.dark .leaflet-container .leaflet-control-attribution {
+  background: rgba(14, 23, 18, 0.85);
+  color: #e6efe4;
+}
+.dark .leaflet-container .leaflet-control-attribution a {
+  color: #9fd0ff;
+}
