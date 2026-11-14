@@ -84,3 +84,6 @@ export const SOIL_TEXTURES: Record<string, string> = {
 
 export const AGGREGATION_NOTE =
   "Los 11 controles se agrupan en los 5 componentes del puntaje (agua, suelo, riesgo, ingreso y sostenibilidad): cada grupo usa el promedio de sus controles.";
+
+/** Palabra para un puntaje de 0 a 100 (acompaña siempre al número y al color). */
+export const band = (v: number): "alto" | "medio" | "bajo" => (v >= 70 ? "alto" : v >= 45 ? "medio" : "bajo");

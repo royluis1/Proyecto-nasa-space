@@ -33,6 +33,7 @@ fieldshift/
 | Base de cultivos | Hecho: 16 cultivos editables, a validar con INTA |
 | Motor de rotaciones y puntaje | Hecho: ver [docs/scoring.md](docs/scoring.md) y [ejemplos](docs/examples/README.md) |
 | Frontend y mapa | Hecho: [frontend/README.md](frontend/README.md) |
+| Dashboard comparativo | Hecho: `/campo/[id]/dashboard` |
 
 El plan completo está en [docs/plan.md](docs/plan.md).
 

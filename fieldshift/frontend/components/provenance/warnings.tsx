@@ -1,8 +1,9 @@
 import { Alert } from "@/components/ui/alert";
+import { friendlyWarnings } from "@/lib/plain";
 
 /** Advertencias del servidor: las primeras a la vista y el resto plegadas. */
 export function WarningsList({ warnings, title = "Advertencias sobre los datos", max = 3 }: { warnings: string[]; title?: string; max?: number }) {
-  const list = [...new Set(warnings)].filter(Boolean);
+  const list = friendlyWarnings(warnings).filter(Boolean);
   if (list.length === 0) return null;
   const visible = list.slice(0, max);
   const hidden = list.slice(max);

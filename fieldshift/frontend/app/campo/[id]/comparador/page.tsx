@@ -1,6 +1,7 @@
 "use client";
 
 import { Info, RefreshCw, SlidersHorizontal } from "lucide-react";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { useCampo } from "@/components/campo/campo-provider";
 import { RadarCompare } from "@/components/charts/radar-compare";
 import { PriorityControls } from "@/components/field/priority-controls";
@@ -19,6 +20,7 @@ export default function ComparadorPage() {
   const { fieldId, ui, setUi, compare } = useCampo();
   const { evaluations, result } = compare;
   const baseline = evaluations.find((e) => e.rotation.strategy === "actual")?.score.total ?? null;
+  const wide = useMediaQuery("(min-width: 1024px)");
 
   const prioritiesPanel = (
     <Card>
@@ -109,13 +111,16 @@ export default function ComparadorPage() {
         </div>
         <aside className="lg:order-2" aria-label="Prioridades">
           <div className="lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
-            <div className="hidden lg:block">{prioritiesPanel}</div>
-            <details className="lg:hidden">
-              <summary className="mb-3 flex min-h-11 cursor-pointer items-center gap-2 rounded-md border bg-card px-4 font-medium">
-                <SlidersHorizontal aria-hidden className="size-5" /> Ajustar mis prioridades
-              </summary>
-              {prioritiesPanel}
-            </details>
+            {wide ? (
+              prioritiesPanel
+            ) : (
+              <details>
+                <summary className="mb-3 flex min-h-11 cursor-pointer items-center gap-2 rounded-md border bg-card px-4 font-medium">
+                  <SlidersHorizontal aria-hidden className="size-5" /> Ajustar mis prioridades
+                </summary>
+                {prioritiesPanel}
+              </details>
+            )}
           </div>
         </aside>
       </div>

@@ -1,6 +1,6 @@
 import {
   AlertTriangle, Calculator, CircleHelp, Cpu, Database, Droplet, Eye, FlaskConical, Shapes, ShieldCheck, OctagonAlert,
-  SignalHigh, SignalLow, SignalMedium, Snowflake, Store, Thermometer, Upload, WifiOff, Wind, Repeat, Shuffle, ClipboardList, Satellite,
+  BatteryFull, BatteryLow, BatteryMedium, Snowflake, Store, Thermometer, Upload, WifiOff, Wind, Repeat, Shuffle, ClipboardList, Satellite,
   Info, type LucideIcon,
 } from "lucide-react";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
@@ -54,7 +54,7 @@ export function RiskLevelBadge({ level, prefix = "Riesgo" }: { level: Level | nu
   );
 }
 
-const CONF_ICON: Record<Confidence, LucideIcon> = { alta: SignalHigh, media: SignalMedium, baja: SignalLow };
+const CONF_ICON: Record<Confidence, LucideIcon> = { alta: BatteryFull, media: BatteryMedium, baja: BatteryLow };
 
 export function ConfidenceBadge({ level }: { level: Confidence }) {
   const Icon = CONF_ICON[level];

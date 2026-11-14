@@ -7,6 +7,7 @@ import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DISCLAIMER } from "@/lib/content";
+import { GLOSSARY, GLOSSARY_KEYS } from "@/lib/glossary";
 import { COMPONENTS, COMPONENT_ORDER, AGGREGATION_NOTE } from "@/lib/format";
 import { GROUPS, PRIORITY_META, type GroupKey } from "@/lib/priorities";
 import type { DataLabel } from "@/types/api";
@@ -66,16 +67,6 @@ const SOURCES: { name: string; label: DataLabel; what: string; res: string; use:
   },
 ];
 
-const GLOSSARY: [string, string][] = [
-  ["Evapotranspiración (ET₀)", "Los milímetros de agua que la atmósfera “pide” por día en un pasto bien regado: lo que se evapora del suelo y transpiran las plantas. Si pide más de lo que llueve, hay déficit de agua."],
-  ["Estrés hídrico", "Cuando un cultivo no recibe toda el agua que necesita. En la app es el porcentaje de la demanda que la lluvia y el agua guardada en el suelo no llegan a cubrir."],
-  ["Humedad del suelo (SMAP)", "Cuánta agua hay en el suelo según un satélite de la NASA. Se compara con lo normal para la misma época: si está 20 % por debajo, el suelo está más seco que casi siempre."],
-  ["NDVI", "Un número de 0 a 1 que indica cuánto verde hay: cerca de 0 es suelo desnudo, 0,3 o menos es barbecho o rastrojo, y más de 0,7 es un cultivo en pleno desarrollo."],
-  ["Barbecho", "Período en que el lote queda sin cultivo. Sirve para juntar agua, pero deja el suelo expuesto al viento."],
-  ["Reanálisis", "Un modelo del clima que se corrige con observaciones de estaciones y satélites. Rellena los lugares donde no hay estación."],
-  ["Índice de aridez", "Lluvia anual dividida por la demanda de agua de la atmósfera. Menos de 0,5 es zona semiárida; menos de 0,2, árida."],
-  ["Coeficiente de variación", "Qué tanto cambia la lluvia de un año a otro. Si es alto, un año seco es más probable."],
-];
 
 export default function MetodologiaPage() {
   return (
@@ -159,8 +150,8 @@ export default function MetodologiaPage() {
       <section aria-labelledby="glosario" className="space-y-3">
         <h2 id="glosario" className="text-2xl font-semibold">Glosario sin vueltas</h2>
         <dl className="space-y-3">
-          {GLOSSARY.map(([t, d]) => (
-            <div key={t} className="rounded-lg border p-3"><dt className="font-semibold">{t}</dt><dd className="text-muted-foreground">{d}</dd></div>
+          {GLOSSARY_KEYS.map((k) => (
+            <div key={k} className="rounded-lg border p-3"><dt className="font-semibold">{GLOSSARY[k].term}</dt><dd className="text-muted-foreground">{GLOSSARY[k].long}</dd></div>
           ))}
         </dl>
       </section>

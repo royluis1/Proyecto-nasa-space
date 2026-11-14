@@ -1,7 +1,5 @@
-import { COMPONENTS, COMPONENT_ORDER, num } from "@/lib/format";
+import { COMPONENTS, COMPONENT_ORDER, band, num } from "@/lib/format";
 import type { ScoreComponent } from "@/types/api";
-
-const band = (v: number) => (v >= 70 ? "alto" : v >= 45 ? "medio" : "bajo");
 
 /** Los 5 componentes del puntaje con su valor escrito y una barra. */
 export function ScoreBars({ components, showWeights = false }: { components: ScoreComponent[]; showWeights?: boolean }) {

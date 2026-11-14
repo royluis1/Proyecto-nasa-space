@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, CalendarDays, CloudSun, FileText, Layers, UserRound } from "lucide-react";
+import { BarChart3, CalendarDays, CloudSun, FileText, Layers, LayoutDashboard, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const steps = [
   { slug: "perfil", label: "Perfil y prioridades", icon: UserRound },
   { slug: "diagnostico", label: "Diagnóstico", icon: CloudSun },
   { slug: "comparador", label: "Comparador", icon: BarChart3 },
+  { slug: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { slug: "calendario", label: "Calendario", icon: CalendarDays },
   { slug: "escenarios", label: "Escenarios", icon: Layers },
   { slug: "reporte", label: "Reporte", icon: FileText },

@@ -61,11 +61,50 @@ export async function demoCrops(): Promise<ApiEnvelope<Crop[]>> {
   return env(await load<Crop[]>("crops"));
 }
 
-export async function demoCompare(fieldId: string): Promise<ApiEnvelope<CompareResult>> {
+/** Escenario predefinido que coincide con lo pedido (por id o por parámetros). */
+function findPreset(all: ScenarioResult[], s: ScenarioInput): ScenarioResult | undefined {
+  return (
+    all.find((p) => p.scenario.id === s.id) ??
+    all.find(
+      (p) =>
+        p.scenario.rain_delta_pct === s.rain_delta_pct && p.scenario.temp_delta_c === s.temp_delta_c &&
+        p.scenario.dry_year === s.dry_year && p.scenario.irrigation === s.irrigation,
+    )
+  );
+}
+
+/**
+ * Resultado de la comparación. Con un escenario, los puntajes salen de los escenarios precalculados;
+ * el detalle de factores sigue siendo el del clima del período (se avisa).
+ */
+export async function demoCompare(fieldId: string, scenario?: ScenarioInput | null): Promise<ApiEnvelope<CompareResult>> {
   const { id, note } = await exampleIdFor(fieldId);
   const data = await load<Omit<CompareResult, "ranking">>(`compare-${id}`);
-  const result = { ...data, field_id: fieldId, ranking: data.evaluations.map((e) => e.score) } as CompareResult;
-  return env(result, [...(note ? [note] : []), ...result.warnings]);
+  let evaluations = data.evaluations;
+  const extra: string[] = note ? [note] : [];
+  let applied: ScenarioInput | null = null;
+
+  const isBase = !scenario || (scenario.id === "base" && !scenario.irrigation && !scenario.rain_delta_pct && !scenario.temp_delta_c && !scenario.dry_year);
+  if (!isBase) {
+    const preset = findPreset(await load<ScenarioResult[]>(`scenarios-${id}`), scenario!);
+    if (preset) {
+      applied = preset.scenario;
+      const byId = Object.fromEntries(preset.ranking.map((s) => [s.rotation_id, s]));
+      evaluations = data.evaluations
+        .map((ev) => {
+          const sc = byId[ev.rotation.id];
+          if (!sc) return ev;
+          const components = sc.components.map((c) => ({ ...c, drivers: ev.score.components.find((b) => b.key === c.key)?.drivers ?? [] }));
+          return { ...ev, score: { ...sc, components } };
+        })
+        .sort((a, b) => a.score.rank - b.score.rank);
+      extra.push("En modo demostración, los puntajes reflejan el escenario elegido pero el detalle de factores es el del clima del período.");
+    } else {
+      extra.push("En modo demostración solo hay escenarios predefinidos: se muestra el clima del período.");
+    }
+  }
+  const result = { ...data, evaluations, scenario: applied, field_id: fieldId, ranking: evaluations.map((e) => e.score) } as CompareResult;
+  return env(result, [...extra, ...result.warnings]);
 }
 
 export async function demoRotations(fieldId: string): Promise<Rotation[]> {

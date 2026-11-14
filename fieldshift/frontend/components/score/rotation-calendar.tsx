@@ -18,10 +18,12 @@ interface Props {
   rotation: Pick<Rotation, "id" | "name" | "duration_years" | "steps">;
   crops: Record<string, Crop>;
   heading?: string;
+  /** Versión más baja y chica, para mostrar varias rotaciones juntas. */
+  compact?: boolean;
 }
 
 /** Calendario mensual: una fila por año del ciclo. Cada cultivo lleva ícono y nombre; el barbecho, rayado y texto. */
-export function RotationCalendar({ rotation, crops, heading }: Props) {
+export function RotationCalendar({ rotation, crops, heading, compact = false }: Props) {
   const cal = buildCalendar(rotation);
   const rows = Array.from({ length: cal.years }, (_, y) => {
     const cells: { owner: number | null; span: number; start: number }[] = [];
@@ -37,7 +39,7 @@ export function RotationCalendar({ rotation, crops, heading }: Props) {
     <div className="space-y-2">
       {heading && <h3 className="text-lg font-semibold">{heading}</h3>}
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[44rem] border-separate border-spacing-1 text-sm">
+        <table className={cn("w-full min-w-[44rem] border-separate border-spacing-1", compact ? "text-xs" : "text-sm")}>
           <caption className="sr-only">Calendario de {rotation.name}: qué ocupa el lote en cada mes de cada año del ciclo.</caption>
           <thead>
             <tr>
@@ -54,7 +56,7 @@ export function RotationCalendar({ rotation, crops, heading }: Props) {
                 {cells.map((cell, i) => {
                   if (cell.owner === null) {
                     return (
-                      <td key={i} colSpan={cell.span} style={FALLOW_STYLE} className="h-14 rounded-md border border-dashed text-center align-middle text-muted-foreground">
+                      <td key={i} colSpan={cell.span} style={FALLOW_STYLE} className={cn(compact ? "h-9 text-xs" : "h-14", "rounded-md border border-dashed text-center align-middle text-muted-foreground")}>
                         Barbecho
                       </td>
                     );
@@ -68,7 +70,7 @@ export function RotationCalendar({ rotation, crops, heading }: Props) {
                       key={i}
                       colSpan={cell.span}
                       title={`${crop?.name ?? step.step.crop_id}: siembra en ${MONTHS_LONG[step.step.start_month - 1]}, hasta ${MONTHS_LONG[step.step.end_month - 1]}`}
-                      className={cn("h-14 rounded-md px-1 text-center align-middle font-medium", info.cls)}
+                      className={cn(compact ? "h-9 text-xs" : "h-14", "rounded-md px-1 text-center align-middle font-medium", info.cls)}
                     >
                       <span className="inline-flex items-center justify-center gap-1">
                         <Icon aria-hidden className="size-4 shrink-0" />

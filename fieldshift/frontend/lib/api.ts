@@ -211,8 +211,8 @@ export const api = {
 
   async compare(req: CompareRequest, o: Opts = {}): Promise<ApiResult<CompareResult>> {
     const id = fieldIdOf(req);
-    if (isLocalId(id)) return viaDemo(() => demo.demoCompare(id));
-    return call(() => request<CompareResult>("/rotations/compare", { method: "POST", body: req, ...o }), () => demo.demoCompare(id));
+    if (isLocalId(id)) return viaDemo(() => demo.demoCompare(id, req.scenario));
+    return call(() => request<CompareResult>("/rotations/compare", { method: "POST", body: req, ...o }), () => demo.demoCompare(id, req.scenario));
   },
 
   async scenarios(fieldId: string, scenarios: ScenarioInput[], priorities?: CompareRequest["priorities"], o: Opts = {}): Promise<ApiResult<ScenarioResult[]>> {

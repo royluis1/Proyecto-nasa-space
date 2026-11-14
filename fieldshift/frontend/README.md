@@ -63,6 +63,7 @@ Si cambia la API, corré `npm run gen:api`: los tipos de `types/api.ts` salen de
 | `/campos/nuevo` | Cargar un campo: mapa + formulario |
 | `/campo/[id]/perfil` | Perfil del campo (editable) y las 11 prioridades |
 | `/campo/[id]/diagnostico` | Diagnóstico climático e hídrico: clima, humedad del suelo y vegetación |
+| `/campo/[id]/dashboard` | Dashboard comparativo: ranking, gráficos, desglose, explicaciones, escenarios y exportación |
 | `/campo/[id]/comparador` | Ranking de rotaciones, que se recalcula al mover las prioridades |
 | `/campo/[id]/rotacion/[rid]` | Detalle: por qué, desglose del puntaje, riesgos, evidencia y supuestos |
 | `/campo/[id]/calendario` | Calendario agrícola mensual y ventanas de siembra |
@@ -79,12 +80,14 @@ frontend/
 │   ├── ui/         botón, tarjeta, slider, tabla, alerta... (estilo shadcn/ui)
 │   ├── map/        mapa Leaflet (búsqueda, punto, polígono, GeoJSON, satélite)
 │   ├── charts/     gráficos accesibles (cada uno con su tabla de datos)
+│   ├── dashboard/  piezas del dashboard comparativo (aportes, mapa de calor, indicadores...)
+│   ├── glossary/   términos técnicos con explicación al tocarlos
 │   ├── score/      tarjetas del ranking, barras de puntaje, calendario
 │   ├── provenance/ etiquetas de origen del dato, riesgo y confianza
 │   ├── field/      formulario del campo y controles de prioridades
 │   ├── campo/      estado compartido del campo (prioridades, ranking)
 │   └── layout/     encabezado, avisos, pie, modo oscuro
-├── hooks/          useAsync, useDebounced, useBackendStatus
+├── hooks/          useAsync, useDebounced, useBackendStatus, useMediaQuery, useDashboardCompare
 ├── lib/            cliente de la API, prioridades, ranking, geometría, calendario, exportación
 │   └── demo/       datos de ejemplo para el modo demostración
 ├── types/          tipos de la API (openapi.d.ts es generado)
@@ -107,9 +110,21 @@ frontend/
 
 **Diseño y accesibilidad.** Paleta de verde (cultivo), tierra (suelo) y azul (agua) sobre fondo claro; modo oscuro opcional (sigue al sistema o se cambia con el botón). Tipografía del sistema de 17 px y botones de al menos 44 px. Español rioplatense. Ningún riesgo, nivel ni estado se comunica solo con color: siempre hay ícono y texto. Los gráficos llevan descripción y una tabla de datos alternativa, y no se animan. Se puede navegar con teclado y hay un enlace para saltar al contenido. Se revisó con axe-core (sin observaciones en las pantallas principales) y sin desborde horizontal entre 390 y 1280 px. La advertencia profesional está en una barra permanente, en el pie, en cada recomendación y en el reporte.
 
+**Dashboard comparativo** (`/campo/[id]/dashboard`). Junta en una pantalla:
+
+- **Ranking**: la rotación actual y todas las alternativas, con puesto, puntaje total, ventajas y desventajas, y una recomendación final que dice cuánto mejora (o no) frente a lo que el productor hace hoy.
+- **Visualizaciones** en pestañas: aporte de cada componente al puntaje (barras apiladas), barras por componente, gráfico de araña, mapa de calor y línea de tiempo de cada rotación. Cada serie tiene una trama propia (liso, rayas, puntos, cuadrícula) además del color, y cada gráfico tiene su tabla.
+- **Indicadores** de agua, suelo, riesgo, ingreso y sostenibilidad para comparar dos rotaciones a elección, con veredicto en texto ("mejor", "peor", "parecido").
+- **Desglose y explicación** por rotación: los cinco componentes con el peso que eligió el usuario y el aporte de cada uno (valor × peso), qué datos la favorecen y cuáles la penalizan frente a la rotación actual, por qué se recomienda, supuestos, riesgos y qué tiene que validar un agrónomo local.
+- **Controles**: prioridades, escenario climático (los mismos de la pantalla de escenarios), disponibilidad de riego y selección de hasta 4 rotaciones para comparar. Todo se recalcula en vivo.
+- **Exportar**: CSV, JSON, impresión y enlace al reporte completo.
+- **Lenguaje claro**: ET0, NDVI, SMAP, estrés hídrico, Kc y otros términos se explican al tocarlos (`lib/glossary.ts`), y los avisos técnicos del servidor se traducen a español llano (`lib/plain.ts`).
+
+La lógica de comparación está en `lib/dashboard.ts` (aportes, favorece/penaliza, indicadores, riego y descripción del escenario).
+
 ## Tests
 
-`npm test` corre 67 tests de la lógica: prioridades, ranking en vivo, geometría del mapa, GeoJSON, calendario, exportación, datos de ejemplo y el cliente de API (reintentos, errores, paso a modo demostración, recuperación). Las pruebas de pantalla se hicieron con un navegador real (Playwright) contra el backend y sin él.
+`npm test` corre 86 tests de la lógica: prioridades, ranking en vivo, geometría del mapa, GeoJSON, calendario, exportación, comparación del dashboard, traducción de términos, datos de ejemplo y el cliente de API (reintentos, errores, paso a modo demostración, recuperación). Las pruebas de pantalla se hicieron con un navegador real (Playwright) contra el backend y sin él.
 
 ## Limitaciones conocidas
 

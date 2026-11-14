@@ -10,7 +10,7 @@ Cada fase se hace en un bloque separado y se aprueba antes de pasar a la siguien
 | 4 | Base de datos de cultivos | Hecho: 16 cultivos editables (valores cualitativos a validar con INTA) |
 | 5 | Motor de rotaciones y puntaje | Hecho (ver scoring.md); escenarios de clima incluidos |
 | 6 | Frontend y mapa | Hecho: 10 pantallas, mapa Leaflet, cliente de API y modo demostración (ver frontend/README.md) |
-| 7 | Dashboard comparativo | Pendiente |
+| 7 | Dashboard comparativo | Hecho: ranking, gráficos, desglose, explicaciones y escenarios (ver frontend/README.md) |
 | 8 | Calendario, escenarios y monitor de campaña (Módulo 2) | Pendiente |
 | 9 | IA opcional y explicabilidad | Pendiente |
 | 10 | Documentación, demo y presentación | Pendiente |

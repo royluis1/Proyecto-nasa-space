@@ -13,9 +13,13 @@ const SERIES = [
   { color: CHART.gris, dash: "12 4 2 4" },
 ] as const;
 
-export function RadarCompare({ evaluations }: { evaluations: RotationEvaluation[] }) {
+/** `pick="auto"`: las 3 mejores y la actual. `pick="all"`: exactamente las que se pasan (hasta 4). */
+export function RadarCompare({ evaluations, pick = "auto" }: { evaluations: RotationEvaluation[]; pick?: "auto" | "all" }) {
   const actual = evaluations.find((e) => e.rotation.strategy === "actual");
-  const picked = [...evaluations.slice(0, 3), ...(actual && !evaluations.slice(0, 3).includes(actual) ? [actual] : [])];
+  const picked =
+    pick === "all"
+      ? evaluations.slice(0, SERIES.length)
+      : [...evaluations.slice(0, 3), ...(actual && !evaluations.slice(0, 3).includes(actual) ? [actual] : [])];
   const names = picked.map((e) => `${e.score.rank}. ${STRATEGY_LABELS[e.rotation.strategy]}`);
   const data: Record<string, string | number>[] = COMPONENT_ORDER.map((k) => ({
     eje: `${k} ${COMPONENTS[k].short}`,

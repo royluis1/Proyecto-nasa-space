@@ -1,5 +1,6 @@
 import { STRATEGY_LABELS } from "./format";
 import { DISCLAIMER } from "./content";
+import { friendlyWarnings } from "./plain";
 import type { CompareResult, RotationEvaluation } from "@/types/api";
 
 /** Marca de orden de bytes: hace que Excel lea el CSV como UTF-8 y respete los acentos. */
@@ -15,7 +16,7 @@ export function buildCsv(fieldName: string, origin: string, result: CompareResul
   const rows: unknown[][] = [
     [`# ${DISCLAIMER}`],
     [`# Origen de los datos: ${origin}`],
-    ...result.warnings.map((w) => [`# ${w}`]),
+    ...friendlyWarnings(result.warnings).map((w) => [`# ${w}`]),
     ["# Campo", fieldName],
     [],
     ["puesto", "rotacion_id", "estrategia", "rotacion", "puntaje_total", "rango_min", "rango_max", "confianza", "A_agua", "S_suelo", "R_riesgo", "I_ingreso", "E_sostenibilidad", "explicacion"],
