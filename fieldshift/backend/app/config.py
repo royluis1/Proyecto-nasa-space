@@ -60,6 +60,9 @@ class Settings(BaseSettings):
     open_meteo_enabled: bool = True
     open_meteo_url: str = "https://api.open-meteo.com/v1/forecast"
     open_meteo_api_key: SecretStr | None = None
+    # Suelo estimado (SoilGrids de ISRIC). Sin red: muestra simulada rotulada; si no hay, queda vacío con aviso.
+    soilgrids_enabled: bool = True
+    soil_sample_file: str = "soil_sample_san_luis.json"
     srtm_product: Literal["SRTMGL1", "SRTMGL3"] = "SRTMGL1"
     srtm_sample_file: str = "srtm_sample_san_luis.json"
     llm_enabled: bool = False

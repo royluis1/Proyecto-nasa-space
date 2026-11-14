@@ -28,6 +28,287 @@
     }
    }
   },
+  "/regions/provinces": {
+   "get": {
+    "tags": [
+     "zonas y suelo"
+    ],
+    "summary": "Provincias de Argentina",
+    "description": "GeoJSON de las provincias (simplificado), con `has_zones` y el origen de su zonificación.\nFuente de los límites: ver `source` y `license` (Natural Earth hasta tener el archivo del IGN).",
+    "operationId": "provinces_regions_provinces_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_ProvincesOut_"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/regions/{province_id}/zones": {
+   "get": {
+    "tags": [
+     "zonas y suelo"
+    ],
+    "summary": "Zonas climáticas de una provincia",
+    "description": "Zonas climáticas derivadas de NASA POWER (índice de aridez UNEP) con su clima y la aptitud resumida de cada\ncultivo, y las celdas de POWER que las forman. Si la provincia no tiene zonificación: `available = false`.\nNo son zonas agroecológicas oficiales.",
+    "operationId": "zones_regions__province_id__zones_get",
+    "parameters": [
+     {
+      "name": "province_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "examples": [
+        "san-luis"
+       ],
+       "title": "Province Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_ZonesOut_"
+        }
+       }
+      }
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      },
+      "description": "Not Found"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/zones/at": {
+   "get": {
+    "tags": [
+     "zonas y suelo"
+    ],
+    "summary": "Zona de un punto y transición",
+    "description": "Provincia, zona y celda de POWER del punto, si está en una zona de transición húmedo/seco (con la aptitud para\nlas dos zonas y opciones a evaluar) y los cultivos más aptos. 404 si el punto no cae en ninguna provincia.",
+    "operationId": "zone_at_zones_at_get",
+    "parameters": [
+     {
+      "name": "lat",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "number",
+       "maximum": -21,
+       "minimum": -56,
+       "examples": [
+        -33.85
+       ],
+       "title": "Lat"
+      }
+     },
+     {
+      "name": "lon",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "number",
+       "maximum": -53,
+       "minimum": -74,
+       "examples": [
+        -65.2
+       ],
+       "title": "Lon"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_ZoneAt_"
+        }
+       }
+      }
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      },
+      "description": "Not Found"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/crops/suitability": {
+   "get": {
+    "tags": [
+     "zonas y suelo"
+    ],
+    "summary": "Aptitud de cultivos en una zona",
+    "description": "Aptitud orientativa (alta, media o baja) de cada cultivo del catálogo con el clima de la zona, con motivos,\nriesgos, confianza y lo que depende del suelo y del manejo. Requiere validación agronómica local.",
+    "operationId": "crop_suitability_crops_suitability_get",
+    "parameters": [
+     {
+      "name": "zone_id",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "examples": [
+        "san-luis-semiarido"
+       ],
+       "title": "Zone Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_ZoneSuitability_"
+        }
+       }
+      }
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      },
+      "description": "Not Found"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/fields/{field_id}/soil-moisture": {
+   "get": {
+    "tags": [
+     "zonas y suelo"
+    ],
+    "summary": "Humedad del suelo satelital del lote (SMAP)",
+    "description": "SMAP L3 (capa superficial ~5 cm, observado) y L4 (zona de raíces, MODELADO), ~9 km: última observación\ndisponible, serie reciente y anomalía frente al mismo mes de otros años. Contexto regional, no tiempo real.",
+    "operationId": "soil_moisture_fields__field_id__soil_moisture_get",
+    "parameters": [
+     {
+      "name": "field_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Field Id"
+      }
+     },
+     {
+      "name": "recent_days",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 365,
+       "minimum": 7,
+       "default": 60,
+       "title": "Recent Days"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_FieldSoilMoisture_"
+        }
+       }
+      }
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      },
+      "description": "Not Found"
+     },
+     "503": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      },
+      "description": "Service Unavailable"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/crops": {
    "get": {
     "tags": [
@@ -76,7 +357,7 @@
      "lotes"
     ],
     "summary": "Crear un lote",
-    "description": "Crea un lote a partir de coordenadas (WGS84). Se redondean a 4 decimales.\n\nSi el punto cae fuera de San Luis se acepta, pero con advertencia: los datos\nde muestra y los supuestos agronómicos son de San Luis.",
+    "description": "Crea un lote a partir de coordenadas (WGS84). Se redondean a 4 decimales.\n\nDevuelve además el perfil automático (`auto_profile`): suelo ESTIMADO (SoilGrids, 250 m), zona climática derivada\nde NASA POWER, los cultivos más aptos y si está en una zona de transición. Lo que carga el productor siempre pisa\nlo automático. Si el punto cae fuera de San Luis se acepta, con advertencia.",
     "operationId": "create_field_fields_post",
     "requestBody": {
      "content": {
@@ -153,7 +434,7 @@
      "lotes"
     ],
     "summary": "Actualizar un lote",
-    "description": "Reemplaza los datos del lote. Los cambios se guardan en memoria (se pierden al reiniciar).",
+    "description": "Reemplaza los datos del lote y recalcula el perfil automático (lo cargado por el productor tiene prioridad).\nLos cambios se guardan en memoria (se pierden al reiniciar).",
     "operationId": "update_field_fields__field_id__put",
     "parameters": [
      {
@@ -1913,6 +2194,22 @@
     ],
     "title": "ApiResponse[FieldOut]"
    },
+   "ApiResponse_FieldSoilMoisture_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/FieldSoilMoisture"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[FieldSoilMoisture]"
+   },
    "ApiResponse_Forecast_": {
     "properties": {
      "data": {
@@ -1944,6 +2241,22 @@
      "meta"
     ],
     "title": "ApiResponse[HuertaPanel]"
+   },
+   "ApiResponse_ProvincesOut_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/ProvincesOut"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[ProvincesOut]"
    },
    "ApiResponse_Report_": {
     "properties": {
@@ -2024,6 +2337,54 @@
      "meta"
     ],
     "title": "ApiResponse[VegetationSummary]"
+   },
+   "ApiResponse_ZoneAt_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/ZoneAt"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[ZoneAt]"
+   },
+   "ApiResponse_ZoneSuitability_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/ZoneSuitability"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[ZoneSuitability]"
+   },
+   "ApiResponse_ZonesOut_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/ZonesOut"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[ZonesOut]"
    },
    "ApiResponse_list_Crop__": {
     "properties": {
@@ -2169,6 +2530,68 @@
      "text"
     ],
     "title": "Assumption"
+   },
+   "AutoProfile": {
+    "properties": {
+     "soil_estimate": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/SoilEstimate"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "soil_applied": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Soil Applied",
+      "description": "Datos del suelo que se completaron con la estimación (los que el productor no cargó)."
+     },
+     "zone": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/ZoneAt"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "top_crops": {
+      "items": {
+       "$ref": "#/components/schemas/CropSuitability"
+      },
+      "type": "array",
+      "title": "Top Crops"
+     },
+     "warnings": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Warnings"
+     },
+     "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Generated At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "soil_estimate",
+     "soil_applied",
+     "zone",
+     "top_crops",
+     "warnings",
+     "generated_at"
+    ],
+    "title": "AutoProfile",
+    "description": "Lo que FieldShift completa solo al cargar el campo. Lo que carga el productor siempre pisa esto."
    },
    "Boundary": {
     "properties": {
@@ -3446,6 +3869,63 @@
     ],
     "title": "CropGroup"
    },
+   "CropSuitability": {
+    "properties": {
+     "crop_id": {
+      "type": "string",
+      "title": "Crop Id"
+     },
+     "crop_name": {
+      "type": "string",
+      "title": "Crop Name"
+     },
+     "level": {
+      "$ref": "#/components/schemas/Level",
+      "description": "Aptitud orientativa: alto, medio o bajo."
+     },
+     "reasons": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Reasons"
+     },
+     "risks": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Risks"
+     },
+     "depends_on": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Depends On",
+      "description": "Lo que la zona no captura: suelo y manejo."
+     },
+     "confidence": {
+      "$ref": "#/components/schemas/Confidence"
+     },
+     "note": {
+      "type": "string",
+      "title": "Note",
+      "default": "Requiere validación agronómica local."
+     }
+    },
+    "type": "object",
+    "required": [
+     "crop_id",
+     "crop_name",
+     "level",
+     "reasons",
+     "risks",
+     "depends_on",
+     "confidence"
+    ],
+    "title": "CropSuitability"
+   },
    "DailyRecord": {
     "properties": {
      "date": {
@@ -4404,6 +4884,17 @@
       ],
       "title": "Sample Note",
       "description": "Indica si los datos del lote son reales o ilustrativos."
+     },
+     "auto_profile": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/AutoProfile"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Perfil automático: suelo estimado, zona climática, cultivos más aptos y transición."
      }
     },
     "type": "object",
@@ -4415,6 +4906,50 @@
     ],
     "title": "FieldOut",
     "description": "Campo/lote guardado."
+   },
+   "FieldSoilMoisture": {
+    "properties": {
+     "field_id": {
+      "type": "string",
+      "title": "Field Id"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title",
+      "default": "Humedad del suelo satelital (contexto regional)"
+     },
+     "context": {
+      "type": "string",
+      "title": "Context",
+      "default": "SMAP mide desde el espacio en píxeles de ~9 km: describe la zona, no tu lote. Se muestra la última observación disponible, con días de atraso: no es tiempo real ni un sensor en el campo."
+     },
+     "products": {
+      "items": {
+       "$ref": "#/components/schemas/SoilMoistureProduct"
+      },
+      "type": "array",
+      "title": "Products"
+     },
+     "sensors": {
+      "type": "string",
+      "title": "Sensors",
+      "default": "Sensores propios del productor: todavía no están conectados (punto de entrada preparado para el futuro)."
+     },
+     "warnings": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Warnings"
+     }
+    },
+    "type": "object",
+    "required": [
+     "field_id",
+     "products",
+     "warnings"
+    ],
+    "title": "FieldSoilMoisture"
    },
    "Forecast": {
     "properties": {
@@ -5101,6 +5636,32 @@
     ],
     "title": "MissingDataReport"
    },
+   "MoisturePoint": {
+    "properties": {
+     "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+     },
+     "value": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Value"
+     }
+    },
+    "type": "object",
+    "required": [
+     "date",
+     "value"
+    ],
+    "title": "MoisturePoint"
+   },
    "MonthlyClimatology": {
     "properties": {
      "month": {
@@ -5637,6 +6198,58 @@
      "label"
     ],
     "title": "Provenance"
+   },
+   "ProvincesOut": {
+    "properties": {
+     "source": {
+      "type": "string",
+      "title": "Source"
+     },
+     "license": {
+      "type": "string",
+      "title": "License"
+     },
+     "note": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Note"
+     },
+     "generated_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Generated At"
+     },
+     "features": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "title": "Features",
+      "description": "GeoJSON Features: properties {id, name, has_zones, zones_origin}."
+     }
+    },
+    "type": "object",
+    "required": [
+     "source",
+     "license",
+     "note",
+     "generated_at",
+     "features"
+    ],
+    "title": "ProvincesOut"
    },
    "QualityReport": {
     "properties": {
@@ -7109,6 +7722,148 @@
     ],
     "title": "Severity"
    },
+   "SoilEstimate": {
+    "properties": {
+     "source": {
+      "type": "string",
+      "title": "Source"
+     },
+     "resolution": {
+      "type": "string",
+      "title": "Resolution"
+     },
+     "depth": {
+      "type": "string",
+      "title": "Depth"
+     },
+     "label": {
+      "type": "string",
+      "const": "estimado",
+      "title": "Label",
+      "default": "estimado"
+     },
+     "origin": {
+      "$ref": "#/components/schemas/DataStatus"
+     },
+     "origin_label": {
+      "type": "string",
+      "title": "Origin Label"
+     },
+     "retrieved_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Retrieved At"
+     },
+     "clay_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Clay Pct"
+     },
+     "sand_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sand Pct"
+     },
+     "silt_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Silt Pct"
+     },
+     "texture_usda": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Texture Usda",
+      "description": "Clase textural USDA."
+     },
+     "texture": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/SoilTexture"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Clase de FieldShift."
+     },
+     "organic_matter_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Organic Matter Pct",
+      "description": "Materia orgánica = carbono orgánico x 1,724 (factor de van Bemmelen)."
+     },
+     "organic_matter": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Level"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "note": {
+      "type": "string",
+      "title": "Note"
+     }
+    },
+    "type": "object",
+    "required": [
+     "source",
+     "resolution",
+     "depth",
+     "origin",
+     "origin_label",
+     "retrieved_at",
+     "clay_pct",
+     "sand_pct",
+     "silt_pct",
+     "texture_usda",
+     "texture",
+     "organic_matter_pct",
+     "organic_matter",
+     "note"
+    ],
+    "title": "SoilEstimate",
+    "description": "Suelo ESTIMADO desde un mapa de suelos (no se mide desde satélite). El análisis de laboratorio tiene prioridad."
+   },
    "SoilInputSummary": {
     "properties": {
      "texture": {
@@ -7323,6 +8078,181 @@
      "value"
     ],
     "title": "SoilMoisturePoint"
+   },
+   "SoilMoistureProduct": {
+    "properties": {
+     "product": {
+      "type": "string",
+      "title": "Product"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "label": {
+      "type": "string",
+      "enum": [
+       "observado",
+       "modelado"
+      ],
+      "title": "Label"
+     },
+     "depth": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Depth"
+     },
+     "resolution": {
+      "type": "string",
+      "title": "Resolution"
+     },
+     "temporal_resolution": {
+      "type": "string",
+      "title": "Temporal Resolution"
+     },
+     "units": {
+      "type": "string",
+      "title": "Units"
+     },
+     "last_observation": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Observation",
+      "description": "Última observación disponible (no es tiempo real)."
+     },
+     "last_value": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Value"
+     },
+     "recent": {
+      "items": {
+       "$ref": "#/components/schemas/MoisturePoint"
+      },
+      "type": "array",
+      "title": "Recent",
+      "description": "Serie de los últimos días con dato."
+     },
+     "month": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Month"
+     },
+     "month_mean": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Month Mean",
+      "description": "Promedio del mes de la última observación."
+     },
+     "month_normal": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Month Normal",
+      "description": "Promedio del mismo mes en los otros años."
+     },
+     "anomaly_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Anomaly Pct"
+     },
+     "reading": {
+      "type": "string",
+      "title": "Reading",
+      "description": "Lectura en palabras."
+     },
+     "origin": {
+      "$ref": "#/components/schemas/DataStatus"
+     },
+     "origin_label": {
+      "type": "string",
+      "title": "Origin Label"
+     },
+     "retrieved_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Retrieved At"
+     },
+     "limitations": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Limitations"
+     }
+    },
+    "type": "object",
+    "required": [
+     "product",
+     "name",
+     "label",
+     "depth",
+     "resolution",
+     "temporal_resolution",
+     "units",
+     "last_observation",
+     "last_value",
+     "recent",
+     "month",
+     "month_mean",
+     "month_normal",
+     "anomaly_pct",
+     "reading",
+     "origin",
+     "origin_label",
+     "retrieved_at",
+     "limitations"
+    ],
+    "title": "SoilMoistureProduct"
    },
    "SoilMoistureRequest": {
     "properties": {
@@ -8141,6 +9071,151 @@
      "water_stress_pct"
     ],
     "title": "TimelineMonth"
+   },
+   "Transition": {
+    "properties": {
+     "is_transition": {
+      "type": "boolean",
+      "title": "Is Transition"
+     },
+     "reasons": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Reasons"
+     },
+     "message": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Message"
+     },
+     "other_zone_class": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "arido",
+         "semiarido",
+         "subhumedo_seco",
+         "humedo"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Other Zone Class"
+     },
+     "other_zone_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Other Zone Label"
+     },
+     "distance_to_border_km": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Distance To Border Km"
+     },
+     "aridity_margin": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Aridity Margin",
+      "description": "Distancia del índice de aridez al límite de clase más cercano."
+     },
+     "years_other_class_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Years Other Class Pct"
+     },
+     "options": {
+      "items": {
+       "$ref": "#/components/schemas/TransitionOption"
+      },
+      "type": "array",
+      "title": "Options",
+      "default": []
+     },
+     "suitability_other": {
+      "items": {
+       "$ref": "#/components/schemas/CropSuitability"
+      },
+      "type": "array",
+      "title": "Suitability Other",
+      "description": "Aptitud si el año se comporta como la otra zona.",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "is_transition",
+     "reasons",
+     "message",
+     "other_zone_class",
+     "other_zone_label",
+     "distance_to_border_km",
+     "aridity_margin",
+     "years_other_class_pct"
+    ],
+    "title": "Transition"
+   },
+   "TransitionOption": {
+    "properties": {
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "detail": {
+      "type": "string",
+      "title": "Detail"
+     },
+     "reason": {
+      "type": "string",
+      "title": "Reason"
+     },
+     "source": {
+      "type": "string",
+      "title": "Source"
+     }
+    },
+    "type": "object",
+    "required": [
+     "title",
+     "detail",
+     "reason",
+     "source"
+    ],
+    "title": "TransitionOption"
    },
    "Trend": {
     "properties": {
@@ -8993,6 +10068,407 @@
      "level"
     ],
     "title": "WaterStress"
+   },
+   "ZoneAt": {
+    "properties": {
+     "latitude": {
+      "type": "number",
+      "title": "Latitude"
+     },
+     "longitude": {
+      "type": "number",
+      "title": "Longitude"
+     },
+     "province_id": {
+      "type": "string",
+      "title": "Province Id"
+     },
+     "province_name": {
+      "type": "string",
+      "title": "Province Name"
+     },
+     "zones_available": {
+      "type": "boolean",
+      "title": "Zones Available"
+     },
+     "zone": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/ZoneSummary"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "cell": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/ZoneCell"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "transition": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Transition"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "top_crops": {
+      "items": {
+       "$ref": "#/components/schemas/CropSuitability"
+      },
+      "type": "array",
+      "title": "Top Crops",
+      "default": []
+     },
+     "note": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Note"
+     }
+    },
+    "type": "object",
+    "required": [
+     "latitude",
+     "longitude",
+     "province_id",
+     "province_name",
+     "zones_available"
+    ],
+    "title": "ZoneAt"
+   },
+   "ZoneCell": {
+    "properties": {
+     "cell_id": {
+      "type": "string",
+      "title": "Cell Id"
+     },
+     "center_lat": {
+      "type": "number",
+      "title": "Center Lat"
+     },
+     "center_lon": {
+      "type": "number",
+      "title": "Center Lon"
+     },
+     "climate": {
+      "$ref": "#/components/schemas/ZoneClimate"
+     }
+    },
+    "type": "object",
+    "required": [
+     "cell_id",
+     "center_lat",
+     "center_lon",
+     "climate"
+    ],
+    "title": "ZoneCell"
+   },
+   "ZoneClimate": {
+    "properties": {
+     "precip_mm": {
+      "type": "number",
+      "title": "Precip Mm"
+     },
+     "et0_mm": {
+      "type": "number",
+      "title": "Et0 Mm"
+     },
+     "deficit_mm": {
+      "type": "number",
+      "title": "Deficit Mm",
+      "description": "ET0 - lluvia, promedio anual."
+     },
+     "aridity_index": {
+      "type": "number",
+      "title": "Aridity Index",
+      "description": "Lluvia / ET0 (UNEP)."
+     },
+     "hot_days": {
+      "type": "number",
+      "title": "Hot Days",
+      "description": "Días por año con Tmax > 35 °C."
+     },
+     "frost_days": {
+      "type": "number",
+      "title": "Frost Days",
+      "description": "Días por año con Tmin <= 2 °C."
+     },
+     "precip_cv_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Precip Cv Pct"
+     },
+     "years_other_class_pct": {
+      "type": "number",
+      "title": "Years Other Class Pct",
+      "description": "% de años en que la celda cae en otra zona."
+     }
+    },
+    "type": "object",
+    "required": [
+     "precip_mm",
+     "et0_mm",
+     "deficit_mm",
+     "aridity_index",
+     "hot_days",
+     "frost_days",
+     "precip_cv_pct",
+     "years_other_class_pct"
+    ],
+    "title": "ZoneClimate"
+   },
+   "ZoneSuitability": {
+    "properties": {
+     "zone": {
+      "$ref": "#/components/schemas/ZoneSummary"
+     },
+     "crops": {
+      "items": {
+       "$ref": "#/components/schemas/CropSuitability"
+      },
+      "type": "array",
+      "title": "Crops"
+     }
+    },
+    "type": "object",
+    "required": [
+     "zone",
+     "crops"
+    ],
+    "title": "ZoneSuitability"
+   },
+   "ZoneSummary": {
+    "properties": {
+     "zone_id": {
+      "type": "string",
+      "title": "Zone Id"
+     },
+     "zone_class": {
+      "type": "string",
+      "enum": [
+       "arido",
+       "semiarido",
+       "subhumedo_seco",
+       "humedo"
+      ],
+      "title": "Zone Class"
+     },
+     "label": {
+      "type": "string",
+      "title": "Label"
+     },
+     "province_id": {
+      "type": "string",
+      "title": "Province Id"
+     },
+     "climate": {
+      "$ref": "#/components/schemas/ZoneClimate"
+     },
+     "cells": {
+      "type": "integer",
+      "title": "Cells"
+     },
+     "area_km2": {
+      "type": "number",
+      "title": "Area Km2"
+     },
+     "origin": {
+      "$ref": "#/components/schemas/DataStatus"
+     },
+     "origin_label": {
+      "type": "string",
+      "title": "Origin Label"
+     },
+     "period": {
+      "type": "string",
+      "title": "Period"
+     },
+     "method": {
+      "type": "string",
+      "title": "Method"
+     },
+     "generated_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Generated At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "zone_id",
+     "zone_class",
+     "label",
+     "province_id",
+     "climate",
+     "cells",
+     "area_km2",
+     "origin",
+     "origin_label",
+     "period",
+     "method",
+     "generated_at"
+    ],
+    "title": "ZoneSummary"
+   },
+   "ZonesOut": {
+    "properties": {
+     "province_id": {
+      "type": "string",
+      "title": "Province Id"
+     },
+     "province_name": {
+      "type": "string",
+      "title": "Province Name"
+     },
+     "available": {
+      "type": "boolean",
+      "title": "Available"
+     },
+     "title": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Title"
+     },
+     "origin": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/DataStatus"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "origin_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Origin Label"
+     },
+     "period": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Period"
+     },
+     "method": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Method"
+     },
+     "thresholds": {
+      "anyOf": [
+       {
+        "additionalProperties": {
+         "type": "string"
+        },
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Thresholds"
+     },
+     "generated_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Generated At"
+     },
+     "warning": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Warning"
+     },
+     "zones": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "title": "Zones",
+      "description": "GeoJSON Features de zonas, con clima y aptitud resumida.",
+      "default": []
+     },
+     "cells": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "title": "Cells",
+      "description": "GeoJSON Features de las celdas de POWER (resolución real del dato).",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "province_id",
+     "province_name",
+     "available"
+    ],
+    "title": "ZonesOut"
    }
   }
  }

@@ -1,0 +1,2 @@
+# Solo para los scripts de datos (no los necesita el servidor)
+shapely>=2.0

@@ -24,6 +24,112 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/regions/provinces": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Provincias de Argentina
+         * @description GeoJSON de las provincias (simplificado), con `has_zones` y el origen de su zonificación.
+         *     Fuente de los límites: ver `source` y `license` (Natural Earth hasta tener el archivo del IGN).
+         */
+        get: operations["provinces_regions_provinces_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/regions/{province_id}/zones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Zonas climáticas de una provincia
+         * @description Zonas climáticas derivadas de NASA POWER (índice de aridez UNEP) con su clima y la aptitud resumida de cada
+         *     cultivo, y las celdas de POWER que las forman. Si la provincia no tiene zonificación: `available = false`.
+         *     No son zonas agroecológicas oficiales.
+         */
+        get: operations["zones_regions__province_id__zones_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/zones/at": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Zona de un punto y transición
+         * @description Provincia, zona y celda de POWER del punto, si está en una zona de transición húmedo/seco (con la aptitud para
+         *     las dos zonas y opciones a evaluar) y los cultivos más aptos. 404 si el punto no cae en ninguna provincia.
+         */
+        get: operations["zone_at_zones_at_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/crops/suitability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Aptitud de cultivos en una zona
+         * @description Aptitud orientativa (alta, media o baja) de cada cultivo del catálogo con el clima de la zona, con motivos,
+         *     riesgos, confianza y lo que depende del suelo y del manejo. Requiere validación agronómica local.
+         */
+        get: operations["crop_suitability_crops_suitability_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/fields/{field_id}/soil-moisture": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Humedad del suelo satelital del lote (SMAP)
+         * @description SMAP L3 (capa superficial ~5 cm, observado) y L4 (zona de raíces, MODELADO), ~9 km: última observación
+         *     disponible, serie reciente y anomalía frente al mismo mes de otros años. Contexto regional, no tiempo real.
+         */
+        get: operations["soil_moisture_fields__field_id__soil_moisture_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/crops": {
         parameters: {
             query?: never;
@@ -61,8 +167,9 @@ export interface paths {
          * Crear un lote
          * @description Crea un lote a partir de coordenadas (WGS84). Se redondean a 4 decimales.
          *
-         *     Si el punto cae fuera de San Luis se acepta, pero con advertencia: los datos
-         *     de muestra y los supuestos agronómicos son de San Luis.
+         *     Devuelve además el perfil automático (`auto_profile`): suelo ESTIMADO (SoilGrids, 250 m), zona climática derivada
+         *     de NASA POWER, los cultivos más aptos y si está en una zona de transición. Lo que carga el productor siempre pisa
+         *     lo automático. Si el punto cae fuera de San Luis se acepta, con advertencia.
          */
         post: operations["create_field_fields_post"];
         delete?: never;
@@ -85,7 +192,8 @@ export interface paths {
         get: operations["get_field_fields__field_id__get"];
         /**
          * Actualizar un lote
-         * @description Reemplaza los datos del lote. Los cambios se guardan en memoria (se pierden al reiniciar).
+         * @description Reemplaza los datos del lote y recalcula el perfil automático (lo cargado por el productor tiene prioridad).
+         *     Los cambios se guardan en memoria (se pierden al reiniciar).
          */
         put: operations["update_field_fields__field_id__put"];
         post?: never;
@@ -558,6 +666,11 @@ export interface components {
             data: components["schemas"]["FieldOut"];
             meta: components["schemas"]["ResponseMeta"];
         };
+        /** ApiResponse[FieldSoilMoisture] */
+        ApiResponse_FieldSoilMoisture_: {
+            data: components["schemas"]["FieldSoilMoisture"];
+            meta: components["schemas"]["ResponseMeta"];
+        };
         /** ApiResponse[Forecast] */
         ApiResponse_Forecast_: {
             data: components["schemas"]["Forecast"];
@@ -566,6 +679,11 @@ export interface components {
         /** ApiResponse[HuertaPanel] */
         ApiResponse_HuertaPanel_: {
             data: components["schemas"]["HuertaPanel"];
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[ProvincesOut] */
+        ApiResponse_ProvincesOut_: {
+            data: components["schemas"]["ProvincesOut"];
             meta: components["schemas"]["ResponseMeta"];
         };
         /** ApiResponse[Report] */
@@ -591,6 +709,21 @@ export interface components {
         /** ApiResponse[VegetationSummary] */
         ApiResponse_VegetationSummary_: {
             data: components["schemas"]["VegetationSummary"];
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[ZoneAt] */
+        ApiResponse_ZoneAt_: {
+            data: components["schemas"]["ZoneAt"];
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[ZoneSuitability] */
+        ApiResponse_ZoneSuitability_: {
+            data: components["schemas"]["ZoneSuitability"];
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[ZonesOut] */
+        ApiResponse_ZonesOut_: {
+            data: components["schemas"]["ZonesOut"];
             meta: components["schemas"]["ResponseMeta"];
         };
         /** ApiResponse[list[Crop]] */
@@ -646,6 +779,28 @@ export interface components {
              * @default []
              */
             used_in: string[];
+        };
+        /**
+         * AutoProfile
+         * @description Lo que FieldShift completa solo al cargar el campo. Lo que carga el productor siempre pisa esto.
+         */
+        AutoProfile: {
+            soil_estimate: components["schemas"]["SoilEstimate"] | null;
+            /**
+             * Soil Applied
+             * @description Datos del suelo que se completaron con la estimación (los que el productor no cargó).
+             */
+            soil_applied: string[];
+            zone: components["schemas"]["ZoneAt"] | null;
+            /** Top Crops */
+            top_crops: components["schemas"]["CropSuitability"][];
+            /** Warnings */
+            warnings: string[];
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
         };
         /**
          * Boundary
@@ -1093,6 +1248,30 @@ export interface components {
          * @enum {string}
          */
         CropGroup: "cereal" | "oleaginosa" | "leguminosa" | "forrajera" | "cobertura";
+        /** CropSuitability */
+        CropSuitability: {
+            /** Crop Id */
+            crop_id: string;
+            /** Crop Name */
+            crop_name: string;
+            /** @description Aptitud orientativa: alto, medio o bajo. */
+            level: components["schemas"]["Level"];
+            /** Reasons */
+            reasons: string[];
+            /** Risks */
+            risks: string[];
+            /**
+             * Depends On
+             * @description Lo que la zona no captura: suelo y manejo.
+             */
+            depends_on: string[];
+            confidence: components["schemas"]["Confidence"];
+            /**
+             * Note
+             * @default Requiere validación agronómica local.
+             */
+            note: string;
+        };
         /** DailyRecord */
         DailyRecord: {
             /**
@@ -1457,6 +1636,32 @@ export interface components {
              * @description Indica si los datos del lote son reales o ilustrativos.
              */
             sample_note?: string | null;
+            /** @description Perfil automático: suelo estimado, zona climática, cultivos más aptos y transición. */
+            auto_profile?: components["schemas"]["AutoProfile"] | null;
+        };
+        /** FieldSoilMoisture */
+        FieldSoilMoisture: {
+            /** Field Id */
+            field_id: string;
+            /**
+             * Title
+             * @default Humedad del suelo satelital (contexto regional)
+             */
+            title: string;
+            /**
+             * Context
+             * @default SMAP mide desde el espacio en píxeles de ~9 km: describe la zona, no tu lote. Se muestra la última observación disponible, con días de atraso: no es tiempo real ni un sensor en el campo.
+             */
+            context: string;
+            /** Products */
+            products: components["schemas"]["SoilMoistureProduct"][];
+            /**
+             * Sensors
+             * @default Sensores propios del productor: todavía no están conectados (punto de entrada preparado para el futuro).
+             */
+            sensors: string;
+            /** Warnings */
+            warnings: string[];
         };
         /** Forecast */
         Forecast: {
@@ -1687,6 +1892,16 @@ export interface components {
             /** Incomplete Years */
             incomplete_years: number[];
         };
+        /** MoisturePoint */
+        MoisturePoint: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Value */
+            value: number | null;
+        };
         /** MonthlyClimatology */
         MonthlyClimatology: {
             /** Month */
@@ -1853,6 +2068,24 @@ export interface components {
             confidence: components["schemas"]["Confidence"];
             /** Note */
             note?: string | null;
+        };
+        /** ProvincesOut */
+        ProvincesOut: {
+            /** Source */
+            source: string;
+            /** License */
+            license: string;
+            /** Note */
+            note: string | null;
+            /** Generated At */
+            generated_at: string | null;
+            /**
+             * Features
+             * @description GeoJSON Features: properties {id, name, has_zones, zones_origin}.
+             */
+            features: {
+                [key: string]: unknown;
+            }[];
         };
         /** QualityReport */
         QualityReport: {
@@ -2464,6 +2697,50 @@ export interface components {
          * @enum {string}
          */
         Severity: "info" | "media" | "alta";
+        /**
+         * SoilEstimate
+         * @description Suelo ESTIMADO desde un mapa de suelos (no se mide desde satélite). El análisis de laboratorio tiene prioridad.
+         */
+        SoilEstimate: {
+            /** Source */
+            source: string;
+            /** Resolution */
+            resolution: string;
+            /** Depth */
+            depth: string;
+            /**
+             * Label
+             * @default estimado
+             * @constant
+             */
+            label: "estimado";
+            origin: components["schemas"]["DataStatus"];
+            /** Origin Label */
+            origin_label: string;
+            /** Retrieved At */
+            retrieved_at: string | null;
+            /** Clay Pct */
+            clay_pct: number | null;
+            /** Sand Pct */
+            sand_pct: number | null;
+            /** Silt Pct */
+            silt_pct: number | null;
+            /**
+             * Texture Usda
+             * @description Clase textural USDA.
+             */
+            texture_usda: string | null;
+            /** @description Clase de FieldShift. */
+            texture: components["schemas"]["SoilTexture"] | null;
+            /**
+             * Organic Matter Pct
+             * @description Materia orgánica = carbono orgánico x 1,724 (factor de van Bemmelen).
+             */
+            organic_matter_pct: number | null;
+            organic_matter: components["schemas"]["Level"] | null;
+            /** Note */
+            note: string;
+        };
         /** SoilInputSummary */
         SoilInputSummary: {
             texture: components["schemas"]["SoilTexture"] | null;
@@ -2549,6 +2826,64 @@ export interface components {
             date: string;
             /** Value */
             value: number | null;
+        };
+        /** SoilMoistureProduct */
+        SoilMoistureProduct: {
+            /** Product */
+            product: string;
+            /** Name */
+            name: string;
+            /**
+             * Label
+             * @enum {string}
+             */
+            label: "observado" | "modelado";
+            /** Depth */
+            depth: string | null;
+            /** Resolution */
+            resolution: string;
+            /** Temporal Resolution */
+            temporal_resolution: string;
+            /** Units */
+            units: string;
+            /**
+             * Last Observation
+             * @description Última observación disponible (no es tiempo real).
+             */
+            last_observation: string | null;
+            /** Last Value */
+            last_value: number | null;
+            /**
+             * Recent
+             * @description Serie de los últimos días con dato.
+             */
+            recent: components["schemas"]["MoisturePoint"][];
+            /** Month */
+            month: number | null;
+            /**
+             * Month Mean
+             * @description Promedio del mes de la última observación.
+             */
+            month_mean: number | null;
+            /**
+             * Month Normal
+             * @description Promedio del mismo mes en los otros años.
+             */
+            month_normal: number | null;
+            /** Anomaly Pct */
+            anomaly_pct: number | null;
+            /**
+             * Reading
+             * @description Lectura en palabras.
+             */
+            reading: string;
+            origin: components["schemas"]["DataStatus"];
+            /** Origin Label */
+            origin_label: string;
+            /** Retrieved At */
+            retrieved_at: string | null;
+            /** Limitations */
+            limitations: string[];
         };
         /** SoilMoistureRequest */
         SoilMoistureRequest: {
@@ -2864,6 +3199,50 @@ export interface components {
              */
             water_stress_pct: number | null;
         };
+        /** Transition */
+        Transition: {
+            /** Is Transition */
+            is_transition: boolean;
+            /** Reasons */
+            reasons: string[];
+            /** Message */
+            message: string | null;
+            /** Other Zone Class */
+            other_zone_class: ("arido" | "semiarido" | "subhumedo_seco" | "humedo") | null;
+            /** Other Zone Label */
+            other_zone_label: string | null;
+            /** Distance To Border Km */
+            distance_to_border_km: number | null;
+            /**
+             * Aridity Margin
+             * @description Distancia del índice de aridez al límite de clase más cercano.
+             */
+            aridity_margin: number | null;
+            /** Years Other Class Pct */
+            years_other_class_pct: number | null;
+            /**
+             * Options
+             * @default []
+             */
+            options: components["schemas"]["TransitionOption"][];
+            /**
+             * Suitability Other
+             * @description Aptitud si el año se comporta como la otra zona.
+             * @default []
+             */
+            suitability_other: components["schemas"]["CropSuitability"][];
+        };
+        /** TransitionOption */
+        TransitionOption: {
+            /** Title */
+            title: string;
+            /** Detail */
+            detail: string;
+            /** Reason */
+            reason: string;
+            /** Source */
+            source: string;
+        };
         /** Trend */
         Trend: {
             /** Slope Per Decade */
@@ -3151,6 +3530,149 @@ export interface components {
              */
             method: string;
         };
+        /** ZoneAt */
+        ZoneAt: {
+            /** Latitude */
+            latitude: number;
+            /** Longitude */
+            longitude: number;
+            /** Province Id */
+            province_id: string;
+            /** Province Name */
+            province_name: string;
+            /** Zones Available */
+            zones_available: boolean;
+            zone?: components["schemas"]["ZoneSummary"] | null;
+            cell?: components["schemas"]["ZoneCell"] | null;
+            transition?: components["schemas"]["Transition"] | null;
+            /**
+             * Top Crops
+             * @default []
+             */
+            top_crops: components["schemas"]["CropSuitability"][];
+            /** Note */
+            note?: string | null;
+        };
+        /** ZoneCell */
+        ZoneCell: {
+            /** Cell Id */
+            cell_id: string;
+            /** Center Lat */
+            center_lat: number;
+            /** Center Lon */
+            center_lon: number;
+            climate: components["schemas"]["ZoneClimate"];
+        };
+        /** ZoneClimate */
+        ZoneClimate: {
+            /** Precip Mm */
+            precip_mm: number;
+            /** Et0 Mm */
+            et0_mm: number;
+            /**
+             * Deficit Mm
+             * @description ET0 - lluvia, promedio anual.
+             */
+            deficit_mm: number;
+            /**
+             * Aridity Index
+             * @description Lluvia / ET0 (UNEP).
+             */
+            aridity_index: number;
+            /**
+             * Hot Days
+             * @description Días por año con Tmax > 35 °C.
+             */
+            hot_days: number;
+            /**
+             * Frost Days
+             * @description Días por año con Tmin <= 2 °C.
+             */
+            frost_days: number;
+            /** Precip Cv Pct */
+            precip_cv_pct: number | null;
+            /**
+             * Years Other Class Pct
+             * @description % de años en que la celda cae en otra zona.
+             */
+            years_other_class_pct: number;
+        };
+        /** ZoneSuitability */
+        ZoneSuitability: {
+            zone: components["schemas"]["ZoneSummary"];
+            /** Crops */
+            crops: components["schemas"]["CropSuitability"][];
+        };
+        /** ZoneSummary */
+        ZoneSummary: {
+            /** Zone Id */
+            zone_id: string;
+            /**
+             * Zone Class
+             * @enum {string}
+             */
+            zone_class: "arido" | "semiarido" | "subhumedo_seco" | "humedo";
+            /** Label */
+            label: string;
+            /** Province Id */
+            province_id: string;
+            climate: components["schemas"]["ZoneClimate"];
+            /** Cells */
+            cells: number;
+            /** Area Km2 */
+            area_km2: number;
+            origin: components["schemas"]["DataStatus"];
+            /** Origin Label */
+            origin_label: string;
+            /** Period */
+            period: string;
+            /** Method */
+            method: string;
+            /** Generated At */
+            generated_at: string | null;
+        };
+        /** ZonesOut */
+        ZonesOut: {
+            /** Province Id */
+            province_id: string;
+            /** Province Name */
+            province_name: string;
+            /** Available */
+            available: boolean;
+            /** Title */
+            title?: string | null;
+            origin?: components["schemas"]["DataStatus"] | null;
+            /** Origin Label */
+            origin_label?: string | null;
+            /** Period */
+            period?: string | null;
+            /** Method */
+            method?: string | null;
+            /** Thresholds */
+            thresholds?: {
+                [key: string]: string;
+            } | null;
+            /** Generated At */
+            generated_at?: string | null;
+            /** Warning */
+            warning?: string | null;
+            /**
+             * Zones
+             * @description GeoJSON Features de zonas, con clima y aptitud resumida.
+             * @default []
+             */
+            zones: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Cells
+             * @description GeoJSON Features de las celdas de POWER (resolución real del dato).
+             * @default []
+             */
+            cells: {
+                [key: string]: unknown;
+            }[];
+        };
     };
     responses: never;
     parameters: never;
@@ -3176,6 +3698,198 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthResponse"];
+                };
+            };
+        };
+    };
+    provinces_regions_provinces_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ProvincesOut_"];
+                };
+            };
+        };
+    };
+    zones_regions__province_id__zones_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                province_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ZonesOut_"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    zone_at_zones_at_get: {
+        parameters: {
+            query: {
+                lat: number;
+                lon: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ZoneAt_"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    crop_suitability_crops_suitability_get: {
+        parameters: {
+            query: {
+                zone_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_ZoneSuitability_"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    soil_moisture_fields__field_id__soil_moisture_get: {
+        parameters: {
+            query?: {
+                recent_days?: number;
+            };
+            header?: never;
+            path: {
+                field_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_FieldSoilMoisture_"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

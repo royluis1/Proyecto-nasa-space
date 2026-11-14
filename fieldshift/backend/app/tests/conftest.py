@@ -42,6 +42,7 @@ def satellite_provider(tmp_path):
         {
             "SPL4SMGP_rootzone": SAMPLES_DIR / "smap_sample_san_luis.csv",
             "SPL4SMGP_surface": SAMPLES_DIR / "smap_sample_san_luis.csv",
+            "SPL3SMP_E": SAMPLES_DIR / "smap_l3_sample_san_luis.csv",
             "MOD13Q1": SAMPLES_DIR / "ndvi_sample_san_luis.csv",
         },
     )
@@ -71,13 +72,28 @@ def forecast_service():
 
 
 @pytest.fixture
-def client(repo, offline_power, satellite_provider, terrain_provider, forecast_service):
+def soil_provider(tmp_path):
+    """Suelo sin red: SoilGrids no configurado, usa la muestra rotulada del repo."""
+    from app.services.soil.soilgrids import SoilProvider
+
+    return SoilProvider(tmp_path / "soil", SAMPLES_DIR / "soil_sample_san_luis.json")
+
+
+@pytest.fixture
+def client(repo, offline_power, satellite_provider, terrain_provider, forecast_service, soil_provider):
     """Cliente de la API con repositorio nuevo y POWER sin red, por test."""
     pytest.importorskip("fastapi")
     pytest.importorskip("httpx")
     from fastapi.testclient import TestClient
 
-    from app.api.deps import get_forecast_service, get_power_service, get_repository, get_satellite_provider, get_terrain_provider
+    from app.api.deps import (
+        get_forecast_service,
+        get_power_service,
+        get_repository,
+        get_satellite_provider,
+        get_soil_provider,
+        get_terrain_provider,
+    )
     from app.main import create_app
 
     app = create_app()
@@ -86,6 +102,7 @@ def client(repo, offline_power, satellite_provider, terrain_provider, forecast_s
     app.dependency_overrides[get_satellite_provider] = lambda: satellite_provider
     app.dependency_overrides[get_terrain_provider] = lambda: terrain_provider
     app.dependency_overrides[get_forecast_service] = lambda: forecast_service
+    app.dependency_overrides[get_soil_provider] = lambda: soil_provider
     return TestClient(app)
 
 

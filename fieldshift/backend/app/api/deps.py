@@ -9,6 +9,9 @@ from app.services.power.cache import PowerCache
 from app.services.power.sample import SampleProvider
 from app.services.earthdata.session import credentials_from_settings
 from app.services.early_warning import EarlyWarningService
+from app.services.regions.repository import RegionRepository
+from app.services.soil.soilgrids import SoilProvider
+from app.services.soil.soilgrids import http_fetcher as soilgrids_fetcher
 from app.services.forecast.open_meteo import ForecastService, http_fetcher
 from app.services.power.file_source import PowerFileProvider
 from app.services.power.service import Cooldown, PowerService
@@ -71,6 +74,7 @@ def get_satellite_provider() -> SatelliteProvider:
     samples = {
         **{k: s.nasa_samples_dir / s.smap_sample_file for k in ("SPL4SMGP_rootzone", "SPL4SMGP_surface")},
         **{k: s.nasa_samples_dir / s.ndvi_sample_file for k in ("MOD13Q1",)},
+        "SPL3SMP_E": s.nasa_samples_dir / "smap_l3_sample_san_luis.csv",
     }
     return SatelliteProvider(s.cache_dir / "appeears", samples, factory)
 
@@ -121,3 +125,21 @@ def get_early_warning_service(
     satellite: SatelliteService = Depends(get_satellite_service),
 ) -> EarlyWarningService:
     return EarlyWarningService(repo, power, forecast, satellite)
+
+
+@lru_cache
+def get_soil_provider() -> SoilProvider:
+    s = get_settings()
+    fetcher = soilgrids_fetcher(min(30.0, s.request_timeout_s)) if s.soilgrids_enabled else None
+    return SoilProvider(s.cache_dir / "soil", s.nasa_samples_dir / s.soil_sample_file, fetcher, Cooldown(s.power_cooldown_s))
+
+
+_REGIONS: dict[tuple, RegionRepository] = {}
+
+
+def get_region_repository(repo: Repository = Depends(get_repository)) -> RegionRepository:
+    """Una por carpeta de datos y catálogo: los GeoJSON se leen una sola vez."""
+    key = (get_settings().nasa_samples_dir, id(repo.crops))
+    if key not in _REGIONS:
+        _REGIONS[key] = RegionRepository(get_settings().nasa_samples_dir, repo.crops)
+    return _REGIONS[key]

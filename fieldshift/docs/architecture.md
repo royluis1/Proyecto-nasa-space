@@ -47,6 +47,10 @@ flowchart LR
 | `api/` | Rutas HTTP finas: validan, llaman a servicios, envuelven la respuesta |
 | `services/` | Orquestación y acceso a datos (repositorio, clientes externos) |
 | `services/satellite/` | SMAP y MODIS NDVI: parser de CSV de AppEEARS, conector AppEEARS, cascada de respaldo y métricas (ver satellite.md) |
+| `services/regions/` | Provincias y zonas (GeoJSON precalculados), geometría propia sin PostGIS (punto en polígono, distancia a un borde), transición y aptitud de cultivos |
+| `services/soil/` | Suelo estimado con SoilGrids (caché, muestra, vacío con aviso) y triángulo textural USDA |
+| `services/field_profile.py` | Perfil automático del campo; lo cargado por el productor tiene prioridad |
+| `services/soil_moisture_field.py`, `services/soil_moisture_sources.py` | Humedad SMAP por lote, e interfaz preparada (sin implementar) para sensores propios |
 | `services/engine/` | Motor de rotaciones: calendario, balance hídrico, generador, puntaje y explicaciones (ver scoring.md) |
 | `models/` | Enums, procedencia (`Provenance`, `Valued`), constantes |
 | `schemas/` | Contratos de request y response (Pydantic v2) |
@@ -96,7 +100,10 @@ Cascada: **en vivo → caché (cualquier antigüedad, con advertencia) → muest
 | `POST /scenarios` | Hecho: ranking por escenario (lluvia, temperatura, año seco, riego) |
 | `GET /export/report` | Hecho: JSON y CSV con ranking, explicaciones, fuentes y supuestos |
 | `POST /soil-moisture`, `POST /vegetation-index` | Hecho: AppEEARS asincrónico, CSV o GeoTIFF cargado, caché y muestra |
-| `GET /fields` (listar), salud de suelo, alertas | Pendientes |
+| `GET /regions/provinces`, `GET /regions/{province_id}/zones` | Hecho: provincias (Natural Earth hasta tener IGN) y zonas climáticas derivadas de NASA POWER (solo San Luis; muestra rotulada) |
+| `GET /zones/at`, `GET /crops/suitability` | Hecho: zona de un punto, transición húmedo/seco y aptitud orientativa de cultivos |
+| `POST /fields` (perfil automático), `GET /fields/{field_id}/soil-moisture` | Hecho: suelo estimado (SoilGrids), zona y cultivos más aptos; humedad SMAP L3/L4 del lote |
+| `POST /alerts`, `POST /huerta`, `POST /forecast`, `POST /terrain`, `POST /calendar` | Hecho (ver los documentos de cada bloque) |
 
 ## Reglas de calidad de datos
 

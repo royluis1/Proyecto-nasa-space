@@ -71,6 +71,31 @@ Todo lo que no está respaldado por un dato observado o una fuente verificada se
 | Tendencia de biomasa significativa: -6 (baja) / +4 (alta) puntos en S de la rotación actual | Supuesto de diseño |
 | Muestras `smap_sample_san_luis.csv` y `ndvi_sample_san_luis.csv` | **Simuladas** |
 
+## Zonas climáticas, transición, aptitud y suelo estimado
+
+| Supuesto | Fuente | Estado |
+|---|---|---|
+| Clases por índice de aridez (lluvia / ET0): árida < 0,20; semiárida 0,20-0,50; subhúmeda seca 0,50-0,65; subhúmeda húmeda o más ≥ 0,65 | UNEP (1992), Middleton y Thomas, *World Atlas of Desertification* | Publicado; ⚠️ la ET0 es FAO-56 con datos de POWER (UNEP usó Thornthwaite) |
+| Celdas de 0,5° x 0,625° de POWER como unidad de zonificación (~55 km) | Resolución de MERRA-2 en POWER | Supuesto: dentro de una celda no hay variación |
+| Período 2015-2025 (11 años) | Pedido del bloque | Supuesto: corto para clima; reemplazable con `--start` |
+| Día de calor: Tmax > 35 °C; día con riesgo de helada: Tmin ≤ 2 °C (aire a 2 m) | Criterio agronómico general | ⚠️ a validar |
+| **Transición**: (a) a 25 km o menos del borde con otra zona (media celda de POWER) | Supuesto de diseño | ⚠️ a validar |
+| **Transición**: (b) índice de aridez a 0,05 o menos de un límite de clase | Supuesto de diseño | ⚠️ a validar |
+| **Transición**: (c) 30 % o más de los años (3 de cada 10) clasificados en otra zona | Supuesto de diseño | ⚠️ a validar |
+| Clima de "la otra zona" en una transición: misma ET0 y la lluvia que lleva el índice al centro de esa clase | Supuesto para comparar | Supuesto |
+| **Aptitud por agua** (secano): matriz requerimiento hídrico x clase (alto: baja/baja/media/alta; medio: baja/media/alta/alta; bajo: media/alta/alta/alta, de árida a húmeda) | Supuesto de diseño sobre el catálogo | ⚠️ a validar con INTA |
+| Alta tolerancia a sequía sube un nivel; un cultivo de alta demanda nunca queda "alta" en zona árida o semiárida | Supuesto de diseño | ⚠️ |
+| Calor: cultivos poco tolerantes y en el lote en verano (dic-feb) bajan un nivel con más de 20 días/año sobre 35 °C y quedan en "baja" con más de 40; los de tolerancia media bajan un nivel con más de 40 | Supuesto de diseño | ⚠️ |
+| Heladas: cultivos poco tolerantes y en el lote en invierno (jun-ago) bajan un nivel con más de 10 días/año con Tmin ≤ 2 °C; si no están en invierno, solo se avisa el riesgo | Supuesto de diseño | ⚠️ |
+| Variabilidad: coeficiente de variación de la lluvia ≥ 25 % se avisa como riesgo | Supuesto de diseño | ⚠️ |
+| Aptitud = la peor de agua, calor y heladas; confianza media con zonas de POWER, baja con la muestra; nunca alta | Supuesto de diseño | — |
+| Suelo 0-30 cm: promedio de SoilGrids ponderado por espesor (0-5, 5-15, 15-30 cm) | Supuesto | — |
+| Materia orgánica = carbono orgánico x 1,724 (factor de van Bemmelen) | Clásico; ⚠️ el factor real varía entre 1,7 y 2,0 | Supuesto |
+| Materia orgánica: baja < 1 %; media 1-2,5 %; alta > 2,5 % | Criterio general | ⚠️ a validar para suelos de San Luis |
+| Textura USDA -> clases de FieldShift (areno franco -> arenosa; franco arcillo arenoso, franco arcilloso y franco arcillo limoso -> franco arcillosa; arcillo arenoso y arcillo limoso -> arcillosa; limoso -> franco limosa) | Simplificación | Supuesto |
+| Humedad SMAP en palabras: anomalía ≤ -15 % "más seco", ≥ +15 % "más húmedo" que lo normal para el mes | Supuesto | ⚠️ |
+| Muestras `zonas_san_luis_muestra.geojson`, `soil_sample_san_luis.json`, `smap_l3_sample_san_luis.csv` | — | **Simuladas** |
+
 ## A verificar con la fuente
 
 - Si NASA POWER ofrece ET₀ ya calculada en la API diaria.
@@ -79,3 +104,6 @@ Todo lo que no está respaldado por un dato observado o una fuente verificada se
 - Nombres exactos de columnas del CSV de AppEEARS y si el NDVI viene escalado (el parser tolera ambos).
 - Formato de `/bundle/{task_id}` de AppEEARS y decodificación de la bandera de calidad de SPL3SMP_E.
 - Referencias de INTA EEA San Luis sobre erosión eólica y cultivos de cobertura.
+- Licencia del archivo de provincias del IGN y si hay una zonificación agroecológica oficial de INTA para San Luis (tendría prioridad).
+- Estado y formato actual de la API REST de SoilGrids (ISRIC la publica como "beta / fair use").
+- Zonas reales de San Luis: correr `scripts/build_zones.py --live` con acceso a NASA POWER.

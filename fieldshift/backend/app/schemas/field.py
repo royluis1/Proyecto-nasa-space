@@ -76,3 +76,11 @@ class FieldOut(FieldCreate):
     sample_note: str | None = Field(
         default=None, description="Indica si los datos del lote son reales o ilustrativos."
     )
+    auto_profile: "AutoProfile | None" = Field(
+        default=None, description="Perfil automático: suelo estimado, zona climática, cultivos más aptos y transición."
+    )
+
+
+from app.schemas.regions import AutoProfile  # noqa: E402
+
+FieldOut.model_rebuild()

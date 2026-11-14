@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Body, Depends, status
 
 from app.api import examples
-from app.api.deps import get_repository
+from app.api.deps import get_region_repository, get_repository, get_soil_provider
 from app.models.enums import DataStatus
 from app.schemas.common import ApiResponse, ErrorResponse, ResponseMeta
 from app.schemas.field import FieldCreate, FieldOut
+from app.services.field_profile import build_auto_profile
+from app.services.regions.repository import RegionRepository
 from app.services.repository import Repository
+from app.services.soil.soilgrids import SoilProvider
 from app.utils.validators import is_in_san_luis
 
 router = APIRouter(tags=["lotes"])
@@ -23,14 +26,17 @@ NOT_FOUND = {404: {"model": ErrorResponse, "description": "El lote no existe."}}
 def create_field(
     data: FieldCreate = Body(openapi_examples=examples.FIELD_CREATE),
     repo: Repository = Depends(get_repository),
+    regions: RegionRepository = Depends(get_region_repository),
+    soil: SoilProvider = Depends(get_soil_provider),
 ) -> ApiResponse[FieldOut]:
     """Crea un lote a partir de coordenadas (WGS84). Se redondean a 4 decimales.
 
-    Si el punto cae fuera de San Luis se acepta, pero con advertencia: los datos
-    de muestra y los supuestos agronómicos son de San Luis.
+    Devuelve además el perfil automático (`auto_profile`): suelo ESTIMADO (SoilGrids, 250 m), zona climática derivada
+    de NASA POWER, los cultivos más aptos y si está en una zona de transición. Lo que carga el productor siempre pisa
+    lo automático. Si el punto cae fuera de San Luis se acepta, con advertencia.
     """
-    field = repo.create_field(data)
-    warnings = ["El lote se guarda en memoria: se pierde al reiniciar el servidor."]
+    field = repo.save_field(build_auto_profile(repo.create_field(data), regions, soil))
+    warnings = ["El lote se guarda en memoria: se pierde al reiniciar el servidor.", *field.auto_profile.warnings]
     if not is_in_san_luis(field.location.lat, field.location.lon):
         warnings.append("La ubicación está fuera de San Luis: los supuestos agronómicos pueden no aplicar.")
     return ApiResponse(data=field, meta=ResponseMeta(data_status=DataStatus.SAMPLE, warnings=warnings))
@@ -52,11 +58,16 @@ def list_fields(repo: Repository = Depends(get_repository)) -> ApiResponse[list[
     responses={**NOT_FOUND, 400: {"model": ErrorResponse}, 422: {"model": ErrorResponse}},
 )
 def update_field(
-    field_id: str, data: FieldCreate = Body(), repo: Repository = Depends(get_repository)
+    field_id: str,
+    data: FieldCreate = Body(),
+    repo: Repository = Depends(get_repository),
+    regions: RegionRepository = Depends(get_region_repository),
+    soil: SoilProvider = Depends(get_soil_provider),
 ) -> ApiResponse[FieldOut]:
-    """Reemplaza los datos del lote. Los cambios se guardan en memoria (se pierden al reiniciar)."""
-    field = repo.update_field(field_id, data)
-    warnings = ["El lote se guarda en memoria: se pierde al reiniciar el servidor."]
+    """Reemplaza los datos del lote y recalcula el perfil automático (lo cargado por el productor tiene prioridad).
+    Los cambios se guardan en memoria (se pierden al reiniciar)."""
+    field = repo.save_field(build_auto_profile(repo.update_field(field_id, data), regions, soil))
+    warnings = ["El lote se guarda en memoria: se pierde al reiniciar el servidor.", *field.auto_profile.warnings]
     if not is_in_san_luis(field.location.lat, field.location.lon):
         warnings.append("La ubicación está fuera de San Luis: los supuestos agronómicos pueden no aplicar.")
     return ApiResponse(data=field, meta=ResponseMeta(data_status=DataStatus.SAMPLE, warnings=warnings))

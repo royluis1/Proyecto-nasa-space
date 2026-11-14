@@ -77,6 +77,10 @@ class Repository:
         self.fields[field.id] = field
         return field
 
+    def save_field(self, field: FieldOut) -> FieldOut:
+        self.fields[field.id] = field
+        return field
+
     # --- prioridades ---
     def save_priorities(self, fp: FarmerPriority) -> FarmerPriority:
         self.get_field(fp.field_id)

@@ -1,0 +1,8 @@
+{
+  "note": "MUESTRA SIMULADA para demostración y tests: valores ilustrativos con el formato de SoilGrids (0-30 cm). NO son estimaciones reales. Con internet, el backend consulta SoilGrids (ISRIC).",
+  "sites": [
+    {"site_id": "campo-este", "lat": -33.85, "lon": -65.2, "clay": 12.0, "sand": 64.0, "silt": 24.0, "soc": 6.5},
+    {"site_id": "campo-centro", "lat": -33.55, "lon": -66.2, "clay": 8.5, "sand": 74.0, "silt": 17.5, "soc": 4.5},
+    {"site_id": "campo-conlara", "lat": -32.45, "lon": -65.25, "clay": 14.0, "sand": 58.0, "silt": 28.0, "soc": 9.0}
+  ]
+}
