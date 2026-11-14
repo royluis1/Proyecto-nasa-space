@@ -77,6 +77,8 @@ class RainSummary(BaseModel):
 
 class AlertsResult(BaseModel):
     profile: Profile
+    latitude: float
+    longitude: float
     alerts: list[Alert]
     forecast: Forecast | None
     past_rain: RainSummary | None

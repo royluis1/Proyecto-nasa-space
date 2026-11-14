@@ -1596,6 +1596,14 @@
       ],
       "title": "Profile"
      },
+     "latitude": {
+      "type": "number",
+      "title": "Latitude"
+     },
+     "longitude": {
+      "type": "number",
+      "title": "Longitude"
+     },
      "alerts": {
       "items": {
        "$ref": "#/components/schemas/Alert"
@@ -1653,6 +1661,8 @@
     "type": "object",
     "required": [
      "profile",
+     "latitude",
+     "longitude",
      "alerts",
      "forecast",
      "past_rain",

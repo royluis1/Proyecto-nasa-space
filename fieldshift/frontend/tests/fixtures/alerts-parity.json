@@ -1,0 +1,1442 @@
+[
+ {
+  "name": "heladas-huerta",
+  "profile": "huerta",
+  "forecast": {
+   "latitude": -33.9,
+   "longitude": -65.07,
+   "timezone": "America/Argentina/San_Luis",
+   "days": [
+    {
+     "date": "2026-11-14",
+     "tmax_c": 28.2,
+     "tmin_c": 5.0,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-15",
+     "tmax_c": 28.2,
+     "tmin_c": 1.4,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-16",
+     "tmax_c": 28.2,
+     "tmin_c": -2.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-17",
+     "tmax_c": 28.2,
+     "tmin_c": -1.1,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-18",
+     "tmax_c": 28.2,
+     "tmin_c": 6.0,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-19",
+     "tmax_c": 28.2,
+     "tmin_c": 1.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-20",
+     "tmax_c": 28.2,
+     "tmin_c": 8.0,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-21",
+     "tmax_c": 28.2,
+     "tmin_c": 9.0,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-22",
+     "tmax_c": 28.2,
+     "tmin_c": 9.0,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-23",
+     "tmax_c": 28.2,
+     "tmin_c": 9.0,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    }
+   ],
+   "source": {
+    "name": "Open-Meteo (pronóstico; no es un dato de la NASA)",
+    "is_nasa": false,
+    "kind": "pronóstico",
+    "retrieved_at": "2026-11-14T12:00:00Z",
+    "origin": null,
+    "origin_label": null,
+    "detail": "Modelos meteorológicos combinados, celdas de 1 a 11 km según la zona."
+   }
+  },
+  "past": null,
+  "smap": null,
+  "expected": [
+   {
+    "id": "helada-2026-11-15",
+    "kind": "helada",
+    "severity": "alta",
+    "title": "Helada el 15/11 al 17/11 (mínima -2 °C)",
+    "message": "Cubrí las plantas sensibles (tomate, pimiento, zapallo, albahaca) con manta antihelada o nylon esa noche y regá a la tarde: el suelo húmedo guarda calor. No trasplantes hasta que pase.",
+    "start": "2026-11-15",
+    "end": "2026-11-17",
+    "source": "Open-Meteo (pronóstico, no es NASA)"
+   },
+   {
+    "id": "falta-de-agua",
+    "kind": "falta_de_agua",
+    "severity": "media",
+    "title": "Sin lluvia los próximos 10 días",
+    "message": "Vas a tener que regar: unos 36 litros por m² por semana, repartidos en 2 o 3 riegos.",
+    "start": "2026-11-14",
+    "end": "2026-11-23",
+    "source": "Open-Meteo (pronóstico, no es NASA)"
+   },
+   {
+    "id": "helada-2026-11-19",
+    "kind": "helada",
+    "severity": "media",
+    "title": "Posible helada el 19/11 (mínima 1 °C)",
+    "message": "Cubrí las plantas sensibles (tomate, pimiento, zapallo, albahaca) con manta antihelada o nylon esa noche y regá a la tarde: el suelo húmedo guarda calor. No trasplantes hasta que pase.",
+    "start": "2026-11-19",
+    "end": "2026-11-19",
+    "source": "Open-Meteo (pronóstico, no es NASA)"
+   }
+  ]
+ },
+ {
+  "name": "heladas-agricultor",
+  "profile": "agricultor",
+  "forecast": {
+   "latitude": -33.9,
+   "longitude": -65.07,
+   "timezone": "America/Argentina/San_Luis",
+   "days": [
+    {
+     "date": "2026-11-14",
+     "tmax_c": 28.2,
+     "tmin_c": 5.0,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-15",
+     "tmax_c": 28.2,
+     "tmin_c": 1.4,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-16",
+     "tmax_c": 28.2,
+     "tmin_c": -2.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-17",
+     "tmax_c": 28.2,
+     "tmin_c": -1.1,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-18",
+     "tmax_c": 28.2,
+     "tmin_c": 6.0,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-19",
+     "tmax_c": 28.2,
+     "tmin_c": 1.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-20",
+     "tmax_c": 28.2,
+     "tmin_c": 8.0,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-21",
+     "tmax_c": 28.2,
+     "tmin_c": 9.0,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-22",
+     "tmax_c": 28.2,
+     "tmin_c": 9.0,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-23",
+     "tmax_c": 28.2,
+     "tmin_c": 9.0,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    }
+   ],
+   "source": {
+    "name": "Open-Meteo (pronóstico; no es un dato de la NASA)",
+    "is_nasa": false,
+    "kind": "pronóstico",
+    "retrieved_at": "2026-11-14T12:00:00Z",
+    "origin": null,
+    "origin_label": null,
+    "detail": "Modelos meteorológicos combinados, celdas de 1 a 11 km según la zona."
+   }
+  },
+  "past": null,
+  "smap": null,
+  "expected": [
+   {
+    "id": "helada-2026-11-15",
+    "kind": "helada",
+    "severity": "alta",
+    "title": "Helada el 15/11 al 17/11 (mínima -2 °C)",
+    "message": "Puede dañar cultivos recién emergidos o en floración. Postergá siembras sensibles al frío y revisá el lote después de la helada.",
+    "start": "2026-11-15",
+    "end": "2026-11-17",
+    "source": "Open-Meteo (pronóstico, no es NASA)"
+   },
+   {
+    "id": "falta-de-agua",
+    "kind": "falta_de_agua",
+    "severity": "media",
+    "title": "Sin lluvia los próximos 10 días",
+    "message": "Se pronostican 0 mm contra 51 mm de evaporación: el perfil se va a secar. Medí la humedad antes de sembrar y ajustá la densidad.",
+    "start": "2026-11-14",
+    "end": "2026-11-23",
+    "source": "Open-Meteo (pronóstico, no es NASA)"
+   },
+   {
+    "id": "helada-2026-11-19",
+    "kind": "helada",
+    "severity": "media",
+    "title": "Posible helada el 19/11 (mínima 1 °C)",
+    "message": "Puede dañar cultivos recién emergidos o en floración. Postergá siembras sensibles al frío y revisá el lote después de la helada.",
+    "start": "2026-11-19",
+    "end": "2026-11-19",
+    "source": "Open-Meteo (pronóstico, no es NASA)"
+   }
+  ]
+ },
+ {
+  "name": "calor-lluvia-viento-huerta",
+  "profile": "huerta",
+  "forecast": {
+   "latitude": -33.9,
+   "longitude": -65.07,
+   "timezone": "America/Argentina/San_Luis",
+   "days": [
+    {
+     "date": "2026-11-14",
+     "tmax_c": 30.0,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.0
+    },
+    {
+     "date": "2026-11-15",
+     "tmax_c": 36.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.0
+    },
+    {
+     "date": "2026-11-16",
+     "tmax_c": 39.1,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.0
+    },
+    {
+     "date": "2026-11-17",
+     "tmax_c": 30.0,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.0
+    },
+    {
+     "date": "2026-11-18",
+     "tmax_c": 30.0,
+     "tmin_c": 12.2,
+     "precip_mm": 55.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.0
+    },
+    {
+     "date": "2026-11-19",
+     "tmax_c": 30.0,
+     "tmin_c": 12.2,
+     "precip_mm": 32.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.0
+    },
+    {
+     "date": "2026-11-20",
+     "tmax_c": 30.0,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.0
+    },
+    {
+     "date": "2026-11-21",
+     "tmax_c": 30.0,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.0
+    },
+    {
+     "date": "2026-11-22",
+     "tmax_c": 30.0,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 70.2
+    },
+    {
+     "date": "2026-11-23",
+     "tmax_c": 30.0,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 80.1
+    }
+   ],
+   "source": {
+    "name": "Open-Meteo (pronóstico; no es un dato de la NASA)",
+    "is_nasa": false,
+    "kind": "pronóstico",
+    "retrieved_at": "2026-11-14T12:00:00Z",
+    "origin": null,
+    "origin_label": null,
+    "detail": "Modelos meteorológicos combinados, celdas de 1 a 11 km según la zona."
+   }
+  },
+  "past": null,
+  "smap": null,
+  "expected": [
+   {
+    "id": "calor-2026-11-15",
+    "kind": "calor",
+    "severity": "alta",
+    "title": "Calor fuerte: 2 días con más de 35 °C desde el 15/11 (máxima 39 °C)",
+    "message": "Regá temprano a la mañana o al atardecer, poné media sombra a las hojas tiernas y cubrí el suelo con paja para que no se seque.",
+    "start": "2026-11-15",
+    "end": "2026-11-16",
+    "source": "Open-Meteo (pronóstico, no es NASA)"
+   },
+   {
+    "id": "lluvia-2026-11-18",
+    "kind": "lluvia_intensa",
+    "severity": "alta",
+    "title": "Lluvia intensa el 18/11 (~55 mm)",
+    "message": "No riegues esos días, revisá que el agua escurra y no se encharquen los canteros; protegé los almácigos.",
+    "start": "2026-11-18",
+    "end": "2026-11-18",
+    "source": "Open-Meteo (pronóstico, no es NASA)"
+   },
+   {
+    "id": "lluvia-2026-11-19",
+    "kind": "lluvia_intensa",
+    "severity": "media",
+    "title": "Lluvia intensa el 19/11 (~32 mm)",
+    "message": "No riegues esos días, revisá que el agua escurra y no se encharquen los canteros; protegé los almácigos.",
+    "start": "2026-11-19",
+    "end": "2026-11-19",
+    "source": "Open-Meteo (pronóstico, no es NASA)"
+   },
+   {
+    "id": "viento-2026-11-22",
+    "kind": "viento",
+    "severity": "media",
+    "title": "Viento fuerte el 22/11 (ráfagas de ~70 km/h)",
+    "message": "Atá tutores y cubrí almácigos.",
+    "start": "2026-11-22",
+    "end": "2026-11-22",
+    "source": "Open-Meteo (pronóstico, no es NASA)"
+   }
+  ]
+ },
+ {
+  "name": "calor-lluvia-viento-agricultor",
+  "profile": "agricultor",
+  "forecast": {
+   "latitude": -33.9,
+   "longitude": -65.07,
+   "timezone": "America/Argentina/San_Luis",
+   "days": [
+    {
+     "date": "2026-11-14",
+     "tmax_c": 30.0,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.0
+    },
+    {
+     "date": "2026-11-15",
+     "tmax_c": 36.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.0
+    },
+    {
+     "date": "2026-11-16",
+     "tmax_c": 39.1,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.0
+    },
+    {
+     "date": "2026-11-17",
+     "tmax_c": 30.0,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.0
+    },
+    {
+     "date": "2026-11-18",
+     "tmax_c": 30.0,
+     "tmin_c": 12.2,
+     "precip_mm": 55.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.0
+    },
+    {
+     "date": "2026-11-19",
+     "tmax_c": 30.0,
+     "tmin_c": 12.2,
+     "precip_mm": 32.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.0
+    },
+    {
+     "date": "2026-11-20",
+     "tmax_c": 30.0,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.0
+    },
+    {
+     "date": "2026-11-21",
+     "tmax_c": 30.0,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.0
+    },
+    {
+     "date": "2026-11-22",
+     "tmax_c": 30.0,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 70.2
+    },
+    {
+     "date": "2026-11-23",
+     "tmax_c": 30.0,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 80.1
+    }
+   ],
+   "source": {
+    "name": "Open-Meteo (pronóstico; no es un dato de la NASA)",
+    "is_nasa": false,
+    "kind": "pronóstico",
+    "retrieved_at": "2026-11-14T12:00:00Z",
+    "origin": null,
+    "origin_label": null,
+    "detail": "Modelos meteorológicos combinados, celdas de 1 a 11 km según la zona."
+   }
+  },
+  "past": null,
+  "smap": null,
+  "expected": [
+   {
+    "id": "calor-2026-11-15",
+    "kind": "calor",
+    "severity": "alta",
+    "title": "Calor fuerte: 2 días con más de 35 °C desde el 15/11 (máxima 39 °C)",
+    "message": "Golpe de calor: si coincide con la floración de maíz o soja puede bajar el rendimiento. Revisá el agua del perfil y evitá pulverizar en las horas de más calor.",
+    "start": "2026-11-15",
+    "end": "2026-11-16",
+    "source": "Open-Meteo (pronóstico, no es NASA)"
+   },
+   {
+    "id": "lluvia-2026-11-18",
+    "kind": "lluvia_intensa",
+    "severity": "alta",
+    "title": "Lluvia intensa el 18/11 (~55 mm)",
+    "message": "Riesgo de erosión y encharcamiento en lotes con suelo desnudo. Evitá pulverizar antes de la lluvia y revisá caminos y bajos.",
+    "start": "2026-11-18",
+    "end": "2026-11-18",
+    "source": "Open-Meteo (pronóstico, no es NASA)"
+   },
+   {
+    "id": "lluvia-2026-11-19",
+    "kind": "lluvia_intensa",
+    "severity": "media",
+    "title": "Lluvia intensa el 19/11 (~32 mm)",
+    "message": "Riesgo de erosión y encharcamiento en lotes con suelo desnudo. Evitá pulverizar antes de la lluvia y revisá caminos y bajos.",
+    "start": "2026-11-19",
+    "end": "2026-11-19",
+    "source": "Open-Meteo (pronóstico, no es NASA)"
+   },
+   {
+    "id": "viento-2026-11-22",
+    "kind": "viento",
+    "severity": "media",
+    "title": "Viento fuerte el 22/11 (ráfagas de ~70 km/h)",
+    "message": "Más erosión eólica en lotes sin cobertura; no pulverices.",
+    "start": "2026-11-22",
+    "end": "2026-11-22",
+    "source": "Open-Meteo (pronóstico, no es NASA)"
+   }
+  ]
+ },
+ {
+  "name": "seco-con-pasado-huerta",
+  "profile": "huerta",
+  "forecast": {
+   "latitude": -33.9,
+   "longitude": -65.07,
+   "timezone": "America/Argentina/San_Luis",
+   "days": [
+    {
+     "date": "2026-11-14",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-15",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-16",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-17",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-18",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-19",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-20",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-21",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-22",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-23",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    }
+   ],
+   "source": {
+    "name": "Open-Meteo (pronóstico; no es un dato de la NASA)",
+    "is_nasa": false,
+    "kind": "pronóstico",
+    "retrieved_at": "2026-11-14T12:00:00Z",
+    "origin": null,
+    "origin_label": null,
+    "detail": "Modelos meteorológicos combinados, celdas de 1 a 11 km según la zona."
+   }
+  },
+  "past": {
+   "days": 30,
+   "total_mm": 10.0,
+   "normal_mm": 60.0,
+   "pct_of_normal": 17.0,
+   "start": "2026-10-12",
+   "end": "2026-11-10",
+   "source": {
+    "name": "NASA POWER",
+    "is_nasa": true,
+    "kind": "modelado",
+    "retrieved_at": "2026-11-14T12:00:00Z",
+    "origin": null,
+    "origin_label": null,
+    "detail": null
+   }
+  },
+  "smap": null,
+  "expected": [
+   {
+    "id": "falta-de-agua",
+    "kind": "falta_de_agua",
+    "severity": "alta",
+    "title": "Sin lluvia los próximos 10 días y el último mes llovió poco",
+    "message": "Vas a tener que regar: unos 43 litros por m² por semana, repartidos en 2 o 3 riegos.",
+    "start": "2026-11-14",
+    "end": "2026-11-23",
+    "source": "Open-Meteo (pronóstico, no es NASA) y NASA POWER (lluvia del último mes)"
+   }
+  ]
+ },
+ {
+  "name": "seco-con-pasado-agricultor",
+  "profile": "agricultor",
+  "forecast": {
+   "latitude": -33.9,
+   "longitude": -65.07,
+   "timezone": "America/Argentina/San_Luis",
+   "days": [
+    {
+     "date": "2026-11-14",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-15",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-16",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-17",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-18",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-19",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-20",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-21",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-22",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-23",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.0,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 6.1,
+     "wind_max_kmh": 20.2
+    }
+   ],
+   "source": {
+    "name": "Open-Meteo (pronóstico; no es un dato de la NASA)",
+    "is_nasa": false,
+    "kind": "pronóstico",
+    "retrieved_at": "2026-11-14T12:00:00Z",
+    "origin": null,
+    "origin_label": null,
+    "detail": "Modelos meteorológicos combinados, celdas de 1 a 11 km según la zona."
+   }
+  },
+  "past": {
+   "days": 30,
+   "total_mm": 10.0,
+   "normal_mm": 60.0,
+   "pct_of_normal": 17.0,
+   "start": "2026-10-12",
+   "end": "2026-11-10",
+   "source": {
+    "name": "NASA POWER",
+    "is_nasa": true,
+    "kind": "modelado",
+    "retrieved_at": "2026-11-14T12:00:00Z",
+    "origin": null,
+    "origin_label": null,
+    "detail": null
+   }
+  },
+  "smap": null,
+  "expected": [
+   {
+    "id": "falta-de-agua",
+    "kind": "falta_de_agua",
+    "severity": "alta",
+    "title": "Sin lluvia los próximos 10 días y el último mes llovió poco",
+    "message": "Se pronostican 0 mm contra 61 mm de evaporación: el perfil se va a secar. Medí la humedad antes de sembrar y ajustá la densidad.",
+    "start": "2026-11-14",
+    "end": "2026-11-23",
+    "source": "Open-Meteo (pronóstico, no es NASA) y NASA POWER (lluvia del último mes)"
+   }
+  ]
+ },
+ {
+  "name": "seco-sin-pasado-huerta",
+  "profile": "huerta",
+  "forecast": {
+   "latitude": -33.9,
+   "longitude": -65.07,
+   "timezone": "America/Argentina/San_Luis",
+   "days": [
+    {
+     "date": "2026-11-14",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-15",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-16",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-17",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-18",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-19",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-20",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-21",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-22",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-23",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    }
+   ],
+   "source": {
+    "name": "Open-Meteo (pronóstico; no es un dato de la NASA)",
+    "is_nasa": false,
+    "kind": "pronóstico",
+    "retrieved_at": "2026-11-14T12:00:00Z",
+    "origin": null,
+    "origin_label": null,
+    "detail": "Modelos meteorológicos combinados, celdas de 1 a 11 km según la zona."
+   }
+  },
+  "past": null,
+  "smap": -35.2,
+  "expected": [
+   {
+    "id": "falta-de-agua",
+    "kind": "falta_de_agua",
+    "severity": "media",
+    "title": "Sin lluvia los próximos 10 días",
+    "message": "Vas a tener que regar: unos 28 litros por m² por semana, repartidos en 2 o 3 riegos.",
+    "start": "2026-11-14",
+    "end": "2026-11-23",
+    "source": "Open-Meteo (pronóstico, no es NASA)"
+   },
+   {
+    "id": "suelo-seco",
+    "kind": "suelo_seco",
+    "severity": "media",
+    "title": "Suelo más seco que lo normal (-35 %)",
+    "message": "La tierra de la zona está más seca que otros años: regá más seguido y cubrí el suelo.",
+    "start": null,
+    "end": null,
+    "source": "NASA SMAP"
+   }
+  ]
+ },
+ {
+  "name": "seco-sin-pasado-agricultor",
+  "profile": "agricultor",
+  "forecast": {
+   "latitude": -33.9,
+   "longitude": -65.07,
+   "timezone": "America/Argentina/San_Luis",
+   "days": [
+    {
+     "date": "2026-11-14",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-15",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-16",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-17",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-18",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-19",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-20",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-21",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-22",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-23",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 0.3,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 4.2,
+     "wind_max_kmh": 20.2
+    }
+   ],
+   "source": {
+    "name": "Open-Meteo (pronóstico; no es un dato de la NASA)",
+    "is_nasa": false,
+    "kind": "pronóstico",
+    "retrieved_at": "2026-11-14T12:00:00Z",
+    "origin": null,
+    "origin_label": null,
+    "detail": "Modelos meteorológicos combinados, celdas de 1 a 11 km según la zona."
+   }
+  },
+  "past": null,
+  "smap": -35.2,
+  "expected": [
+   {
+    "id": "falta-de-agua",
+    "kind": "falta_de_agua",
+    "severity": "media",
+    "title": "Sin lluvia los próximos 10 días",
+    "message": "Se pronostican 3 mm contra 42 mm de evaporación: el perfil se va a secar. Medí la humedad antes de sembrar y ajustá la densidad.",
+    "start": "2026-11-14",
+    "end": "2026-11-23",
+    "source": "Open-Meteo (pronóstico, no es NASA)"
+   },
+   {
+    "id": "suelo-seco",
+    "kind": "suelo_seco",
+    "severity": "media",
+    "title": "Suelo más seco que lo normal (-35 %)",
+    "message": "SMAP muestra la zona de raíces más seca que lo habitual para la época. Es un dato regional (9 km): confirmalo en el lote.",
+    "start": null,
+    "end": null,
+    "source": "NASA SMAP"
+   }
+  ]
+ },
+ {
+  "name": "solo-pasado-huerta",
+  "profile": "huerta",
+  "forecast": null,
+  "past": {
+   "days": 30,
+   "total_mm": 10.0,
+   "normal_mm": 60.0,
+   "pct_of_normal": 17.0,
+   "start": "2026-10-12",
+   "end": "2026-11-10",
+   "source": {
+    "name": "NASA POWER",
+    "is_nasa": true,
+    "kind": "modelado",
+    "retrieved_at": "2026-11-14T12:00:00Z",
+    "origin": null,
+    "origin_label": null,
+    "detail": null
+   }
+  },
+  "smap": null,
+  "expected": [
+   {
+    "id": "falta-de-agua",
+    "kind": "falta_de_agua",
+    "severity": "media",
+    "title": "El último mes llovió el 17 % de lo normal",
+    "message": "Revisá la humedad de la tierra antes de cada riego.",
+    "start": "2026-10-12",
+    "end": "2026-11-10",
+    "source": "NASA POWER"
+   }
+  ]
+ },
+ {
+  "name": "solo-pasado-agricultor",
+  "profile": "agricultor",
+  "forecast": null,
+  "past": {
+   "days": 30,
+   "total_mm": 10.0,
+   "normal_mm": 60.0,
+   "pct_of_normal": 17.0,
+   "start": "2026-10-12",
+   "end": "2026-11-10",
+   "source": {
+    "name": "NASA POWER",
+    "is_nasa": true,
+    "kind": "modelado",
+    "retrieved_at": "2026-11-14T12:00:00Z",
+    "origin": null,
+    "origin_label": null,
+    "detail": null
+   }
+  },
+  "smap": null,
+  "expected": [
+   {
+    "id": "falta-de-agua",
+    "kind": "falta_de_agua",
+    "severity": "media",
+    "title": "El último mes llovió el 17 % de lo normal",
+    "message": "El perfil puede estar más seco que lo habitual: medilo antes de sembrar.",
+    "start": "2026-10-12",
+    "end": "2026-11-10",
+    "source": "NASA POWER"
+   }
+  ]
+ },
+ {
+  "name": "tranquilo-huerta",
+  "profile": "huerta",
+  "forecast": {
+   "latitude": -33.9,
+   "longitude": -65.07,
+   "timezone": "America/Argentina/San_Luis",
+   "days": [
+    {
+     "date": "2026-11-14",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-15",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-16",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-17",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-18",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-19",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-20",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-21",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-22",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-23",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    }
+   ],
+   "source": {
+    "name": "Open-Meteo (pronóstico; no es un dato de la NASA)",
+    "is_nasa": false,
+    "kind": "pronóstico",
+    "retrieved_at": "2026-11-14T12:00:00Z",
+    "origin": null,
+    "origin_label": null,
+    "detail": "Modelos meteorológicos combinados, celdas de 1 a 11 km según la zona."
+   }
+  },
+  "past": null,
+  "smap": -5.0,
+  "expected": []
+ },
+ {
+  "name": "tranquilo-agricultor",
+  "profile": "agricultor",
+  "forecast": {
+   "latitude": -33.9,
+   "longitude": -65.07,
+   "timezone": "America/Argentina/San_Luis",
+   "days": [
+    {
+     "date": "2026-11-14",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-15",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-16",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-17",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-18",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-19",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-20",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-21",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-22",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    },
+    {
+     "date": "2026-11-23",
+     "tmax_c": 28.2,
+     "tmin_c": 12.2,
+     "precip_mm": 3.1,
+     "precip_probability_pct": 10.0,
+     "et0_mm": 5.1,
+     "wind_max_kmh": 20.2
+    }
+   ],
+   "source": {
+    "name": "Open-Meteo (pronóstico; no es un dato de la NASA)",
+    "is_nasa": false,
+    "kind": "pronóstico",
+    "retrieved_at": "2026-11-14T12:00:00Z",
+    "origin": null,
+    "origin_label": null,
+    "detail": "Modelos meteorológicos combinados, celdas de 1 a 11 km según la zona."
+   }
+  },
+  "past": null,
+  "smap": -5.0,
+  "expected": []
+ }
+]

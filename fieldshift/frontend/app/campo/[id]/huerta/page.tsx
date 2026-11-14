@@ -4,6 +4,7 @@ import { AsyncBlock } from "@/components/async-block";
 import { AlertList } from "@/components/alerts/alert-list";
 import { ForecastTable } from "@/components/alerts/forecast-table";
 import { useCampo } from "@/components/campo/campo-provider";
+import { TodaySatellite } from "@/components/map/today-satellite";
 import { PageHeader } from "@/components/page-header";
 import { SourceLine } from "@/components/provenance/source-line";
 import { WarningsList } from "@/components/provenance/warnings";
@@ -29,6 +30,7 @@ function Big({ icon, title, value, children }: { icon: string; title: string; va
 const monthList = (ms: number[]) => (ms.length ? ms.map((m) => MONTHS_LONG[m - 1]).join(", ") : "ninguno");
 
 function Panel({ r }: { r: ApiResult<HuertaPanel> }) {
+  const { field } = useCampo();
   const h = r.data;
   const month = new Date().getMonth() + 1;
   const frostNow = h.frost.frost_months.includes(month);
@@ -89,6 +91,8 @@ function Panel({ r }: { r: ApiResult<HuertaPanel> }) {
           </Card>
         )}
       </div>
+
+      {field && <TodaySatellite field={field} title="Tu zona hoy, vista desde el espacio" />}
 
       <Card>
         <CardHeader><CardTitle as="h2">De dónde salen los datos</CardTitle><CardDescription>Fuente, fecha de consulta y tipo de cada dato.</CardDescription></CardHeader>

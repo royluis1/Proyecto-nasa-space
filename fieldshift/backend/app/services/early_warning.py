@@ -341,6 +341,8 @@ class EarlyWarningService:
             sources.append(smap_src)
         return AlertsResult(
             profile=profile,
+            latitude=lat,
+            longitude=lon,
             alerts=build_alerts(profile, fc, past, anomaly),
             forecast=fc,
             past_rain=past,

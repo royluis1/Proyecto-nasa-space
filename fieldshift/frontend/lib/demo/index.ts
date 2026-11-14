@@ -125,13 +125,17 @@ const NO_FORECAST = "Sin conexión con el servidor: el pronóstico (Open-Meteo) 
 export async function demoHuerta(fieldId: string): Promise<ApiEnvelope<HuertaPanel>> {
   const { id, note } = await exampleIdFor(fieldId);
   const data = await load<HuertaPanel>(`huerta-${id}`);
-  return env({ ...data, field_id: fieldId }, [...(note ? [note] : []), NO_FORECAST, ...data.warnings]);
+  const local = isLocalId(fieldId) ? getLocalField(fieldId) : null;
+  const at = local ? { latitude: local.location.lat, longitude: local.location.lon } : {};
+  return env({ ...data, ...at, field_id: fieldId }, [...(note ? [note] : []), NO_FORECAST, ...data.warnings]);
 }
 
 export async function demoAlerts(fieldId: string, profile: "huerta" | "agricultor"): Promise<ApiEnvelope<AlertsResult>> {
   const { id, note } = await exampleIdFor(fieldId);
   const data = await load<AlertsResult>(`alerts-${id}-${profile}`);
-  return env(data, [...(note ? [note] : []), NO_FORECAST, ...data.warnings]);
+  const local = isLocalId(fieldId) ? getLocalField(fieldId) : null;
+  const at = local ? { latitude: local.location.lat, longitude: local.location.lon } : {};
+  return env({ ...data, ...at }, [...(note ? [note] : []), NO_FORECAST, ...data.warnings]);
 }
 
 export async function demoTerrain(fieldId: string): Promise<ApiEnvelope<TerrainSummary>> {

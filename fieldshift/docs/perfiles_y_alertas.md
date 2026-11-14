@@ -74,6 +74,20 @@ Se agregan más archivos con `FIELDSHIFT_POWER_FALLBACK_FILES` (lista JSON de no
 - Es gratis sin clave para uso no comercial. Para un cliente comercial, Open-Meteo pide un plan con clave: `FIELDSHIFT_OPEN_METEO_URL=https://customer-api.open-meteo.com/v1/forecast` y `FIELDSHIFT_OPEN_METEO_API_KEY`.
 - Si no responde, las alertas y el panel siguen con POWER y SMAP, y lo avisan. No se inventa un pronóstico.
 
+### Pronóstico desde el navegador
+
+Si la respuesta del servidor no trae pronóstico, el navegador consulta Open-Meteo directamente (`frontend/lib/open-meteo.ts`, función `getForecast(lat, lon)`). Pasa cuando el servidor no está o cuando el servidor no llega a Open-Meteo. Después recalcula las alertas con las mismas reglas que el backend (`frontend/lib/alerts.ts`). Un test compara los dos con 12 casos generados por el backend (`frontend/tests/fixtures/alerts-parity.json`). En pantalla se aclara: "Pronóstico consultado desde tu navegador (Open-Meteo, no es NASA)".
+
+## Imagen satelital del día (NASA GIBS)
+
+En los mapas hay un botón **"NASA del día"**. Muestra la imagen MODIS Terra en color real de NASA GIBS: es pública, no pide cuenta y tiene un píxel de unos 250 m.
+
+```
+https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/{AAAA-MM-DD}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg
+```
+
+Por defecto muestra la imagen de ayer, porque la de hoy suele estar incompleta. Se puede elegir otra fecha, desde 2000-02-24. En Diagnóstico y en Mi huerta está la tarjeta "Tu zona hoy, vista por la NASA". Sirve para ver nubes, humo, verdor o anegamientos de la zona, no el detalle del lote.
+
 ## Alertas (`POST /alerts`, con `profile`: `huerta` o `agricultor`)
 
 | Alerta | Cuándo | Fuente |

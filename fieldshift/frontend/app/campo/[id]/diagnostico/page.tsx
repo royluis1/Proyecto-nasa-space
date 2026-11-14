@@ -7,6 +7,7 @@ import { AsyncBlock } from "@/components/async-block";
 import {
   AnnualRainChart, CampaignsChart, HeatChart, MonthlyClimateChart, NdviClimatologyChart, SoilMoistureAnomalyChart, SoilMoistureClimatologyChart,
 } from "@/components/charts/diagnostic-charts";
+import { TodaySatellite } from "@/components/map/today-satellite";
 import { PageHeader } from "@/components/page-header";
 import { LabelBadge, OriginBadge, RiskLevelBadge } from "@/components/provenance/badges";
 import { TraceInfo } from "@/components/provenance/trace-info";
@@ -254,6 +255,7 @@ export default function DiagnosticoPage() {
           <AsyncBlock state={terrain} what="el relieve">{(r) => <TerrainSection r={r} />}</AsyncBlock>
         </CardContent>
       </Card>
+      {field && <TodaySatellite field={field} />}
       <p className="flex items-start gap-2 text-sm text-muted-foreground">
         <Flame aria-hidden className="mt-0.5 size-4 shrink-0" />
         Estos datos describen la zona. Para decidir, combinalos con lo que sabés de tu lote y consultá a un ingeniero agrónomo.

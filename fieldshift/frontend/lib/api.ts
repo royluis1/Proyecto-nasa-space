@@ -8,6 +8,7 @@ import type {
 } from "@/types/api";
 import { API_URL, DEMO_FALLBACK, REQUEST_TIMEOUT_MS } from "./config";
 import * as demo from "./demo";
+import { enrichAlerts, enrichHuerta, withBrowserForecast } from "./live-forecast";
 import { toRequest } from "./scenarios";
 import { getLocalField, isLocalId, listLocalFields, newLocalId, saveLocalField } from "./local-fields";
 import { DEMO_NOTICE } from "./content";
@@ -231,17 +232,23 @@ export const api = {
     return call(() => request<CalendarTimeline>("/calendar", { method: "POST", body, ...o }), () => demo.demoCalendar(id, req));
   },
 
+  /** Panel de huerta. Si no trae pronóstico, se completa con Open-Meteo desde el navegador. */
   async huerta(fieldId: string, o: Opts = {}): Promise<ApiResult<HuertaPanel>> {
-    if (isLocalId(fieldId)) return viaDemo(() => demo.demoHuerta(fieldId));
-    return call(() => request<HuertaPanel>("/huerta", { method: "POST", body: { field_id: fieldId }, ...o }), () => demo.demoHuerta(fieldId));
+    const r = isLocalId(fieldId)
+      ? await viaDemo(() => demo.demoHuerta(fieldId))
+      : await call(() => request<HuertaPanel>("/huerta", { method: "POST", body: { field_id: fieldId }, ...o }), () => demo.demoHuerta(fieldId));
+    return withBrowserForecast(r, enrichHuerta);
   },
 
+  /** Alertas tempranas. Si no traen pronóstico, se completan con Open-Meteo desde el navegador. */
   async alerts(fieldId: string, profile: "huerta" | "agricultor", o: Opts = {}): Promise<ApiResult<AlertsResult>> {
-    if (isLocalId(fieldId)) return viaDemo(() => demo.demoAlerts(fieldId, profile));
-    return call(
-      () => request<AlertsResult>("/alerts", { method: "POST", body: { field_id: fieldId, profile }, ...o }),
-      () => demo.demoAlerts(fieldId, profile),
-    );
+    const r = isLocalId(fieldId)
+      ? await viaDemo(() => demo.demoAlerts(fieldId, profile))
+      : await call(
+          () => request<AlertsResult>("/alerts", { method: "POST", body: { field_id: fieldId, profile }, ...o }),
+          () => demo.demoAlerts(fieldId, profile),
+        );
+    return withBrowserForecast(r, enrichAlerts);
   },
 
   async terrain(req: TerrainRequest, o: Opts = {}): Promise<ApiResult<TerrainSummary>> {

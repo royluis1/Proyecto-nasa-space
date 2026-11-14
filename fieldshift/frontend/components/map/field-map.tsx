@@ -2,13 +2,14 @@
 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { Check, Eraser, FileUp, Hexagon, Map as MapIcon, MapPin, Navigation, Satellite, Search, Undo2 } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Eraser, FileUp, Hexagon, Map as MapIcon, MapPin, Navigation, Orbit, Satellite, Search, Undo2 } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { CircleMarker, MapContainer, Marker, Polygon, Polyline, TileLayer, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { searchPlaces, type Place } from "@/lib/geocode";
+import { GIBS_ATTRIBUTION, GIBS_FIRST_DATE, GIBS_MAX_NATIVE_ZOOM, clampGibsDate, defaultGibsDate, gibsUrl, shiftGibsDate } from "@/lib/gibs";
 import { closeRing, parseCoordinates, parseGeoJson, ringAreaHa, ringCentroid, type LngLat } from "@/lib/geometry";
 import { num } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -35,6 +36,12 @@ interface FieldMapProps {
   selectedId?: string | null;
   onSelectOther?: (id: string) => void;
   className?: string;
+  /** Capa con la que arranca el mapa. "nasa" = imagen del día de NASA GIBS (MODIS Terra). */
+  initialBase?: Base;
+  /** Altura del mapa (clases de Tailwind). */
+  heightClass?: string;
+  /** Zoom inicial (por defecto, según el modo). */
+  initialZoom?: number;
 }
 
 const SAN_LUIS: [number, number] = [-33.7, -65.8];
@@ -47,6 +54,8 @@ const TILES = {
     attribution: "Imágenes © Esri, Maxar, Earthstar Geographics y la comunidad GIS",
   },
 } as const;
+
+type Base = "mapa" | "satelite" | "nasa";
 
 const pinHtml = (color: string) =>
   `<svg xmlns="http://www.w3.org/2000/svg" width="34" height="44" viewBox="0 0 34 44" aria-hidden="true"><path d="M17 1C8.7 1 2 7.5 2 15.6 2 26 17 43 17 43s15-17 15-27.4C32 7.5 25.3 1 17 1z" fill="${color}" stroke="#fff" stroke-width="2.5"/><circle cx="17" cy="15.5" r="5.5" fill="#fff"/></svg>`;
@@ -97,9 +106,11 @@ function SizeFix() {
 
 export default function FieldMap({
   mode = "edit", point = null, polygon = null, onPointChange, onPolygonChange, others = [], selectedId = null, onSelectOther, className,
+  initialBase = "mapa", heightClass = "h-[420px] sm:h-[480px]", initialZoom,
 }: FieldMapProps) {
   const uid = useId();
-  const [base, setBase] = useState<"mapa" | "satelite">("mapa");
+  const [base, setBase] = useState<Base>(initialBase);
+  const [nasaDate, setNasaDate] = useState(() => defaultGibsDate());
   const [drawing, setDrawing] = useState(false);
   const [draft, setDraft] = useState<LngLat[]>([]);
   const [move, setMove] = useState<Move>(null);
@@ -116,7 +127,7 @@ export default function FieldMap({
   const initial = useMemo(() => {
     const first = others[0];
     const c: [number, number] = point ? [point.lat, point.lon] : first ? [first.lat, first.lon] : SAN_LUIS;
-    return { center: c, zoom: point ? 13 : mode === "overview" ? 8 : 7 };
+    return { center: c, zoom: initialZoom ?? (point ? 13 : mode === "overview" ? 8 : 7) };
     // solo la vista inicial: los cambios posteriores se mueven con `move`
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -191,7 +202,8 @@ export default function FieldMap({
 
   const ring = polygon && polygon.length >= 4 ? polygon : null;
   const areaHa = ring ? ringAreaHa(ring) : 0;
-  const tone = base === "satelite" ? "#ffe066" : "#2f6f40";
+  const tone = base === "mapa" ? "#2f6f40" : "#ffe066";
+  const maxDate = defaultGibsDate();
   const editing = mode === "edit";
 
   return (
@@ -202,6 +214,9 @@ export default function FieldMap({
         </Button>
         <Button type="button" size="sm" variant={base === "satelite" ? "default" : "outline"} aria-pressed={base === "satelite"} onClick={() => setBase("satelite")}>
           <Satellite aria-hidden /> Satélite
+        </Button>
+        <Button type="button" size="sm" variant={base === "nasa" ? "default" : "outline"} aria-pressed={base === "nasa"} onClick={() => setBase("nasa")}>
+          <Orbit aria-hidden /> NASA del día
         </Button>
         {editing && (
           <>
@@ -276,13 +291,41 @@ export default function FieldMap({
       )}
       {fileMsg && <p role="alert" className="text-sm text-destructive">{fileMsg}</p>}
 
+      {base === "nasa" && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-card p-2 text-sm">
+          <Label htmlFor={`${uid}-gibs`} className="font-medium">Imagen del día</Label>
+          <Button type="button" size="sm" variant="outline" aria-label="Día anterior" onClick={() => setNasaDate((d) => shiftGibsDate(d, -1))} disabled={nasaDate <= GIBS_FIRST_DATE}>
+            <ChevronLeft aria-hidden />
+          </Button>
+          <Input
+            id={`${uid}-gibs`}
+            type="date"
+            className="h-9 w-auto"
+            min={GIBS_FIRST_DATE}
+            max={maxDate}
+            value={nasaDate}
+            onChange={(e) => e.target.value && setNasaDate(clampGibsDate(e.target.value))}
+          />
+          <Button type="button" size="sm" variant="outline" aria-label="Día siguiente" onClick={() => setNasaDate((d) => shiftGibsDate(d, 1))} disabled={nasaDate >= maxDate}>
+            <ChevronRight aria-hidden />
+          </Button>
+          <p className="basis-full text-muted-foreground">
+            Satélite Terra de la NASA (MODIS, color real, píxel de ~250 m) vía NASA GIBS. Lo blanco son nubes; las franjas negras, zonas que el satélite no
+            cubrió ese día. Si no se ve tu zona, probá con otro día.
+          </p>
+        </div>
+      )}
       <div
         role="group"
         aria-label={editing ? "Mapa interactivo: hacé clic para marcar el campo. También podés usar las coordenadas." : "Mapa de campos"}
         className="overflow-hidden rounded-lg border"
       >
-        <MapContainer center={initial.center} zoom={initial.zoom} scrollWheelZoom className="z-0 h-[420px] w-full sm:h-[480px]">
-          <TileLayer key={base} url={TILES[base].url} attribution={TILES[base].attribution} maxZoom={19} />
+        <MapContainer center={initial.center} zoom={initial.zoom} scrollWheelZoom className={cn("z-0 w-full", heightClass)}>
+          {base === "nasa" ? (
+            <TileLayer key={`nasa-${nasaDate}`} url={gibsUrl(nasaDate)} attribution={GIBS_ATTRIBUTION} maxNativeZoom={GIBS_MAX_NATIVE_ZOOM} maxZoom={19} />
+          ) : (
+            <TileLayer key={base} url={TILES[base].url} attribution={TILES[base].attribution} maxZoom={19} />
+          )}
           <ClickHandler mode={mode} drawing={drawing} onPoint={setPoint} onVertex={(v) => setDraft((d) => [...d, v])} />
           <Mover move={move} />
           <SizeFix />

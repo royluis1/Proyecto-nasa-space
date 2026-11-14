@@ -478,6 +478,10 @@ export interface components {
              * @enum {string}
              */
             profile: "huerta" | "agricultor";
+            /** Latitude */
+            latitude: number;
+            /** Longitude */
+            longitude: number;
             /** Alerts */
             alerts: components["schemas"]["Alert"][];
             forecast: components["schemas"]["Forecast"] | null;
