@@ -33,10 +33,32 @@ PRIORITIES = {
 }
 
 CLIMATE = {
-    "climatologia": {
-        "summary": "Climatología 2015-2025",
-        "value": {"field_id": "campo-este", "period": {"start": "2015-01-01", "end": "2025-12-31"}},
-    }
+    "coordenadas": {
+        "summary": "Por coordenadas, 2015-2025, sin serie diaria",
+        "value": {
+            "latitude": -33.85,
+            "longitude": -65.2,
+            "start_date": "2015-01-01",
+            "end_date": "2025-12-31",
+            "community": "AG",
+            "include_daily": False,
+        },
+    },
+    "lote": {
+        "summary": "Por lote precargado, con serie diaria",
+        "value": {"field_id": "campo-centro", "start_date": "2020-01-01", "end_date": "2024-12-31"},
+    },
+    "parametros": {
+        "summary": "Solo parámetros básicos",
+        "value": {
+            "latitude": -32.45,
+            "longitude": -65.25,
+            "start_date": "2018-01-01",
+            "end_date": "2023-12-31",
+            "parameters": ["T2M", "T2M_MAX", "T2M_MIN", "PRECTOTCORR"],
+            "include_daily": False,
+        },
+    },
 }
 
 COMPARE = {

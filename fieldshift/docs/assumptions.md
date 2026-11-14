@@ -29,13 +29,20 @@ Todo lo que no está respaldado por un dato observado o una fuente verificada se
 | Barbecho / suelo desnudo: NDVI < 0,25–0,30 | A calibrar con la serie del lote |
 | Kc de barbecho (evaporación de suelo desnudo): 0,25 | Supuesto |
 | Lluvia efectiva: método USDA-SCS | A documentar con su fuente |
-| Mes no válido si más de 20 % de faltantes | Supuesto |
+| Mes no válido si más de 20 % de días sin lluvia registrada | Supuesto |
+| Año completo: todos los días, todos los meses válidos y ≤ 5 % de faltantes de lluvia | Supuesto |
+| Año seco/húmedo: z-score de la lluvia anual ≤ −1 / ≥ +1, relativo al período pedido | Supuesto |
+| Año con estrés térmico: z-score de días con Tmax > 35 °C ≥ +1 | Supuesto |
+| ET₀ diaria: FAO-56 Penman-Monteith con humedad relativa media (ec. 19); Hargreaves si faltan datos | Método FAO-56 |
+| Déficit hídrico climático: suma mensual de max(0, ET₀ − lluvia) | Método simplificado |
+| Datos climáticos de muestra (`power_sample_san_luis.csv`) | **Simulados**, normales aproximadas ⚠️ |
 | Subponderaciones de los componentes S y E del puntaje | Supuestos de diseño |
 | Rangos de escenarios: lluvia −50 a +30 %, temperatura 0 a +3 °C | Supuestos de diseño, no proyecciones |
 
 ## A verificar con la fuente
 
 - Si NASA POWER ofrece ET₀ ya calculada en la API diaria.
-- Latencia de POWER, zona horaria de los datos diarios y unidad de radiación en la comunidad AG.
+- Estructura exacta del JSON de la API diaria (el parser se escribió sin una respuesta real; grabar una como fixture).
+- Zona horaria de los datos diarios (la documentación habla de UTC y LST, pero no dice cuál es el valor por defecto para datos diarios) y unidad de radiación en la comunidad AG.
 - Si AppEEARS soporta SPL3SMP_E y SPL4SMGP.
 - Referencias de INTA EEA San Luis sobre erosión eólica y cultivos de cobertura.

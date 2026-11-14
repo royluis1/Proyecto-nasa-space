@@ -8,6 +8,7 @@ from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 APP_DIR = Path(__file__).resolve().parent
+REPO_ROOT = APP_DIR.parents[1]
 
 
 class Settings(BaseSettings):
@@ -28,10 +29,13 @@ class Settings(BaseSettings):
 
     request_timeout_s: float = Field(default=30.0, gt=0, le=120)
     max_retries: int = Field(default=3, ge=0, le=10)
+    retry_backoff_s: float = Field(default=1.0, ge=0, le=30, description="Base del backoff exponencial.")
 
     cache_ttl_hours: int = Field(default=24, ge=0)
-    cache_dir: Path = Path("./cache")
+    cache_dir: Path = REPO_ROOT / "data" / "cache"
     sample_data_dir: Path | None = None
+    nasa_samples_dir: Path = REPO_ROOT / "data" / "samples"
+    power_sample_file: str = "power_sample_san_luis.csv"
 
     cors_origins: list[str] = ["http://localhost:3000"]
 

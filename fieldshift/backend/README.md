@@ -9,7 +9,7 @@ API de FieldShift para el NASA Space Apps Challenge 2026 (*Field Shift: Adapting
 | Endpoint | Estado |
 |---|---|
 | `GET /health`, `GET /crops`, `POST /fields`, `GET /fields/{id}`, `POST /priorities` | Funcionan con datos de muestra |
-| `POST /climate-summary` | Valida y devuelve la estructura **vacía** (integración NASA POWER pendiente) |
+| `POST /climate-summary` | **NASA POWER integrado**, con caché y fallback a muestra simulada |
 | `POST /rotations/compare`, `GET /rotations/{id}`, `GET /export/report` | Puntajes **simulados** (`data_status: "mock"`) |
 | `POST /scenarios` | Valida y devuelve rankings **vacíos** |
 
@@ -50,6 +50,39 @@ Abrí **http://127.0.0.1:8000/docs** (Swagger, con ejemplos de cada request).
 pytest -q
 ```
 `test_validators.py` corre sin FastAPI. `test_api.py` necesita las dependencias instaladas.
+
+## Resumen climático con NASA POWER
+
+```bash
+curl -X POST http://127.0.0.1:8000/climate-summary \
+  -H "Content-Type: application/json" \
+  -d '{"latitude": -33.85, "longitude": -65.2, "start_date": "2015-01-01", "end_date": "2025-12-31", "include_daily": false}'
+```
+
+- También acepta `field_id` (por ejemplo `"campo-este"`) en lugar de coordenadas.
+- `parameters` es opcional: por defecto pide T2M, T2M_MAX, T2M_MIN, PRECTOTCORR, RH2M, WS2M, ALLSKY_SFC_SW_DWN y PS. Los 4 primeros se agregan siempre.
+- `include_daily: false` omite la serie diaria (11 años ≈ 0,8 MB de JSON).
+
+**Origen del dato** (`meta.origin_label`), en este orden de búsqueda:
+
+1. **DATO CACHEADO**: caché vigente en `data/cache/` (los pedidos históricos no vencen; los recientes, a las 24 h).
+2. **DATO NASA EN VIVO**: consulta a POWER (timeout 30 s, 3 reintentos con backoff ante 429, 5xx o timeout).
+3. **DATO CACHEADO** vencido, con advertencia, si POWER no responde.
+4. **DATO DE MUESTRA**: datos **simulados** de `data/samples/power_sample_san_luis.csv`, solo si el punto está a menos de 1° de un campo de ejemplo.
+5. Si no hay nada: error 503 `NO_DATA_AVAILABLE`.
+
+**Qué devuelve:** serie diaria (con ET₀), resumen mensual, climatología mensual, resumen estacional, resumen anual (con clasificación seco/normal/húmedo y estrés térmico), extremos con fecha, tendencias (Sen + Mann-Kendall), días calurosos, lluvia acumulada, variabilidad (CV), déficit hídrico climático, reporte de faltantes, fuente, fecha de consulta y limitaciones.
+
+### Limitaciones de resolución y datos
+
+- **Resolución:** la meteorología de POWER es de ~0,5° x 0,625° (~50 km) y la radiación de ~1°. Describe el entorno regional, no el lote.
+- **Tipo de dato:** es un reanálisis (MERRA-2 / GEOS), o sea, datos **modelados** con asimilación de observaciones. No reemplaza un pluviómetro propio.
+- **Datos recientes:** los últimos días o meses vienen de productos preliminares y pueden corregirse.
+- **−999:** se trata como faltante. Un mes con más de 20 % de días sin lluvia registrada no se usa; un año con algún mes inválido se excluye de tendencias y clasificación.
+- **ET₀ y déficit:** estimaciones FAO-56 con datos regionales. El déficit es climático (ET₀ − lluvia), no el de un cultivo.
+- **Años secos/húmedos:** relativos al período pedido (|z| ≥ 1), no a una normal oficial. Con pocos años la clasificación es inestable.
+- **Tendencias:** con 10–11 años son orientativas; casi nunca resultan significativas.
+- **Uso responsable:** POWER advierte que puede bloquear aplicaciones que consultan repetidamente el mismo punto. Por eso la caché.
 
 ## Configuración
 

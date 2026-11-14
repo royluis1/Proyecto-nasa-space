@@ -20,6 +20,32 @@ class DataStatus(StrEnum):
     SAMPLE = "sample"  # datos de muestra incluidos en el repo
     MOCK = "mock"  # valor simulado: la lógica todavía no está implementada
 
+    @property
+    def origin_label(self) -> str:
+        """Etiqueta visible para el usuario."""
+        return _ORIGIN_LABELS[self]
+
+
+_ORIGIN_LABELS = {
+    DataStatus.LIVE: "DATO NASA EN VIVO",
+    DataStatus.CACHED: "DATO CACHEADO",
+    DataStatus.SAMPLE: "DATO DE MUESTRA",
+    DataStatus.MOCK: "VALOR SIMULADO",
+}
+
+
+class PowerParameter(StrEnum):
+    """Parámetros diarios de NASA POWER admitidos por FieldShift."""
+
+    T2M = "T2M"  # temperatura media a 2 m
+    T2M_MAX = "T2M_MAX"
+    T2M_MIN = "T2M_MIN"
+    PRECTOTCORR = "PRECTOTCORR"  # precipitación corregida
+    RH2M = "RH2M"  # humedad relativa a 2 m
+    WS2M = "WS2M"  # viento a 2 m
+    ALLSKY_SFC_SW_DWN = "ALLSKY_SFC_SW_DWN"  # radiación solar en superficie
+    PS = "PS"  # presión en superficie
+
 
 class Confidence(StrEnum):
     ALTA = "alta"

@@ -1,0 +1,17 @@
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+
+# Node
+node_modules/
+.next/
+
+# Entorno y secretos
+.env
+.env.local
+
+# Caché de datos (se conserva la carpeta)
+data/cache/*
+!data/cache/.gitkeep
+backend/cache/

@@ -88,7 +88,7 @@ Cascada: **en vivo → caché (cualquier antigüedad, con advertencia) → muest
 | `GET /crops` | Hecho (catálogo provisorio) |
 | `POST /fields`, `GET /fields/{field_id}` | Hecho (en memoria) |
 | `POST /priorities` | Hecho (en memoria) |
-| `POST /climate-summary` | Estructura vacía, falta POWER |
+| `POST /climate-summary` | Hecho: NASA POWER con caché y fallback |
 | `POST /rotations/compare`, `GET /rotations/{rotation_id}` | Puntajes simulados |
 | `POST /scenarios` | Rankings vacíos |
 | `GET /export/report` | JSON y CSV con ranking simulado |

@@ -75,13 +75,37 @@ def test_prioridades(client):
     assert_error(client.post("/priorities", json={"field_id": "nada", "priorities": {}}), 404, "FIELD_NOT_FOUND")
 
 
-def test_climate_summary_valida_fechas(client):
-    ok = client.post("/climate-summary", json={"field_id": "campo-este", "period": {"start": "2015-01-01", "end": "2025-12-31"}})
-    assert ok.status_code == 200 and ok.json()["meta"]["data_status"] == "mock"
-    invertido = {"field_id": "campo-este", "period": {"start": "2025-01-01", "end": "2015-01-01"}}
+def test_climate_summary_con_muestra(client):
+    req = {"latitude": -33.85, "longitude": -65.2, "start_date": "2015-01-01", "end_date": "2025-12-31"}
+    body = client.post("/climate-summary", json=req).json()
+    assert body["meta"]["data_status"] == "sample"
+    assert body["meta"]["origin_label"] == "DATO DE MUESTRA"
+    data = body["data"]
+    assert len(data["daily"]) == 4018 and len(data["monthly"]) == 132 and len(data["annual"]) == 11
+    assert data["source"]["origin_label"] == "DATO DE MUESTRA"
+    assert data["precipitation"]["mean_annual_mm"] > 0
+    assert data["trends"]["precipitation"]["n_years"] == 11
+
+
+def test_climate_summary_por_lote_sin_diaria(client):
+    req = {"field_id": "campo-centro", "start_date": "2020-01-01", "end_date": "2021-12-31", "include_daily": False}
+    data = client.post("/climate-summary", json=req).json()["data"]
+    assert data["daily"] is None and data["field_id"] == "campo-centro"
+
+
+def test_climate_summary_valida_fechas_y_coordenadas(client):
+    base = {"latitude": -33.85, "longitude": -65.2}
+    invertido = {**base, "start_date": "2025-01-01", "end_date": "2015-01-01"}
     assert_error(client.post("/climate-summary", json=invertido), 422, "VALIDATION_ERROR")
-    futuro = {"field_id": "campo-este", "period": {"start": "2025-01-01", "end": "2099-01-01"}}
+    futuro = {**base, "start_date": "2025-01-01", "end_date": "2099-01-01"}
     assert_error(client.post("/climate-summary", json=futuro), 422, "VALIDATION_ERROR")
+    lat_mal = {"latitude": 95, "longitude": 0, "start_date": "2020-01-01", "end_date": "2020-12-31"}
+    assert_error(client.post("/climate-summary", json=lat_mal), 422, "VALIDATION_ERROR")
+
+
+def test_climate_summary_sin_datos_da_503(client):
+    req = {"latitude": -34.6, "longitude": -58.4, "start_date": "2020-01-01", "end_date": "2020-12-31"}
+    assert_error(client.post("/climate-summary", json=req), 503, "NO_DATA_AVAILABLE")
 
 
 def test_comparar_rotaciones(client):

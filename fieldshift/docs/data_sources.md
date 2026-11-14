@@ -4,7 +4,7 @@
 
 | Fuente | Producto | Resolución | Uso en FieldShift | Etiqueta | Estado |
 |---|---|---|---|---|---|
-| NASA POWER | API diaria, comunidad AG: T2M, T2M_MAX, T2M_MIN, PRECTOTCORR, RH2M, WS2M, ALLSKY_SFC_SW_DWN | ~0.5° x 0.625° | Clima regional, ET₀, escenarios, monitor | observado / modelado (reanálisis) | En vivo, pendiente |
+| NASA POWER | API diaria por punto (`https://power.larc.nasa.gov/api/temporal/daily/point`), comunidad AG: T2M, T2M_MAX, T2M_MIN, PRECTOTCORR, RH2M, WS2M, ALLSKY_SFC_SW_DWN, PS. Disponible desde 1981 hasta casi tiempo real; máximo 20 parámetros por pedido | Meteorología ~0.5° x 0.625° (MERRA-2 / GEOS FP-IT); solar ~1° (CERES) | Clima regional, ET₀, déficit, escenarios, monitor | modelado (reanálisis) | **Integrado**, con caché y fallback |
 | MODIS | MOD13A1 (NDVI, compuesto 16 días) | 500 m | Vigor, barbechos, suelo desnudo, tendencia | observado | CSV offline, pendiente |
 | SMAP | L3 (capa superficial ~5 cm) | ~9 km ⚠️ | Humedad superficial, contexto regional | observado | CSV offline, pendiente |
 | SMAP | L4 (zona de raíces) | ~9 km | Humedad en raíces, contexto regional | **modelado** | CSV offline, pendiente |

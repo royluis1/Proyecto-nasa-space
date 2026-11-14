@@ -13,6 +13,9 @@ T = TypeVar("T")
 
 class ResponseMeta(BaseModel):
     data_status: DataStatus
+    origin_label: str | None = Field(
+        default=None, description="Etiqueta visible del origen: DATO NASA EN VIVO / DATO CACHEADO / DATO DE MUESTRA."
+    )
     as_of: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     warnings: list[str] = []
     disclaimer: str = DISCLAIMER

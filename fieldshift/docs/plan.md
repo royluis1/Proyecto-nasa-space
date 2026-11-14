@@ -6,7 +6,7 @@ Cada fase se hace en un bloque separado y se aprueba antes de pasar a la siguien
 |---|---|---|
 | 1 | Arquitectura y modelo de datos | Hecho (ver architecture.md) |
 | 2 | Backend base y API | Hecho |
-| 3 | Integración NASA: POWER en vivo + NDVI, SMAP y SRTM offline (Módulo 3) | Pendiente |
+| 3 | Integración NASA: POWER en vivo + NDVI, SMAP y SRTM offline (Módulo 3) | POWER hecho; NDVI, SMAP y SRTM pendientes |
 | 4 | Base de datos de cultivos | Provisoria |
 | 5 | Motor de rotaciones y puntaje | Pendiente |
 | 6 | Frontend y mapa | Pendiente |

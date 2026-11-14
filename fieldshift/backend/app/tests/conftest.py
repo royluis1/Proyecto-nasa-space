@@ -12,16 +12,34 @@ def repo():
     return Repository(DATA_DIR)
 
 
+SAMPLE_CSV = Path(__file__).resolve().parents[3] / "data" / "samples" / "power_sample_san_luis.csv"
+
+
 @pytest.fixture
-def client(repo):
-    """Cliente de la API con un repositorio nuevo por test (sin estado compartido)."""
+def offline_power(tmp_path):
+    """Servicio POWER sin red: el fetcher siempre falla, así se usa la muestra."""
+    from app.services.power.cache import PowerCache
+    from app.services.power.sample import SampleProvider
+    from app.services.power.service import PowerService
+    from app.utils.exceptions import UpstreamError
+
+    def failing(*_):
+        raise UpstreamError("sin red (test)")
+
+    return PowerService(failing, PowerCache(tmp_path, 24), SampleProvider(SAMPLE_CSV))
+
+
+@pytest.fixture
+def client(repo, offline_power):
+    """Cliente de la API con repositorio nuevo y POWER sin red, por test."""
     pytest.importorskip("fastapi")
     pytest.importorskip("httpx")
     from fastapi.testclient import TestClient
 
-    from app.api.deps import get_repository
+    from app.api.deps import get_power_service, get_repository
     from app.main import create_app
 
     app = create_app()
     app.dependency_overrides[get_repository] = lambda: repo
+    app.dependency_overrides[get_power_service] = lambda: offline_power
     return TestClient(app)
