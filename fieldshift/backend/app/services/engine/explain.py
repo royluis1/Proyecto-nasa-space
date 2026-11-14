@@ -265,6 +265,14 @@ def risk_flags(ev: Evaluated, climate: ClimateContext) -> list[RiskFlag]:
             "wind",
             f"Riesgo de erosión eólica: {fmt(m.bare_months_per_year)} meses por año sin cultivo vivo, varios en la época ventosa.",
         )
+    if climate.scenario is not None and climate.scenario.heavy_rain and m.bare_months_per_year >= 2:
+        add(
+            RiskKind.EROSION,
+            Severity.ALTA if m.bare_months_per_year >= 4 else Severity.MEDIA,
+            "cloud-rain",
+            f"Con lluvias intensas, los {fmt(m.bare_months_per_year)} meses por año de suelo desnudo quedan expuestos a "
+            "erosión hídrica y encharcamiento.",
+        )
     if m.monoculture:
         add(
             RiskKind.MONOCULTIVO,
@@ -396,6 +404,8 @@ def evidence(
         nasa.append(
             f"Escenario aplicado '{s.name}': lluvia {s.rain_delta_pct:+.0f} %, temperatura +{fmt(s.temp_delta_c)} °C"
             + (f", año seco análogo {base_climate.driest_year}" if s.dry_year and base_climate.driest_year else "")
+            + (", lluvias intensas de octubre a marzo" if s.heavy_rain else "")
+            + (", ola de calor en verano" if s.heat_wave else "")
             + f" → lluvia {climate.annual_precip:.0f} mm/año y ET0 {climate.annual_et0:.0f} mm/año."
         )
     if soil_moisture:
@@ -498,7 +508,17 @@ def recommendation(
     if soil.texture_assumed:
         assumptions.append("Textura franco arenosa supuesta (no informada).")
     if irrigated:
-        assumptions.append("El riego cubre el 80 % del déficit de los cultivos.")
+        limited = climate.scenario is not None and climate.scenario.irrigation_level == "limitado"
+        assumptions.append(
+            "Riego limitado: cubre el 40 % del déficit de los cultivos (la mitad del riego pleno)."
+            if limited
+            else "El riego cubre el 80 % del déficit de los cultivos."
+        )
+    if climate.scenario is not None and climate.scenario.heat_wave:
+        assumptions.append("Ola de calor: Tmax +3 °C y ET0 +10 % de diciembre a febrero (supuesto de sensibilidad).")
+    if climate.scenario is not None and climate.scenario.heavy_rain:
+        assumptions.append("Lluvias intensas: +35 % de lluvia de octubre a marzo en tormentas; solo el 30 % de ese extra se aprovecha "
+            "(el resto escurre) y la erosión en suelo desnudo sube un 40 % (supuesto).")
     uncertainties = [
         f"El puntaje puede variar entre {ev.low:.0f} y {ev.high:.0f} (lluvia ±15 %, ET0 ±5 % y margen por confianza {ev.confidence.value}).",
         "NASA POWER describe el entorno regional (~50 km): la lluvia del lote puede ser distinta.",

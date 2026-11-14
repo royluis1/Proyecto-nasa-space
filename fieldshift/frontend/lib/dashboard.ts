@@ -1,6 +1,7 @@
 /** Lógica del dashboard comparativo: contribuciones, factores que favorecen o penalizan, indicadores. Todo puro y testeable. */
 import type { DataLabel, Level, RotationEvaluation, ScenarioInput, ScoreComponentKey } from "@/types/api";
 import { COMPONENT_ORDER, COMPONENTS, LEVEL_LABELS, num } from "./format";
+import { isBaseline, scenarioParts } from "./scenarios";
 
 export type Weights = Record<ScoreComponentKey, number>;
 
@@ -156,20 +157,10 @@ export const VERDICT_TEXT: Record<Verdict, string> = { mejor: "Mejor", peor: "Pe
 /* ----------------------------- escenario y riego ----------------------------- */
 
 
-/** Aplica la opción "evaluar con riego" sobre un escenario predefinido. */
-export function withIrrigation(s: ScenarioInput, irrigation: boolean): ScenarioInput {
-  if (!irrigation || s.irrigation) return s;
-  return { ...s, id: `${s.id}+riego`, name: s.id === "base" ? "Clima del período con riego" : `${s.name}, con riego`, irrigation: true };
-}
-
 /** Texto corto que explica qué cambió el escenario. */
 export function describeScenario(s: ScenarioInput | null | undefined, baseline: { rainMm: number; scenarioRainMm: number }): string | null {
-  if (!s || (s.id === "base" && !s.irrigation)) return null;
-  const parts: string[] = [];
-  if (s.dry_year) parts.push("se repite el año más seco de los últimos 10");
-  if (s.rain_delta_pct) parts.push(`llueve ${Math.abs(s.rain_delta_pct)} % ${s.rain_delta_pct < 0 ? "menos" : "más"}`);
-  if (s.temp_delta_c) parts.push(`hace ${num(s.temp_delta_c, 1)} °C más`);
-  if (s.irrigation) parts.push("se evalúa como si el lote tuviera riego");
+  if (!s || isBaseline(s)) return null;
+  const parts = scenarioParts(s);
   const rain = Math.round(baseline.scenarioRainMm) !== Math.round(baseline.rainMm) ? ` (${num(baseline.scenarioRainMm)} mm de lluvia al año en vez de ${num(baseline.rainMm)})` : "";
   return `${parts.join(", ")}${rain}`;
 }

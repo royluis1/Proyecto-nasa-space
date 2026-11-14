@@ -34,6 +34,7 @@ fieldshift/
 | Motor de rotaciones y puntaje | Hecho: ver [docs/scoring.md](docs/scoring.md) y [ejemplos](docs/examples/README.md) |
 | Frontend y mapa | Hecho: [frontend/README.md](frontend/README.md) |
 | Dashboard comparativo | Hecho: `/campo/[id]/dashboard` |
+| Calendario, escenarios y reporte | Hecho: [guía de uso](docs/calendario_escenarios_reporte.md) |
 
 El plan completo está en [docs/plan.md](docs/plan.md).
 

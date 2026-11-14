@@ -3,12 +3,14 @@
 from dataclasses import dataclass
 from datetime import date
 
-from app.models.enums import DataStatus, RotationStrategy
+from app.models.enums import DataStatus, Level, RotationStrategy
+from app.schemas.calendar import CalendarRequest, CalendarTimeline, TimelineAdvice
 from app.schemas.rotation import CompareRequest, CompareResult, ScenarioInput
 from app.schemas.satellite import SoilMoistureRequest, VegetationRequest
 from app.services.climate_summary import build_summary, missing_warnings
-from app.services.engine.context import ClimateContext, climate_from_summary
+from app.services.engine.context import ClimateContext, apply_scenario, climate_from_summary, soil_from_field
 from app.services.engine.engine import EngineRequest, run
+from app.services.engine.timeline import build_timeline
 from app.services.power.service import PowerService, resolve_parameters
 from app.services.repository import Repository
 from app.services.satellite.service import SatelliteService, soil_moisture_input, vegetation_input
@@ -120,6 +122,57 @@ class RotationService:
             except (NoDataError, InvalidInputError) as exc:
                 warnings.append(f"NDVI no disponible para el lote: {exc.message}")
         return sm, veg, warnings
+
+    def timeline(self, req: CalendarRequest, today: date | None = None) -> tuple[CalendarTimeline, ClimateBundle]:
+        """Calendario de 2 a 4 campañas de una rotación, con el escenario aplicado."""
+        result, bundle = self.compare(CompareRequest(field_id=req.field_id, priorities=req.priorities), req.scenario)
+        by_id = {ev.rotation.id: ev for ev in result.evaluations}
+        rotation_id = req.rotation_id or result.recommended_rotation_id
+        if rotation_id not in by_id:
+            raise RotationNotFoundError(f"La rotación '{rotation_id}' no está entre las comparadas para este lote.")
+        ev, best = by_id[rotation_id], by_id[result.recommended_rotation_id]
+        field = self.repo.get_field(req.field_id)
+        share = req.scenario.irrigation_share(field.irrigated) if req.scenario else (1.0 if field.irrigated else 0.0)
+        today = today or date.today()
+        first_year = req.first_campaign_year or (today.year if today.month < 7 else today.year + 1)
+        tl = build_timeline(
+            ev.rotation,
+            self.repo.crops,
+            apply_scenario(bundle.context, req.scenario),
+            soil_from_field(field),
+            share > 0,
+            share if share > 0 else 1.0,
+            req.campaigns,
+            first_year,
+            result.inputs.soil_moisture,
+            result.inputs.vegetation,
+        )
+        advice = list(tl.advice)
+        if rotation_id == best.rotation.id:
+            text = "Es la rotación con mejor puntaje para este escenario y tus prioridades."
+        else:
+            text = (
+                f"Para este escenario, la rotación con mejor puntaje es «{best.rotation.name}» "
+                f"({best.score.total:.0f} puntos contra {ev.score.total:.0f} de esta)."
+            )
+        advice.insert(0, TimelineAdvice(kind="rotacion", severity=Level.BAJO if rotation_id == best.rotation.id else Level.MEDIO,
+                                        text=text, campaigns=[c.index for c in tl.campaigns]))
+        timeline = CalendarTimeline(
+            field_id=field.id,
+            rotation=ev.rotation,
+            scenario=req.scenario,
+            irrigated=share > 0,
+            campaigns=tl.campaigns,
+            advice=advice,
+            recommended_rotation_id=result.recommended_rotation_id,
+            is_recommended=rotation_id == result.recommended_rotation_id,
+            score_total=ev.score.total,
+            recommended_total=best.score.total,
+            data_used=tl.data_used,
+            assumptions=tl.assumptions,
+            warnings=result.warnings,
+        )
+        return timeline, bundle
 
     def evaluation(self, rotation_id: str):
         """Evaluación de una rotación (declarada o generada) con las prioridades guardadas del lote."""

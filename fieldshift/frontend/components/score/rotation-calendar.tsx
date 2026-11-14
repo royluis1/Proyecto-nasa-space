@@ -38,7 +38,7 @@ export function RotationCalendar({ rotation, crops, heading, compact = false }: 
   return (
     <div className="space-y-2">
       {heading && <h3 className="text-lg font-semibold">{heading}</h3>}
-      <div className="overflow-x-auto">
+      <div className="relative overflow-x-auto">
         <table className={cn("w-full min-w-[44rem] border-separate border-spacing-1", compact ? "text-xs" : "text-sm")}>
           <caption className="sr-only">Calendario de {rotation.name}: qué ocupa el lote en cada mes de cada año del ciclo.</caption>
           <thead>

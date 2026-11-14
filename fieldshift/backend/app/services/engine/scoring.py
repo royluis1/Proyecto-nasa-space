@@ -133,10 +133,12 @@ def _cyclic_pairs(seq: list):
     return list(zip(seq, seq[1:] + seq[:1]))
 
 
-def compute_metrics(calendar: Calendar, climate: ClimateContext, soil: SoilContext, irrigated: bool) -> Metrics:
+def compute_metrics(
+    calendar: Calendar, climate: ClimateContext, soil: SoilContext, irrigated: bool, irrigation_share: float = 1.0
+) -> Metrics:
     n = calendar.n_months
     years = calendar.duration_years
-    water = water_balance(calendar, climate, soil, irrigated)
+    water = water_balance(calendar, climate, soil, irrigated, irrigation_share)
     steps = list(calendar.steps)  # build_calendar los deja en orden cronológico
     crops = [p.crop for p in steps]
 
@@ -151,6 +153,7 @@ def compute_metrics(calendar: Calendar, climate: ClimateContext, soil: SoilConte
             prev = calendar.previous_crop(m)
             exposure = P.RESIDUE_EXPOSURE[prev.erosion_risk] if prev else 1.0
             erosion += exposure * (P.WINDY_WEIGHT if (m % 12) + 1 in P.WINDY_MONTHS else 1.0)
+    erosion *= climate.erosion_factor
 
     month_crops = [(m, calendar.crop_at(m)) for m in range(n) if calendar.owner[m] is not None]
     cv_factor = 1 + max(0.0, (climate.precip_cv_pct or 0) - 15) / 50
@@ -278,6 +281,7 @@ class ScoringContext:
     soil: SoilContext
     irrigated: bool
     current_crop: Crop | None = None
+    irrigation_share: float = 1.0  # fracción del riego pleno (riego limitado < 1)
     history_repeat: str | None = None  # cultivo repetido al final del historial
     soil_moisture: SoilMoistureInput | None = None
     vegetation: VegetationInput | None = None

@@ -7,7 +7,7 @@ from app.config import get_settings
 from app.services.engine.service import RotationService
 from app.services.power.cache import PowerCache
 from app.services.power.sample import SampleProvider
-from app.services.power.service import PowerService
+from app.services.power.service import Cooldown, PowerService
 from app.services.repository import Repository
 from app.services.satellite.provider import SatelliteProvider
 from app.services.satellite.service import SatelliteService
@@ -23,6 +23,11 @@ def get_repository() -> Repository:
 
 
 @lru_cache
+@lru_cache
+def _power_cooldown(seconds: float) -> Cooldown:
+    return Cooldown(seconds)  # una por proceso: se comparte entre pedidos
+
+
 def get_power_service() -> PowerService:
     from app.services.power.client import PowerClient  # importa httpx solo al usarse
 
@@ -32,6 +37,7 @@ def get_power_service() -> PowerService:
         fetcher=client.fetch,
         cache=PowerCache(s.cache_dir, s.cache_ttl_hours),
         samples=SampleProvider(s.nasa_samples_dir / s.power_sample_file),
+        cooldown=_power_cooldown(s.power_cooldown_s),
     )
 
 

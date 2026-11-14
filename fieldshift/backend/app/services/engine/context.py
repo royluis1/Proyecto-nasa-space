@@ -32,6 +32,13 @@ class ClimateContext:
     driest_precip: tuple[float, ...] | None = None
     driest_et0: tuple[float, ...] | None = None
     scenario: ScenarioInput | None = None
+    erosion_factor: float = 1.0  # >1 con lluvias intensas: más erosión hídrica en el suelo desnudo
+    storm_extra: tuple[float, ...] = (0.0,) * 12  # lluvia extra de tormenta por mes (mm), incluida en precip
+
+    def useful_rain(self, month: int) -> tuple[float, float]:
+        """(lluvia que entra en la fórmula de lluvia efectiva, lluvia extra de tormenta aprovechable) del mes 0-11."""
+        extra = self.storm_extra[month]
+        return self.precip[month] - extra, P.HEAVY_RAIN_INFILTRATION * extra
 
     @property
     def annual_precip(self) -> float:
@@ -101,19 +108,40 @@ def apply_scenario(base: ClimateContext, scenario: ScenarioInput | None) -> Clim
         precip, et0 = base.driest_precip, base.driest_et0
     rain = 1 + scenario.rain_delta_pct / 100
     et0_factor = 1 + P.ET0_PER_DEGREE * scenario.temp_delta_c
+    precip = [p * rain for p in precip]
+    et0 = [e * et0_factor for e in et0]
+    heat = [_shift_frequency(f, scenario.temp_delta_c) for f in base.heat_freq]
+    erosion = 1.0
+    storm = [0.0] * 12
+    if scenario.heavy_rain:
+        for m in P.HEAVY_RAIN_MONTHS:
+            storm[m - 1] = precip[m - 1] * (P.HEAVY_RAIN_FACTOR - 1)
+            precip[m - 1] += storm[m - 1]
+        erosion = P.HEAVY_RAIN_EROSION
+    if scenario.heat_wave:
+        for m in P.HEAT_WAVE_MONTHS:
+            et0[m - 1] *= 1 + P.HEAT_WAVE_ET0
+            heat[m - 1] = _shift_frequency(heat[m - 1], P.HEAT_WAVE_SHIFT_C)
     return replace(
         base,
-        precip=tuple(p * rain for p in precip),
-        et0=tuple(e * et0_factor for e in et0),
+        precip=tuple(precip),
+        et0=tuple(et0),
         tmin=tuple(t + scenario.temp_delta_c for t in base.tmin),
-        heat_freq=tuple(_shift_frequency(f, scenario.temp_delta_c) for f in base.heat_freq),
+        heat_freq=tuple(heat),
         scenario=scenario,
+        erosion_factor=erosion,
+        storm_extra=tuple(storm),
     )
 
 
 def perturb(ctx: ClimateContext, rain_factor: float, et0_factor: float) -> ClimateContext:
     """Variante para el rango de incertidumbre."""
-    return replace(ctx, precip=tuple(p * rain_factor for p in ctx.precip), et0=tuple(e * et0_factor for e in ctx.et0))
+    return replace(
+        ctx,
+        precip=tuple(p * rain_factor for p in ctx.precip),
+        et0=tuple(e * et0_factor for e in ctx.et0),
+        storm_extra=tuple(x * rain_factor for x in ctx.storm_extra),
+    )
 
 
 @dataclass(frozen=True)

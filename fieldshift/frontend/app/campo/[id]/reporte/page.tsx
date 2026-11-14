@@ -1,23 +1,119 @@
 "use client";
 
-import { Download, FileJson, Printer, RefreshCw } from "lucide-react";
+import { Download, FileJson, FileText, Loader2, Printer, RefreshCw } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useCampo } from "@/components/campo/campo-provider";
 import { PageHeader } from "@/components/page-header";
-import { ConfidenceBadge, OriginBadge, RiskLevelBadge } from "@/components/provenance/badges";
-import { WarningsList } from "@/components/provenance/warnings";
+import { ConfidenceBadge, OriginBadge } from "@/components/provenance/badges";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DISCLAIMER } from "@/lib/content";
-import { buildCsv, buildJson, downloadText, safeFilename } from "@/lib/export";
-import { COMPONENT_ORDER, COMPONENTS, SOIL_TEXTURES, STRATEGY_LABELS, num, rotationTitle } from "@/lib/format";
-import { PRIORITY_KEYS, PRIORITY_META } from "@/lib/priorities";
+import { useAsync } from "@/hooks/use-async";
+import { useDebounced } from "@/hooks/use-debounced";
+import { api } from "@/lib/api";
+import { buildJson, downloadText, safeFilename } from "@/lib/export";
+import { rotationTitle } from "@/lib/format";
+import { buildReportModel, reportCsv, reportPdf, type ReportModel, type Row } from "@/lib/report";
+import { PRESET_SCENARIOS, resilience, scenarioMatrix } from "@/lib/scenarios";
+import type { ApiResult, CalendarTimeline, ScenarioResult } from "@/types/api";
+
+function KV({ rows }: { rows: [string, string][] }) {
+  return (
+    <dl className="grid gap-x-8 gap-y-1 sm:grid-cols-2">
+      {rows.map(([k, v]) => <div key={k}><dt className="inline font-medium">{k}: </dt><dd className="inline">{v}</dd></div>)}
+    </dl>
+  );
+}
+
+function SimpleTable({ headers, rows, label }: { headers: string[]; rows: Row[]; label: string }) {
+  return (
+    <div>
+      <Table scrollLabel={`${label}: desplazá para ver todas las columnas`}>
+        <TableHeader><TableRow>{headers.map((h) => <TableHead key={h}>{h}</TableHead>)}</TableRow></TableHeader>
+        <TableBody>{rows.map((r, i) => <TableRow key={i}>{r.map((c, j) => <TableCell key={j} className={j === 0 || j === 1 ? "min-w-40" : "tabular-nums"}>{c}</TableCell>)}</TableRow>)}</TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
+  return (
+    <section aria-labelledby={id} className="space-y-2 break-inside-avoid">
+      <h3 id={id} className="text-xl font-semibold">{title}</h3>
+      {children}
+    </section>
+  );
+}
+
+function ReportView({ m }: { m: ReportModel }) {
+  return (
+    <>
+      <Section id="r-reco" title="Recomendación">
+        <div className="space-y-2 rounded-lg border-2 border-primary p-4">
+          <p className="text-lg"><strong>{m.recommendation.rotation}</strong></p>
+          <p>{m.recommendation.score}</p>
+          {m.recommendation.vsActual && <p>{m.recommendation.vsActual}</p>}
+          <p>{m.recommendation.why}</p>
+          {m.recommendation.risks.length > 0 && <><p className="font-medium">Riesgos</p><ul className="list-disc pl-5 text-sm">{m.recommendation.risks.map((r) => <li key={r}>{r}</li>)}</ul></>}
+          {m.recommendation.validate.length > 0 && <><p className="font-medium">Para revisar con el técnico</p><ul className="list-disc pl-5 text-sm">{m.recommendation.validate.map((r) => <li key={r}>{r}</li>)}</ul></>}
+          <p className="text-sm">{m.recommendation.note}</p>
+        </div>
+      </Section>
+      <Section id="r-campo" title="Datos del campo"><KV rows={m.field} /></Section>
+      <Section id="r-prio" title="Prioridades">
+        <ul className="grid gap-x-8 gap-y-0.5 text-sm sm:grid-cols-2">{m.priorities.map(([k, v]) => <li key={k}>{k}: <strong>{v}</strong></li>)}</ul>
+        <p className="text-sm text-muted-foreground">Peso de cada componente: {m.weights}</p>
+      </Section>
+      <Section id="r-clima" title="Resumen climático"><KV rows={m.climate} /></Section>
+      <Section id="r-rank" title="Rotaciones comparadas y puntajes"><SimpleTable label="Puntajes" headers={m.ranking.headers} rows={m.ranking.rows} /></Section>
+      <Section id="r-por-que" title="Por qué cada una">
+        {m.explanations.map((e) => (
+          <Card key={e.title} className="break-inside-avoid">
+            <CardHeader className="pb-1"><CardTitle className="text-base">{e.title}</CardTitle></CardHeader>
+            <CardContent className="space-y-2 text-sm"><p>{e.why}</p>{e.risks.length > 0 && <p><strong>Riesgos:</strong> {e.risks.join(" ")}</p>}</CardContent>
+          </Card>
+        ))}
+      </Section>
+      {m.resilience && <Section id="r-res" title="Resistencia a los escenarios climáticos"><SimpleTable label="Resistencia a escenarios" headers={m.resilience.headers} rows={m.resilience.rows} /></Section>}
+      {m.calendar && (
+        <Section id="r-cal" title="Calendario del plan">
+          <p className="font-medium">{m.calendar.title}</p>
+          <ul className="list-disc space-y-1 pl-5 text-sm">{m.calendar.campaigns.map((c) => <li key={c}>{c}</li>)}</ul>
+          {m.calendar.advice.length > 0 && <><p className="font-medium">Recomendaciones del calendario</p><ul className="list-disc space-y-1 pl-5 text-sm">{m.calendar.advice.map((a) => <li key={a}>{a}</li>)}</ul></>}
+        </Section>
+      )}
+      <Section id="r-sup" title="Supuestos"><ul className="list-disc space-y-1 pl-5 text-sm">{m.assumptions.map((a) => <li key={a}>{a}</li>)}</ul></Section>
+      <Section id="r-fuentes" title="Fuentes"><ul className="space-y-1 text-sm">{m.sources.map((s) => <li key={s}>{s}</li>)}</ul></Section>
+      <Section id="r-adv" title="Advertencias"><ul className="list-disc space-y-1 pl-5 text-sm">{[...m.warnings, m.disclaimer].map((w) => <li key={w}>{w}</li>)}</ul></Section>
+    </>
+  );
+}
 
 export default function ReportePage() {
-  const { field, ui, weights, compare } = useCampo();
+  const { fieldId, field, ui, weights, compare, backendPriorities } = useCampo();
   const { result, evaluations } = compare;
+  const settled = useDebounced(backendPriorities, 800);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+  const [generatedAt] = useState(() => new Date());
+  const actualId = evaluations.find((e) => e.rotation.strategy === "actual")?.rotation.id;
+  const best = evaluations[0]?.rotation.id;
+
+  const scenarios = useAsync<ApiResult<ScenarioResult[]>>((signal) => api.scenarios(fieldId, PRESET_SCENARIOS, settled, { signal }), [fieldId, JSON.stringify(settled)]);
+  const timeline = useAsync<ApiResult<CalendarTimeline>>(
+    (signal) => api.calendar({ field_id: fieldId, rotation_id: best, campaigns: 3, priorities: settled }, { signal }),
+    [fieldId, best, JSON.stringify(settled)],
+    Boolean(best),
+  );
+
+  const origin = compare.demo ? "DATOS DE EJEMPLO (SIN CONEXIÓN)" : (compare.originLabel ?? "");
+  const model = useMemo(() => {
+    if (!result || !field) return null;
+    const res = scenarios.data ? resilience(scenarioMatrix(scenarios.data.data, weights, actualId)) : null;
+    return buildReportModel({ field, ui, weights, result, evaluations, origin, generatedAt, resilience: res, timeline: timeline.data?.data ?? null });
+  }, [result, field, ui, weights, evaluations, origin, generatedAt, scenarios.data, timeline.data, actualId]);
 
   if (compare.error && !result) {
     return (
@@ -27,121 +123,50 @@ export default function ReportePage() {
       </Alert>
     );
   }
-  if (!result || !field) {
+  if (!model || !field || !result) {
     return <div role="status" aria-busy="true" className="space-y-3"><span className="sr-only">Armando el reporte…</span><Skeleton className="h-10 w-1/2" /><Skeleton className="h-96 w-full" /></div>;
   }
 
-  const origin = compare.demo ? "DATOS DE EJEMPLO (SIN CONEXIÓN)" : (compare.originLabel ?? "");
-  const best = evaluations[0];
-  const actual = evaluations.find((e) => e.rotation.strategy === "actual");
   const file = `fieldshift_${safeFilename(field.name)}`;
-  const today = new Date().toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" });
+  const extrasLoading = scenarios.loading || timeline.loading;
+  const downloadPdf = async () => {
+    setPdfBusy(true);
+    setPdfError(null);
+    try {
+      (await reportPdf(model)).save(`${file}.pdf`);
+    } catch {
+      setPdfError("No se pudo generar el PDF. Probá con “Imprimir o guardar en PDF”.");
+    } finally {
+      setPdfBusy(false);
+    }
+  };
 
   return (
     <div className="max-w-5xl space-y-6">
-      <PageHeader title="Reporte del campo" description="Un resumen para guardar, imprimir o compartir con tu ingeniero agrónomo.">
-        <Button onClick={() => downloadText(`${file}.csv`, buildCsv(field.name, origin, result, evaluations), "text/csv")}><Download aria-hidden /> Descargar CSV</Button>
-        <Button variant="outline" onClick={() => downloadText(`${file}.json`, buildJson(field.name, origin, result, evaluations), "application/json")}><FileJson aria-hidden /> Descargar JSON</Button>
-        <Button variant="outline" onClick={() => window.print()}><Printer aria-hidden /> Imprimir o guardar en PDF</Button>
+      <PageHeader title="Reporte del campo" description="El plan para revisar con tu ingeniero agrónomo: datos del campo, prioridades, clima, rotaciones, puntajes, recomendación, calendario y supuestos.">
+        <Button onClick={downloadPdf} disabled={pdfBusy}>{pdfBusy ? <Loader2 aria-hidden className="animate-spin" /> : <FileText aria-hidden />} Descargar PDF</Button>
+        <Button variant="outline" onClick={() => downloadText(`${file}.csv`, reportCsv(model), "text/csv")}><Download aria-hidden /> Descargar CSV</Button>
+        <Button variant="outline" onClick={() => downloadText(`${file}.json`, buildJson(field.name, origin, result, evaluations), "application/json")}><FileJson aria-hidden /> JSON</Button>
+        <Button variant="outline" onClick={() => window.print()}><Printer aria-hidden /> Imprimir</Button>
       </PageHeader>
+      {pdfError && <Alert tone="error" title="PDF"><p>{pdfError}</p></Alert>}
+      {extrasLoading && (
+        <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 aria-hidden className="size-4 animate-spin" /> Sumando la resistencia a escenarios y el calendario…</p>
+      )}
 
       <article className="space-y-6 print:space-y-4" aria-label="Reporte">
         <header className="space-y-2 border-b pb-4">
-          <h2 className="text-2xl font-bold">FieldShift · Reporte de rotaciones: {field.name}</h2>
-          <p className="text-muted-foreground">Generado el {today}</p>
+          <h2 className="text-2xl font-bold">{model.title}</h2>
+          <p className="text-muted-foreground">Generado el {model.generated} · Escenario: {model.scenario}</p>
           <div className="flex flex-wrap items-center gap-2">
             <OriginBadge status={compare.demo ? "demo" : result.inputs.climate.origin} label={origin} />
             <ConfidenceBadge level={result.confidence} />
           </div>
+          {evaluations[0] && <p className="text-sm text-muted-foreground">Rotación recomendada: {rotationTitle(evaluations[0].rotation)}</p>}
         </header>
-
-        <Alert tone="warning" title="Importante"><p>{DISCLAIMER}</p></Alert>
-        <WarningsList warnings={compare.warnings} />
-
-        <section aria-labelledby="r-campo" className="space-y-2">
-          <h3 id="r-campo" className="text-xl font-semibold">El campo</h3>
-          <dl className="grid gap-x-8 gap-y-1 sm:grid-cols-2">
-            <div><dt className="inline font-medium">Superficie: </dt><dd className="inline">{num(field.area_ha)} ha</dd></div>
-            <div><dt className="inline font-medium">Ubicación: </dt><dd className="inline">{num(field.location.lat, 4)}, {num(field.location.lon, 4)}</dd></div>
-            <div><dt className="inline font-medium">Riego: </dt><dd className="inline">{field.irrigated ? "Sí" : "No (secano)"}</dd></div>
-            <div><dt className="inline font-medium">Suelo: </dt><dd className="inline">{field.soil_profile?.texture ? SOIL_TEXTURES[field.soil_profile.texture] : "sin dato (se supuso franco arenosa)"}</dd></div>
-            <div><dt className="inline font-medium">Cultivo actual: </dt><dd className="inline">{result.inputs.current_crop ?? "sin dato"}</dd></div>
-            <div><dt className="inline font-medium">Historial: </dt><dd className="inline">{result.inputs.history.join(" → ") || "sin dato"}</dd></div>
-            <div><dt className="inline font-medium">Clima: </dt><dd className="inline">{result.inputs.climate.period}, {num(result.inputs.climate.annual_precip_mm)} mm de lluvia al año</dd></div>
-          </dl>
-        </section>
-
-        <section aria-labelledby="r-prio" className="space-y-2">
-          <h3 id="r-prio" className="text-xl font-semibold">Tus prioridades</h3>
-          <ul className="grid gap-x-8 gap-y-0.5 text-sm sm:grid-cols-2">
-            {PRIORITY_KEYS.map((k) => <li key={k}>{PRIORITY_META[k].label}: <strong>{ui[k]}/10</strong></li>)}
-          </ul>
-          <p className="text-sm text-muted-foreground">Peso de cada componente: {COMPONENT_ORDER.map((c) => `${COMPONENTS[c].short} ${num(weights[c] * 100)} %`).join(" · ")}</p>
-        </section>
-
-        {best && (
-          <section aria-labelledby="r-reco" className="space-y-2 rounded-lg border-2 border-primary p-4">
-            <h3 id="r-reco" className="text-xl font-semibold">Recomendación final</h3>
-            <p className="text-lg"><strong>{rotationTitle(best.rotation)}</strong> ({STRATEGY_LABELS[best.rotation.strategy]}), con {num(best.score.total)} puntos sobre 100.</p>
-            {actual && best.rotation.id !== actual.rotation.id && <p>Tu rotación actual obtiene {num(actual.score.total)} puntos.</p>}
-            <p>{best.recommendation.why}</p>
-            <p className="text-sm">{best.recommendation.validation_note}</p>
-          </section>
-        )}
-
-        <section aria-labelledby="r-rank" className="space-y-2">
-          <h3 id="r-rank" className="text-xl font-semibold">Ranking completo</h3>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Puesto</TableHead><TableHead>Rotación</TableHead><TableHead>Total</TableHead>
-                {COMPONENT_ORDER.map((c) => <TableHead key={c} title={COMPONENTS[c].name}>{c}</TableHead>)}
-                <TableHead>Riesgo</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {evaluations.map((e) => (
-                <TableRow key={e.rotation.id}>
-                  <TableCell>{e.score.rank}</TableCell>
-                  <TableCell className="min-w-56"><strong>{STRATEGY_LABELS[e.rotation.strategy]}</strong><br /><span className="text-sm text-muted-foreground">{rotationTitle(e.rotation)}</span></TableCell>
-                  <TableCell className="tabular-nums"><strong>{num(e.score.total, 1)}</strong><br /><span className="text-xs text-muted-foreground">({num(e.score.uncertainty_low)}–{num(e.score.uncertainty_high)})</span></TableCell>
-                  {COMPONENT_ORDER.map((c) => <TableCell key={c} className="tabular-nums">{num(e.score.components.find((x) => x.key === c)?.value)}</TableCell>)}
-                  <TableCell><RiskLevelBadge level={e.score.risk_level} /></TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <p className="text-sm text-muted-foreground">{COMPONENT_ORDER.map((c) => `${c} = ${COMPONENTS[c].name}`).join(" · ")}</p>
-        </section>
-
-        <section aria-labelledby="r-por-que" className="space-y-3">
-          <h3 id="r-por-que" className="text-xl font-semibold">Por qué cada una</h3>
-          {evaluations.map((e) => (
-            <Card key={e.rotation.id} className="break-inside-avoid">
-              <CardHeader className="pb-1"><CardTitle className="text-base">{e.score.rank}. {STRATEGY_LABELS[e.rotation.strategy]}: {rotationTitle(e.rotation)}</CardTitle></CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <p>{e.recommendation.why}</p>
-                {e.recommendation.risks.length > 0 && <p><strong>Riesgos:</strong> {e.recommendation.risks.join(" ")}</p>}
-              </CardContent>
-            </Card>
-          ))}
-        </section>
-
-        <section aria-labelledby="r-sup" className="space-y-2 break-inside-avoid">
-          <h3 id="r-sup" className="text-xl font-semibold">Supuestos</h3>
-          <ul className="list-disc space-y-1 pl-5 text-sm">
-            {result.assumptions.map((a) => <li key={a.id}>{a.text}{a.source ? ` (${a.source})` : ""}{!a.validated && !a.source ? " — a validar" : ""}</li>)}
-          </ul>
-        </section>
-
-        <section aria-labelledby="r-fuentes" className="space-y-2 break-inside-avoid">
-          <h3 id="r-fuentes" className="text-xl font-semibold">Fuentes</h3>
-          <ul className="space-y-2 text-sm">
-            {result.sources.map((s) => <li key={s.id}><strong>{s.name}</strong> — {s.provider}. {s.spatial_resolution}, {s.temporal_resolution}. {s.citation}</li>)}
-          </ul>
-        </section>
-
-        <footer className="border-t pt-4 text-sm text-muted-foreground"><p>{DISCLAIMER}</p></footer>
+        <Alert tone="warning" title="Importante"><p>{model.disclaimer}</p></Alert>
+        <ReportView m={model} />
+        <footer className="border-t pt-4 text-sm text-muted-foreground"><p>{model.disclaimer}</p></footer>
       </article>
     </div>
   );

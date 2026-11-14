@@ -1,8 +1,15 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(({ className, ...props }, ref) => (
-  <div className="w-full overflow-x-auto">
+interface TableProps extends React.HTMLAttributes<HTMLTableElement> {
+  /** Para tablas anchas: el contenedor con desplazamiento horizontal recibe foco (teclado) y este nombre. */
+  scrollLabel?: string;
+}
+
+// `relative`: los textos solo para lectores de pantalla (sr-only, posición absoluta) quedan dentro del desplazamiento
+// y no ensanchan la página en el celular.
+const Table = React.forwardRef<HTMLTableElement, TableProps>(({ className, scrollLabel, ...props }, ref) => (
+  <div className="relative w-full overflow-x-auto" {...(scrollLabel ? { tabIndex: 0, role: "region", "aria-label": scrollLabel } : {})}>
     <table ref={ref} className={cn("w-full caption-bottom text-base", className)} {...props} />
   </div>
 ));

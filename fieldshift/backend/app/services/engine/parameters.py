@@ -75,8 +75,17 @@ WINDY_WEIGHT = 1.3
 # --- Agua ---
 CROP_EXCESS_STORAGE = 0.5  # fracción de la lluvia efectiva sobrante que se almacena bajo cultivo (supuesto)
 IRRIGATION_COVERAGE = 0.8  # fracción del déficit que cubre el riego (supuesto)
+LIMITED_IRRIGATION_SHARE = 0.5  # riego limitado: la mitad de la lámina del riego pleno (supuesto)
 INITIAL_STORAGE_FRACTION = 0.5
 ET0_PER_DEGREE = 0.03  # +3 % de ET0 por cada °C (supuesto, rango típico 2-4 %)
+# --- Escenarios de eventos (supuestos de sensibilidad, no proyecciones) ---
+HEAT_WAVE_MONTHS = (12, 1, 2)  # ola de calor: verano
+HEAT_WAVE_SHIFT_C = 3.0  # la Tmax de esos meses se desplaza +3 °C (más días > 35 °C)
+HEAT_WAVE_ET0 = 0.10  # +10 % de ET0 en esos meses
+HEAVY_RAIN_MONTHS = (10, 11, 12, 1, 2, 3)  # lluvias intensas: primavera-verano
+HEAVY_RAIN_FACTOR = 1.35  # +35 % de lluvia en esos meses, concentrada en tormentas
+HEAVY_RAIN_EROSION = 1.4  # más erosión hídrica en el suelo desnudo
+HEAVY_RAIN_INFILTRATION = 0.3  # solo el 30 % de la lluvia extra de tormenta se aprovecha; el resto escurre
 HEAT_SIGMA_C = 5.0  # desvío de Tmax diaria dentro de un mes (supuesto) para desplazar la frecuencia de calor
 FROST_TMIN_HIGH = 3.0  # Tmin media mensual <= 3 °C: mes con heladas frecuentes (supuesto)
 FROST_TMIN_MEDIUM = 6.0  # <= 6 °C: heladas ocasionales

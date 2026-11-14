@@ -54,7 +54,7 @@ export function RotationBreakdown({ ev, actual, weights, fieldId, defaultOpen }:
           <p className="text-sm text-muted-foreground">
             Cada componente va de 0 a 100. Se multiplica por el peso que le diste y la suma de los cinco aportes es el puntaje total (<Term k="contribucion">más sobre la contribución</Term>).
           </p>
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <table className="w-full min-w-[34rem] text-sm">
               <caption className="sr-only">Desglose del puntaje de {ev.rotation.name}: puntaje, peso y aporte de cada componente.</caption>
               <thead>

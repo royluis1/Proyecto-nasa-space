@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     retry_backoff_s: float = Field(default=1.0, ge=0, le=30, description="Base del backoff exponencial.")
 
     cache_ttl_hours: int = Field(default=24, ge=0)
+    power_cooldown_s: float = Field(default=300, ge=0, le=3600, description="Tras una falla de POWER, segundos sin reintentar en vivo.")
     cache_dir: Path = REPO_ROOT / "data" / "cache"
     sample_data_dir: Path | None = None
     nasa_samples_dir: Path = REPO_ROOT / "data" / "samples"

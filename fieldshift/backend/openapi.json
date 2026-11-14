@@ -830,13 +830,35 @@
     }
    }
   },
+  "/scenarios/presets": {
+   "get": {
+    "tags": [
+     "escenarios"
+    ],
+    "summary": "Escenarios predefinidos",
+    "description": "Año normal, seco, con lluvias intensas y con olas de calor; lluvia -10, -20 y -30 %; +1 y +2 °C;\nsin riego, con riego limitado y con riego disponible.",
+    "operationId": "scenario_presets_scenarios_presets_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_list_ScenarioPreset__"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/scenarios": {
    "post": {
     "tags": [
      "escenarios"
     ],
     "summary": "Simular escenarios climáticos",
-    "description": "Recalcula el ranking bajo cada escenario (lluvia -50 a +30 %, temperatura 0 a +3 °C,\naño seco análogo, riego). Las rotaciones son las mismas en todos los escenarios, así se\npueden comparar. Los escenarios son supuestos de sensibilidad, no proyecciones climáticas.",
+    "description": "Recalcula puntajes, ranking, riesgos, recomendación y explicaciones bajo cada escenario (lluvia -50 a\n+30 %, temperatura 0 a +3 °C, año seco análogo, lluvias intensas, olas de calor y nivel de riego). Las\nrotaciones son las mismas en todos los escenarios, así se pueden comparar. Son supuestos de sensibilidad,\nno proyecciones climáticas.",
     "operationId": "run_scenarios_scenarios_post",
     "requestBody": {
      "content": {
@@ -911,13 +933,87 @@
     }
    }
   },
+  "/calendar": {
+   "post": {
+    "tags": [
+     "calendario"
+    ],
+    "summary": "Calendario agrícola de 2 a 4 campañas",
+    "description": "Mes a mes: siembra, desarrollo, cosecha, barbecho, cobertura del suelo, riesgo de golpe de calor\ny de déficit hídrico, suelo desnudo y recomendaciones. Usa NASA POWER y, si están, SMAP y NDVI.",
+    "operationId": "calendar_calendar_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CalendarRequest"
+       },
+       "examples": {
+        "recomendada": {
+         "summary": "Rotación recomendada, 3 campañas",
+         "value": {
+          "field_id": "campo-este",
+          "campaigns": 3
+         }
+        },
+        "seco": {
+         "summary": "Rotación actual en un año seco, 2 campañas",
+         "value": {
+          "field_id": "campo-este",
+          "rotation_id": "campo-este-actual",
+          "campaigns": 2,
+          "scenario": {
+           "id": "anio-seco",
+           "name": "Año seco",
+           "dry_year": true
+          }
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_CalendarTimeline_"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not Found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Unprocessable Content",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/export/report": {
    "get": {
     "tags": [
      "reporte"
     ],
     "summary": "Exportar reporte del lote",
-    "description": "Reporte con lote, rotaciones, ranking, explicaciones, fuentes, supuestos y advertencia.",
+    "description": "Reporte con campo, prioridades, resumen climático, rotaciones, puntajes, recomendación, supuestos,\nfuentes, advertencias y fecha de generación. Con las prioridades guardadas del lote.",
     "operationId": "export_report_export_report_get",
     "parameters": [
      {
@@ -942,13 +1038,76 @@
         "csv"
        ],
        "type": "string",
-       "description": "El PDF llega en una fase posterior.",
+       "description": "El PDF lo arma el frontend con estos mismos datos.",
        "default": "json",
        "title": "Format"
       },
-      "description": "El PDF llega en una fase posterior."
+      "description": "El PDF lo arma el frontend con estos mismos datos."
+     },
+     {
+      "name": "scenarios",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "description": "Sumar la tabla de resistencia a los 12 escenarios predefinidos.",
+       "default": false,
+       "title": "Scenarios"
+      },
+      "description": "Sumar la tabla de resistencia a los 12 escenarios predefinidos."
      }
     ],
+    "responses": {
+     "200": {
+      "description": "JSON (por defecto) o CSV según `format`.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_Report_"
+        }
+       },
+       "text/csv": {}
+      }
+     },
+     "404": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      },
+      "description": "Not Found"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "reporte"
+    ],
+    "summary": "Exportar reporte con prioridades y escenario",
+    "description": "Igual que GET, pero con las prioridades y el escenario que se elijan, y la tabla de resistencia a escenarios.",
+    "operationId": "export_report_custom_export_report_post",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ReportRequest"
+       }
+      }
+     }
+    },
     "responses": {
      "200": {
       "description": "JSON (por defecto) o CSV según `format`.",
@@ -1115,6 +1274,22 @@
      "heat_stress"
     ],
     "title": "AnnualRecord"
+   },
+   "ApiResponse_CalendarTimeline_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/CalendarTimeline"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[CalendarTimeline]"
    },
    "ApiResponse_ClimateSummary_": {
     "properties": {
@@ -1284,6 +1459,26 @@
     ],
     "title": "ApiResponse[list[FieldOut]]"
    },
+   "ApiResponse_list_ScenarioPreset__": {
+    "properties": {
+     "data": {
+      "items": {
+       "$ref": "#/components/schemas/ScenarioPreset"
+      },
+      "type": "array",
+      "title": "Data"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[list[ScenarioPreset]]"
+   },
    "ApiResponse_list_ScenarioResult__": {
     "properties": {
      "data": {
@@ -1405,6 +1600,181 @@
     ],
     "title": "Boundary",
     "description": "Polígono del lote en GeoJSON (WGS84). Se guarda para futuras consultas por área (Sentinel-2, MODIS)."
+   },
+   "CalendarRequest": {
+    "properties": {
+     "field_id": {
+      "type": "string",
+      "title": "Field Id"
+     },
+     "rotation_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rotation Id",
+      "description": "Por defecto, la recomendada para el escenario."
+     },
+     "campaigns": {
+      "type": "integer",
+      "maximum": 4.0,
+      "minimum": 2.0,
+      "title": "Campaigns",
+      "description": "Campañas (julio a junio) a mostrar.",
+      "default": 3
+     },
+     "first_campaign_year": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 2100.0,
+        "minimum": 2000.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "First Campaign Year",
+      "description": "Año en que empieza la primera campaña. Por defecto, la próxima."
+     },
+     "scenario": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/ScenarioInput"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "priorities": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Priorities"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "field_id"
+    ],
+    "title": "CalendarRequest"
+   },
+   "CalendarTimeline": {
+    "properties": {
+     "field_id": {
+      "type": "string",
+      "title": "Field Id"
+     },
+     "rotation": {
+      "$ref": "#/components/schemas/Rotation"
+     },
+     "scenario": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/ScenarioInput"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "irrigated": {
+      "type": "boolean",
+      "title": "Irrigated"
+     },
+     "campaigns": {
+      "items": {
+       "$ref": "#/components/schemas/TimelineCampaign"
+      },
+      "type": "array",
+      "title": "Campaigns"
+     },
+     "advice": {
+      "items": {
+       "$ref": "#/components/schemas/TimelineAdvice"
+      },
+      "type": "array",
+      "title": "Advice"
+     },
+     "recommended_rotation_id": {
+      "type": "string",
+      "title": "Recommended Rotation Id"
+     },
+     "is_recommended": {
+      "type": "boolean",
+      "title": "Is Recommended"
+     },
+     "score_total": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Score Total"
+     },
+     "recommended_total": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Recommended Total"
+     },
+     "data_used": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Data Used",
+      "description": "Qué datos NASA se usaron y de dónde salieron."
+     },
+     "assumptions": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Assumptions"
+     },
+     "warnings": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Warnings"
+     }
+    },
+    "type": "object",
+    "required": [
+     "field_id",
+     "rotation",
+     "scenario",
+     "irrigated",
+     "campaigns",
+     "advice",
+     "recommended_rotation_id",
+     "is_recommended",
+     "score_total",
+     "recommended_total",
+     "data_used",
+     "assumptions",
+     "warnings"
+    ],
+    "title": "CalendarTimeline"
    },
    "Campaign": {
     "properties": {
@@ -4324,6 +4694,29 @@
      "field": {
       "$ref": "#/components/schemas/FieldOut"
      },
+     "priorities": {
+      "$ref": "#/components/schemas/Priorities"
+     },
+     "weights": {
+      "additionalProperties": {
+       "type": "number"
+      },
+      "type": "object",
+      "title": "Weights"
+     },
+     "climate": {
+      "$ref": "#/components/schemas/ClimateInputSummary"
+     },
+     "scenario": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/ScenarioInput"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
      "rotations": {
       "items": {
        "$ref": "#/components/schemas/Rotation"
@@ -4349,8 +4742,19 @@
       "type": "string",
       "title": "Recommended Rotation Id"
      },
+     "recommendation": {
+      "$ref": "#/components/schemas/Recommendation"
+     },
      "confidence": {
       "$ref": "#/components/schemas/Confidence"
+     },
+     "resilience": {
+      "items": {
+       "$ref": "#/components/schemas/ScenarioResilience"
+      },
+      "type": "array",
+      "title": "Resilience",
+      "default": []
      },
      "sources": {
       "items": {
@@ -4382,10 +4786,14 @@
     "required": [
      "generated_at",
      "field",
+     "priorities",
+     "weights",
+     "climate",
      "rotations",
      "ranking",
      "explanations",
      "recommended_rotation_id",
+     "recommendation",
      "confidence",
      "sources",
      "assumptions",
@@ -4393,6 +4801,64 @@
      "disclaimer"
     ],
     "title": "Report"
+   },
+   "ReportRequest": {
+    "properties": {
+     "field_id": {
+      "type": "string",
+      "title": "Field Id"
+     },
+     "priorities": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Priorities"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "scenario": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/ScenarioInput"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Escenario del reporte. Por defecto, el año normal."
+     },
+     "scenario_ids": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "string"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Scenario Ids",
+      "description": "Escenarios predefinidos para la tabla de resistencia. [] = sin tabla; None = todos."
+     },
+     "format": {
+      "type": "string",
+      "enum": [
+       "json",
+       "csv"
+      ],
+      "title": "Format",
+      "default": "json"
+     }
+    },
+    "type": "object",
+    "required": [
+     "field_id"
+    ],
+    "title": "ReportRequest"
    },
    "ResponseMeta": {
     "properties": {
@@ -5028,13 +5494,66 @@
      "irrigation": {
       "type": "boolean",
       "title": "Irrigation",
-      "description": "Evaluar como si el lote tuviera riego.",
+      "description": "Compatibilidad: igual a irrigation_level='disponible'.",
+      "default": false
+     },
+     "irrigation_level": {
+      "type": "string",
+      "enum": [
+       "lote",
+       "sin_riego",
+       "limitado",
+       "disponible"
+      ],
+      "title": "Irrigation Level",
+      "description": "Riego del escenario: 'lote' = el del lote; 'sin_riego' = secano; 'limitado' = la mitad de la lámina; 'disponible' = riego pleno (80 % del déficit).",
+      "default": "lote"
+     },
+     "heat_wave": {
+      "type": "boolean",
+      "title": "Heat Wave",
+      "description": "Ola de calor en verano: +3 °C en la Tmax de dic-feb y +10 % de ET0.",
+      "default": false
+     },
+     "heavy_rain": {
+      "type": "boolean",
+      "title": "Heavy Rain",
+      "description": "Lluvias intensas: +35 % de lluvia de oct a mar, más erosión hídrica.",
       "default": false
      }
     },
     "type": "object",
     "title": "ScenarioInput",
     "description": "Escenario climático aplicado al puntaje (mismos rangos que /scenarios)."
+   },
+   "ScenarioPreset": {
+    "properties": {
+     "scenario": {
+      "$ref": "#/components/schemas/ScenarioInput"
+     },
+     "group": {
+      "type": "string",
+      "enum": [
+       "clima",
+       "eventos",
+       "lluvia",
+       "temperatura",
+       "riego"
+      ],
+      "title": "Group"
+     },
+     "help": {
+      "type": "string",
+      "title": "Help"
+     }
+    },
+    "type": "object",
+    "required": [
+     "scenario",
+     "group",
+     "help"
+    ],
+    "title": "ScenarioPreset"
    },
    "ScenarioRequest": {
     "properties": {
@@ -5047,7 +5566,7 @@
        "$ref": "#/components/schemas/ScenarioInput"
       },
       "type": "array",
-      "maxItems": 8,
+      "maxItems": 16,
       "minItems": 1,
       "title": "Scenarios"
      },
@@ -5068,6 +5587,52 @@
      "scenarios"
     ],
     "title": "ScenarioRequest"
+   },
+   "ScenarioResilience": {
+    "properties": {
+     "rotation_id": {
+      "type": "string",
+      "title": "Rotation Id"
+     },
+     "mean_total": {
+      "type": "number",
+      "title": "Mean Total"
+     },
+     "worst_total": {
+      "type": "number",
+      "title": "Worst Total"
+     },
+     "worst_scenario": {
+      "type": "string",
+      "title": "Worst Scenario"
+     },
+     "worst_rank": {
+      "type": "integer",
+      "title": "Worst Rank"
+     },
+     "wins": {
+      "type": "integer",
+      "title": "Wins",
+      "description": "Escenarios en los que queda primera."
+     },
+     "max_drop": {
+      "type": "number",
+      "title": "Max Drop",
+      "description": "Mayor caída de puntaje frente al año normal."
+     }
+    },
+    "type": "object",
+    "required": [
+     "rotation_id",
+     "mean_total",
+     "worst_total",
+     "worst_scenario",
+     "worst_rank",
+     "wins",
+     "max_drop"
+    ],
+    "title": "ScenarioResilience",
+    "description": "Cómo aguanta una rotación los escenarios simulados."
    },
    "ScenarioResult": {
     "properties": {
@@ -5093,6 +5658,15 @@
       "title": "Ranking",
       "default": []
      },
+     "rotations": {
+      "items": {
+       "$ref": "#/components/schemas/ScenarioRotationNote"
+      },
+      "type": "array",
+      "title": "Rotations",
+      "description": "Riesgos y explicación de cada rotación en este escenario.",
+      "default": []
+     },
      "warnings": {
       "items": {
        "type": "string"
@@ -5107,6 +5681,56 @@
      "scenario"
     ],
     "title": "ScenarioResult"
+   },
+   "ScenarioRotationNote": {
+    "properties": {
+     "rotation_id": {
+      "type": "string",
+      "title": "Rotation Id"
+     },
+     "summary": {
+      "type": "string",
+      "title": "Summary"
+     },
+     "why": {
+      "type": "string",
+      "title": "Why"
+     },
+     "risks": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Risks"
+     },
+     "risk_level": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Level"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "risk_flags": {
+      "items": {
+       "$ref": "#/components/schemas/RiskFlag"
+      },
+      "type": "array",
+      "title": "Risk Flags",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "rotation_id",
+     "summary",
+     "why",
+     "risks"
+    ],
+    "title": "ScenarioRotationNote",
+    "description": "Qué cambia para una rotación en el escenario: riesgos y explicación recalculados."
    },
    "ScoreComponent": {
     "properties": {
@@ -5818,6 +6442,258 @@
      "arcillosa"
     ],
     "title": "SoilTexture"
+   },
+   "TimelineAdvice": {
+    "properties": {
+     "kind": {
+      "type": "string",
+      "enum": [
+       "cobertura",
+       "calor",
+       "agua",
+       "siembra",
+       "rotacion",
+       "datos"
+      ],
+      "title": "Kind"
+     },
+     "severity": {
+      "$ref": "#/components/schemas/Level"
+     },
+     "text": {
+      "type": "string",
+      "title": "Text"
+     },
+     "campaigns": {
+      "items": {
+       "type": "integer"
+      },
+      "type": "array",
+      "title": "Campaigns",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "kind",
+     "severity",
+     "text"
+    ],
+    "title": "TimelineAdvice"
+   },
+   "TimelineCampaign": {
+    "properties": {
+     "index": {
+      "type": "integer",
+      "title": "Index"
+     },
+     "label": {
+      "type": "string",
+      "title": "Label",
+      "examples": [
+       "2027/28"
+      ]
+     },
+     "months": {
+      "items": {
+       "$ref": "#/components/schemas/TimelineMonth"
+      },
+      "type": "array",
+      "title": "Months"
+     },
+     "covered_months": {
+      "type": "integer",
+      "title": "Covered Months"
+     },
+     "bare_months": {
+      "type": "integer",
+      "title": "Bare Months"
+     },
+     "heat_risk_months": {
+      "type": "integer",
+      "title": "Heat Risk Months",
+      "description": "Meses con riesgo de calor alto."
+     },
+     "water_risk_months": {
+      "type": "integer",
+      "title": "Water Risk Months",
+      "description": "Meses con riesgo hídrico alto."
+     }
+    },
+    "type": "object",
+    "required": [
+     "index",
+     "label",
+     "months",
+     "covered_months",
+     "bare_months",
+     "heat_risk_months",
+     "water_risk_months"
+    ],
+    "title": "TimelineCampaign"
+   },
+   "TimelineMonth": {
+    "properties": {
+     "index": {
+      "type": "integer",
+      "minimum": 0.0,
+      "title": "Index",
+      "description": "Posición en la línea de tiempo."
+     },
+     "campaign": {
+      "type": "integer",
+      "minimum": 1.0,
+      "title": "Campaign"
+     },
+     "year": {
+      "type": "integer",
+      "title": "Year"
+     },
+     "month": {
+      "type": "integer",
+      "maximum": 12.0,
+      "minimum": 1.0,
+      "title": "Month"
+     },
+     "label": {
+      "type": "string",
+      "title": "Label",
+      "examples": [
+       "nov 2027"
+      ]
+     },
+     "crop_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Crop Id"
+     },
+     "crop_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Crop Name"
+     },
+     "is_cover_crop": {
+      "type": "boolean",
+      "title": "Is Cover Crop",
+      "default": false
+     },
+     "stage": {
+      "type": "string",
+      "enum": [
+       "siembra",
+       "desarrollo",
+       "cosecha",
+       "barbecho"
+      ],
+      "title": "Stage"
+     },
+     "harvest_of": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Harvest Of",
+      "description": "Cultivo que se cosecha este mes si otro se siembra en el mismo mes."
+     },
+     "cover": {
+      "type": "string",
+      "enum": [
+       "cultivo",
+       "cobertura",
+       "rastrojo",
+       "desnudo"
+      ],
+      "title": "Cover",
+      "description": "cultivo/cobertura = vivo; rastrojo = barbecho con residuo; desnudo = poco o nada de residuo."
+     },
+     "bare_soil": {
+      "type": "boolean",
+      "title": "Bare Soil"
+     },
+     "heat_risk": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Level"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Riesgo de golpe de calor para el cultivo del mes (None en barbecho)."
+     },
+     "water_risk": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Level"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Riesgo de déficit hídrico para el cultivo del mes (None en barbecho)."
+     },
+     "heat_days_pct": {
+      "type": "number",
+      "title": "Heat Days Pct",
+      "description": "% de días con Tmax > 35 °C (NASA POWER, con el escenario)."
+     },
+     "precip_mm": {
+      "type": "number",
+      "title": "Precip Mm"
+     },
+     "et0_mm": {
+      "type": "number",
+      "title": "Et0 Mm"
+     },
+     "water_stress_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Water Stress Pct",
+      "description": "Demanda no cubierta después del riego, % (None en barbecho)."
+     }
+    },
+    "type": "object",
+    "required": [
+     "index",
+     "campaign",
+     "year",
+     "month",
+     "label",
+     "crop_id",
+     "crop_name",
+     "stage",
+     "cover",
+     "bare_soil",
+     "heat_risk",
+     "water_risk",
+     "heat_days_pct",
+     "precip_mm",
+     "et0_mm",
+     "water_stress_pct"
+    ],
+    "title": "TimelineMonth"
    },
    "Trend": {
     "properties": {

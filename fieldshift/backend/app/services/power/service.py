@@ -47,6 +47,27 @@ def resolve_parameters(requested: list[str] | None) -> list[str]:
     return list(dict.fromkeys(params))
 
 
+class Cooldown:
+    """Después de una falla de NASA POWER, no reintentar en vivo durante un rato.
+
+    Sin esto, cada pedido espera todos los reintentos (varios segundos) antes de usar la caché o la muestra.
+    Se comparte entre pedidos (una instancia por proceso).
+    """
+
+    def __init__(self, seconds: float) -> None:
+        self.seconds = seconds
+        self.failed_at: datetime | None = None
+
+    def active(self, now: datetime) -> bool:
+        return self.failed_at is not None and (now - self.failed_at).total_seconds() < self.seconds
+
+    def fail(self, now: datetime) -> None:
+        self.failed_at = now
+
+    def reset(self) -> None:
+        self.failed_at = None
+
+
 class PowerService:
     def __init__(
         self,
@@ -54,11 +75,13 @@ class PowerService:
         cache: PowerCache,
         samples: SampleProvider,
         now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
+        cooldown: Cooldown | None = None,
     ) -> None:
         self.fetcher = fetcher
         self.cache = cache
         self.samples = samples
         self.now = now
+        self.cooldown = cooldown
 
     def get_daily(
         self, lat: float, lon: float, start: date, end: date, params: list[str], community: str = "AG"
@@ -69,14 +92,21 @@ class PowerService:
         if entry and entry.is_fresh(self.now(), self.cache.ttl_hours):
             return self._from_raw(entry.raw, params, DataStatus.CACHED, entry.fetched_at, [])
 
-        try:
-            raw = self.fetcher(lat, lon, start, end, params, community)
-            result = self._from_raw(raw, params, DataStatus.LIVE, self.now(), [])
-            self.cache.put(key, raw, end, result.retrieved_at)  # se guarda solo si se pudo parsear
-            return result
-        except UpstreamError as exc:
-            logger.warning("POWER no disponible: %s", exc.message)
-            reason = exc.message
+        if self.cooldown and self.cooldown.active(self.now()):
+            reason = f"falló hace menos de {self.cooldown.seconds / 60:.0f} min; se vuelve a probar después"
+        else:
+            try:
+                raw = self.fetcher(lat, lon, start, end, params, community)
+                result = self._from_raw(raw, params, DataStatus.LIVE, self.now(), [])
+                self.cache.put(key, raw, end, result.retrieved_at)  # se guarda solo si se pudo parsear
+                if self.cooldown:
+                    self.cooldown.reset()
+                return result
+            except UpstreamError as exc:
+                logger.warning("POWER no disponible: %s", exc.message)
+                reason = exc.message
+                if self.cooldown:
+                    self.cooldown.fail(self.now())
 
         if entry:
             return self._from_raw(

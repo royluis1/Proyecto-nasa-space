@@ -30,26 +30,25 @@ import { useAsync } from "@/hooks/use-async";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useDashboardCompare } from "@/hooks/use-dashboard-compare";
 import { api } from "@/lib/api";
-import { describeScenario, withIrrigation } from "@/lib/dashboard";
+import { describeScenario } from "@/lib/dashboard";
 import { buildCsv, buildJson, downloadText, safeFilename } from "@/lib/export";
 import { STRATEGY_LABELS, rotationTitle } from "@/lib/format";
 import { friendlyWarnings } from "@/lib/plain";
-import { PRESET_SCENARIOS } from "@/lib/scenarios";
-import type { Crop, ScenarioInput } from "@/types/api";
+import { PRESET_SCENARIOS, isBaseline, toRequest, withIrrigationLevel } from "@/lib/scenarios";
+import type { Crop, IrrigationLevel, ScenarioInput } from "@/types/api";
 
 export default function DashboardPage() {
   const { field, fieldId, ui, setUi, weights } = useCampo();
   const [scenarioId, setScenarioId] = useState("base");
-  const [irrigation, setIrrigation] = useState(false);
+  const [irrigation, setIrrigation] = useState<IrrigationLevel>("lote");
   const [custom, setCustom] = useState<string[] | null>(null);
   const [pair, setPair] = useState<{ a: string | null; b: string | null }>({ a: null, b: null });
 
   const scenario = useMemo<ScenarioInput | null>(() => {
     const p = PRESET_SCENARIOS.find((s) => s.id === scenarioId) ?? PRESET_SCENARIOS[0];
-    const base: ScenarioInput = { id: p.id, name: p.name, rain_delta_pct: p.rain_delta_pct, temp_delta_c: p.temp_delta_c, dry_year: p.dry_year, irrigation: p.irrigation };
-    const eff = withIrrigation(base, irrigation && !field?.irrigated);
-    return eff.id === "base" && !eff.irrigation ? null : eff;
-  }, [scenarioId, irrigation, field?.irrigated]);
+    const eff = withIrrigationLevel(toRequest(p), irrigation);
+    return isBaseline(eff) ? null : eff;
+  }, [scenarioId, irrigation]);
 
   const d = useDashboardCompare(scenario);
   const crops = useAsync<Crop[]>(async (signal) => (await api.crops({ signal })).data, []);

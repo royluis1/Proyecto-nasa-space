@@ -85,8 +85,8 @@ describe("cliente de la API", () => {
     expect((await api.climate({ field_id: "campo-centro", start_date: "2016-01-01", end_date: "2025-12-31" })).data.monthly_climatology).toHaveLength(12);
     expect((await api.soilMoisture({ field_id: "campo-centro" })).data.trace.status).toBe("sample");
     expect((await api.vegetation({ field_id: "campo-centro" })).data.campaigns.length).toBeGreaterThan(3);
-    const sc = await api.scenarios("campo-centro", [{ id: "seco-20", name: "x", rain_delta_pct: -20, temp_delta_c: 0, dry_year: false, irrigation: false }]);
-    expect(sc.data[0].scenario.id).toBe("seco-20");
+    const sc = await api.scenarios("campo-centro", [{ id: "lluvia-20", name: "x", rain_delta_pct: -20 }]);
+    expect(sc.data[0].scenario.id).toBe("lluvia-20");
     expect(sc.meta.warnings.join(" ")).toMatch(/modo demostración|MODO DEMOSTRACIÓN/i);
   });
 

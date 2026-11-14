@@ -66,9 +66,9 @@ Si cambia la API, corré `npm run gen:api`: los tipos de `types/api.ts` salen de
 | `/campo/[id]/dashboard` | Dashboard comparativo: ranking, gráficos, desglose, explicaciones, escenarios y exportación |
 | `/campo/[id]/comparador` | Ranking de rotaciones, que se recalcula al mover las prioridades |
 | `/campo/[id]/rotacion/[rid]` | Detalle: por qué, desglose del puntaje, riesgos, evidencia y supuestos |
-| `/campo/[id]/calendario` | Calendario agrícola mensual y ventanas de siembra |
-| `/campo/[id]/escenarios` | Escenarios climáticos (lluvia, temperatura, año seco, riego) |
-| `/campo/[id]/reporte` | Reporte exportable: CSV, JSON e impresión o PDF |
+| `/campo/[id]/calendario` | Calendario de 2 a 4 campañas: etapas, cobertura, suelo desnudo, riesgo de calor y de agua, recomendaciones |
+| `/campo/[id]/escenarios` | 12 escenarios con impacto inmediato y qué rotación resiste mejor |
+| `/campo/[id]/reporte` | Plan para el técnico: PDF, CSV, JSON e impresión |
 | `/metodologia` | Metodología, fuentes y glosario |
 
 ## Estructura
@@ -116,19 +116,25 @@ frontend/
 - **Visualizaciones** en pestañas: aporte de cada componente al puntaje (barras apiladas), barras por componente, gráfico de araña, mapa de calor y línea de tiempo de cada rotación. Cada serie tiene una trama propia (liso, rayas, puntos, cuadrícula) además del color, y cada gráfico tiene su tabla.
 - **Indicadores** de agua, suelo, riesgo, ingreso y sostenibilidad para comparar dos rotaciones a elección, con veredicto en texto ("mejor", "peor", "parecido").
 - **Desglose y explicación** por rotación: los cinco componentes con el peso que eligió el usuario y el aporte de cada uno (valor × peso), qué datos la favorecen y cuáles la penalizan frente a la rotación actual, por qué se recomienda, supuestos, riesgos y qué tiene que validar un agrónomo local.
-- **Controles**: prioridades, escenario climático (los mismos de la pantalla de escenarios), disponibilidad de riego y selección de hasta 4 rotaciones para comparar. Todo se recalcula en vivo.
+- **Controles**: prioridades, escenario climático (los mismos de la pantalla de escenarios), agua de riego (como está el campo, sin riego, limitado o disponible) y selección de hasta 4 rotaciones para comparar. Todo se recalcula en vivo.
 - **Exportar**: CSV, JSON, impresión y enlace al reporte completo.
 - **Lenguaje claro**: ET0, NDVI, SMAP, estrés hídrico, Kc y otros términos se explican al tocarlos (`lib/glossary.ts`), y los avisos técnicos del servidor se traducen a español llano (`lib/plain.ts`).
 
-La lógica de comparación está en `lib/dashboard.ts` (aportes, favorece/penaliza, indicadores, riego y descripción del escenario).
+La lógica de comparación está en `lib/dashboard.ts` (aportes, favorece/penaliza, indicadores y descripción del escenario).
+
+**Calendario, escenarios y reporte.** Guía de uso en [`docs/calendario_escenarios_reporte.md`](../docs/calendario_escenarios_reporte.md). La lógica está en:
+
+- `lib/scenarios.ts`: los 12 escenarios, que salen del backend vía `lib/demo/data/scenario-presets.json`, la matriz de puntajes y la resistencia.
+- `lib/timeline.ts`: tramos, textos y resúmenes del calendario.
+- `lib/report.ts`: el modelo del reporte, el CSV y el PDF con jsPDF, cargado bajo demanda.
 
 ## Tests
 
-`npm test` corre 86 tests de la lógica: prioridades, ranking en vivo, geometría del mapa, GeoJSON, calendario, exportación, comparación del dashboard, traducción de términos, datos de ejemplo y el cliente de API (reintentos, errores, paso a modo demostración, recuperación). Las pruebas de pantalla se hicieron con un navegador real (Playwright) contra el backend y sin él.
+`npm test` corre 107 tests de la lógica: prioridades, ranking en vivo, geometría del mapa, GeoJSON, calendario por campañas, escenarios y resistencia, reporte (CSV y PDF), exportación, comparación del dashboard, traducción de términos, datos de ejemplo y el cliente de API (reintentos, errores, paso a modo demostración, recuperación). Las pruebas de pantalla se hicieron con un navegador real (Playwright) contra el backend y sin él.
 
 ## Limitaciones conocidas
 
 - Los campos y los cambios guardados en el servidor viven en memoria: se pierden al reiniciarlo.
-- En modo demostración los escenarios son solo los predefinidos.
+- En modo demostración los escenarios son solo los predefinidos, y el calendario está calculado solo para el año normal.
 - Todavía no hay descarga automática de SMAP y NDVI: con credenciales de AppEEARS el backend las pide; sin ellas usa datos de muestra simulados y lo avisa.
 - Dibujar un polígono con el teclado no es posible: la alternativa accesible son las coordenadas y la carga de GeoJSON.

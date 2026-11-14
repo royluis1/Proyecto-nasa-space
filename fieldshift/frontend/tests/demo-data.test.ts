@@ -22,7 +22,7 @@ describe("datos de ejemplo (modo demostración)", () => {
     expect((await demoSoilMoisture(id)).data.trace.label).toBe("modelado");
     expect((await demoVegetation(id)).data.trace.label).toBe("observado");
     expect((await demoRotations(id)).length).toBe(evals.length);
-    const sc = await demoScenarios(id, [{ id: "seco-20", name: "", rain_delta_pct: -20, temp_delta_c: 0, dry_year: false, irrigation: false }]);
+    const sc = await demoScenarios(id, [{ id: "lluvia-20", name: "", rain_delta_pct: -20 }]);
     expect(sc.data).toHaveLength(1);
     expect(sc.data[0].ranking.length).toBe(evals.length);
   });

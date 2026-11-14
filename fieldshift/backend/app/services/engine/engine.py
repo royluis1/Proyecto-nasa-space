@@ -87,7 +87,7 @@ def _evaluate(
         calendar = build_calendar(rotation, crops)
     except RotationCalendarError as exc:
         raise InvalidInputError(str(exc), {"rotation_id": rotation.id}) from None
-    metrics = compute_metrics(calendar, climate, ctx.soil, ctx.irrigated)
+    metrics = compute_metrics(calendar, climate, ctx.soil, ctx.irrigated, ctx.irrigation_share)
     comps = score_components(
         metrics, ctx, calendar.steps[0].crop, erosion_scale, is_actual=rotation.strategy == RotationStrategy.ACTUAL
     )
@@ -114,9 +114,18 @@ def run(req: EngineRequest, crops: dict[str, Crop], templates: list[RotationTemp
             raise InvalidInputError(f"Cultivo desconocido en el historial: '{crop_id}'.", {"crop_id": crop_id})
 
     soil = soil_from_field(field_)
-    irrigated = field_.irrigated or bool(req.scenario and req.scenario.irrigation)
-    if req.scenario and req.scenario.irrigation and not field_.irrigated:
-        warnings.append("Escenario con riego: el lote se evalúa como si tuviera riego.")
+    share = req.scenario.irrigation_share(field_.irrigated) if req.scenario else (1.0 if field_.irrigated else 0.0)
+    irrigated = share > 0
+    if irrigated and not field_.irrigated:
+        warnings.append(
+            "Escenario con riego limitado: el lote se evalúa con la mitad de la lámina de riego."
+            if share < 1
+            else "Escenario con riego: el lote se evalúa como si tuviera riego."
+        )
+    elif irrigated and share < 1:
+        warnings.append("Escenario con riego limitado: el lote se evalúa con la mitad de la lámina de riego.")
+    elif not irrigated and field_.irrigated:
+        warnings.append("Escenario sin riego: el lote se evalúa en secano.")
     if soil.texture_assumed:
         warnings.append("Textura del suelo no informada: se supone franco arenosa.")
     climate = apply_scenario(req.climate, req.scenario)
@@ -135,6 +144,7 @@ def run(req: EngineRequest, crops: dict[str, Crop], templates: list[RotationTemp
         climate=climate,
         soil=soil,
         irrigated=irrigated,
+        irrigation_share=share if irrigated else 1.0,
         current_crop=current,
         history_repeat=repeat,
         soil_moisture=req.soil_moisture,

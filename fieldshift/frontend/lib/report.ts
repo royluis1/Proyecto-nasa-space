@@ -1,0 +1,336 @@
+/**
+ * Reporte del campo para revisar con un técnico: un modelo único (puro y testeable) que se exporta a CSV y a PDF.
+ * El PDF se arma en el navegador (jsPDF), así funciona también sin conexión con el servidor.
+ */
+import { DISCLAIMER } from "./content";
+import { COMPONENT_ORDER, COMPONENTS, LEVEL_LABELS, SOIL_TEXTURES, STRATEGY_LABELS, num, rotationTitle } from "./format";
+import { friendlyWarnings } from "./plain";
+import { PRIORITY_KEYS, PRIORITY_META, type UiPriorities } from "./priorities";
+import type { Resilience } from "./scenarios";
+import { campaignSummary, timelineTotals } from "./timeline";
+import type { CalendarTimeline, CompareResult, FieldOut, RotationEvaluation, ScenarioInput, ScoreComponentKey } from "@/types/api";
+
+const ZONES: Record<string, string> = {
+  hiperarido: "hiperárida", arido: "árida", semiarido: "semiárida", subhumedo_seco: "subhúmeda seca", subhumedo: "subhúmeda", humedo: "húmeda",
+};
+
+export interface ReportInput {
+  field: FieldOut;
+  ui: UiPriorities;
+  weights: Record<ScoreComponentKey, number>;
+  result: CompareResult;
+  evaluations: RotationEvaluation[];
+  origin: string;
+  generatedAt: Date;
+  scenario?: ScenarioInput | null;
+  resilience?: Resilience[] | null;
+  names?: Record<string, string>;
+  timeline?: CalendarTimeline | null;
+}
+
+export type Row = (string | number | null | undefined)[];
+
+export interface ReportModel {
+  title: string;
+  generated: string;
+  generatedIso: string;
+  origin: string;
+  scenario: string;
+  field: [string, string][];
+  priorities: [string, string][];
+  weights: string;
+  climate: [string, string][];
+  recommendation: { rotation: string; score: string; vsActual: string | null; why: string; benefits: string[]; risks: string[]; validate: string[]; note: string };
+  ranking: { headers: string[]; rows: Row[] };
+  explanations: { title: string; why: string; risks: string[] }[];
+  resilience: { headers: string[]; rows: Row[] } | null;
+  calendar: { title: string; campaigns: string[]; advice: string[] } | null;
+  assumptions: string[];
+  sources: string[];
+  warnings: string[];
+  disclaimer: string;
+}
+
+const fmtDate = (d: Date) => d.toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" });
+
+export function buildReportModel(i: ReportInput): ReportModel {
+  const { field, result, evaluations } = i;
+  const c = result.inputs.climate;
+  const best = evaluations[0];
+  const actual = evaluations.find((e) => e.rotation.strategy === "actual");
+  const names = i.names ?? Object.fromEntries(evaluations.map((e) => [e.rotation.id, rotationTitle(e.rotation)]));
+  const sm = result.inputs.soil_moisture;
+  const veg = result.inputs.vegetation;
+  const climate: [string, string][] = [
+    ["Período de referencia", `${c.period} (NASA POWER, ${c.origin_label})`],
+    ["Lluvia media", `${num(c.annual_precip_mm)} mm/año`],
+    ["Evapotranspiración de referencia (ET0)", `${num(c.annual_et0_mm)} mm/año`],
+    ["Índice de aridez", `${num(c.aridity_index, 2)} (zona ${ZONES[c.zone] ?? c.zone})`],
+    ["Variabilidad de la lluvia", c.precip_cv_pct == null ? "sin dato" : `${num(c.precip_cv_pct)} % entre años`],
+    ["Días con más de 35 °C", c.heat_days_per_year == null ? "sin dato" : `${num(c.heat_days_per_year)} por año`],
+  ];
+  if (c.scenario) climate.push(["Con el escenario", `${num(c.scenario_precip_mm)} mm de lluvia y ${num(c.scenario_et0_mm)} mm de ET0 al año`]);
+  climate.push(["Humedad del suelo (SMAP)", sm ? `${sm.anomaly_pct > 0 ? "+" : ""}${num(sm.anomaly_pct)} % frente a lo normal${sm.period ? ` (${sm.period})` : ""}` : "no disponible"]);
+  climate.push(["Vegetación (MODIS NDVI)", veg ? `${num(veg.bare_soil_fraction * 100)} % del tiempo con poca vegetación${veg.period ? ` (${veg.period})` : ""}` : "no disponible"]);
+
+  return {
+    title: `FieldShift · Plan de rotación: ${field.name}`,
+    generated: fmtDate(i.generatedAt),
+    generatedIso: i.generatedAt.toISOString(),
+    origin: i.origin,
+    scenario: i.scenario?.name ?? result.scenario?.name ?? "Año normal (clima promedio de los últimos 10 años)",
+    field: [
+      ["Nombre", field.name],
+      ["Superficie", `${num(field.area_ha)} ha`],
+      ["Ubicación", `${num(field.location.lat, 4)}, ${num(field.location.lon, 4)}`],
+      ["Riego", field.irrigated ? "Sí" : "No (secano)"],
+      ["Suelo", field.soil_profile?.texture ? SOIL_TEXTURES[field.soil_profile.texture] : "sin dato (se supuso franco arenosa)"],
+      ["Cultivo actual", result.inputs.current_crop ?? "sin dato"],
+      ["Historial", result.inputs.history.join(" > ") || "sin dato"],
+    ],
+    priorities: PRIORITY_KEYS.map((k) => [PRIORITY_META[k].label, `${i.ui[k]}/10`]),
+    weights: COMPONENT_ORDER.map((k) => `${COMPONENTS[k].name} ${num(i.weights[k] * 100)} %`).join(" · "),
+    climate,
+    recommendation: {
+      rotation: best ? `${rotationTitle(best.rotation)} (${STRATEGY_LABELS[best.rotation.strategy]})` : "—",
+      score: best ? `${num(best.score.total)} de 100 puntos (rango ${num(best.score.uncertainty_low)} a ${num(best.score.uncertainty_high)})` : "—",
+      vsActual: actual && best && actual.rotation.id !== best.rotation.id ? `Tu rotación actual obtiene ${num(actual.score.total)} puntos.` : actual ? "Tu rotación actual ya es la mejor con estas prioridades." : null,
+      why: best?.recommendation.why ?? "",
+      benefits: best?.recommendation.benefits ?? [],
+      risks: best?.recommendation.risks ?? [],
+      validate: best?.recommendation.evidence.needs_validation ?? [],
+      note: best?.recommendation.validation_note ?? "",
+    },
+    ranking: {
+      headers: ["Puesto", "Rotación", "Total", "Rango", ...COMPONENT_ORDER.map((k) => COMPONENTS[k].short), "Riesgo"],
+      rows: evaluations.map((e) => [
+        e.score.rank,
+        `${STRATEGY_LABELS[e.rotation.strategy]}: ${rotationTitle(e.rotation)}`,
+        num(e.score.total, 1),
+        `${num(e.score.uncertainty_low)}–${num(e.score.uncertainty_high)}`,
+        ...COMPONENT_ORDER.map((k) => num(e.score.components.find((x) => x.key === k)?.value)),
+        e.score.risk_level ? LEVEL_LABELS[e.score.risk_level] : "—",
+      ]),
+    },
+    explanations: evaluations.map((e) => ({ title: `${e.score.rank}. ${STRATEGY_LABELS[e.rotation.strategy]}: ${rotationTitle(e.rotation)}`, why: e.recommendation.why, risks: e.recommendation.risks })),
+    resilience: i.resilience?.length
+      ? {
+          headers: ["Rotación", "Promedio", "Peor puntaje", "Peor escenario", "Peor puesto", "Escenarios que gana", "Mayor caída"],
+          rows: i.resilience.map((r) => [names[r.id] ?? r.id, num(r.mean, 1), num(r.worst, 1), r.worstScenario, r.worstRank, r.wins, num(r.maxDrop, 1)]),
+        }
+      : null,
+    calendar: i.timeline
+      ? {
+          title: `${rotationTitle(i.timeline.rotation)}, ${i.timeline.campaigns.length} campañas (${timelineTotals(i.timeline).bare} meses de suelo desnudo en total)`,
+          campaigns: i.timeline.campaigns.map((c) => `${c.label}: ${c.months.filter((m) => m.stage === "siembra").map((m) => `${m.crop_name} se siembra en ${m.label}`).join("; ") || "sin siembras"}. ${campaignSummary(c)}.`),
+          advice: i.timeline.advice.map((a) => a.text),
+        }
+      : null,
+    assumptions: result.assumptions.map((a) => `${a.text}${a.source ? ` (${a.source})` : ""}${!a.validated && !a.source ? " — a validar" : ""}`),
+    sources: result.sources.map((s) => `${s.name} — ${s.provider}. ${s.spatial_resolution}, ${s.temporal_resolution}. ${s.citation}`),
+    warnings: friendlyWarnings(result.warnings),
+    disclaimer: DISCLAIMER,
+  };
+}
+
+/* ---------------------------------- CSV ---------------------------------- */
+
+const esc = (v: unknown): string => {
+  const s = v === null || v === undefined ? "" : String(v);
+  return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
+
+/** CSV por secciones (seccion, dato, valor), con BOM para que Excel respete los acentos. */
+export function reportCsv(m: ReportModel): string {
+  const rows: Row[] = [
+    [`# ${m.title}`],
+    [`# ${m.disclaimer}`],
+    ["# Generado", m.generatedIso],
+    ["# Origen de los datos", m.origin],
+    ["# Escenario", m.scenario],
+    [],
+    ["seccion", "dato", "valor"],
+    ...m.field.map(([k, v]) => ["campo", k, v]),
+    ...m.priorities.map(([k, v]) => ["prioridades", k, v]),
+    ["prioridades", "Peso de cada componente", m.weights],
+    ...m.climate.map(([k, v]) => ["clima", k, v]),
+    ["recomendacion", "Rotación", m.recommendation.rotation],
+    ["recomendacion", "Puntaje", m.recommendation.score],
+    ...(m.recommendation.vsActual ? [["recomendacion", "Frente a la actual", m.recommendation.vsActual]] : []),
+    ["recomendacion", "Por qué", m.recommendation.why],
+    ...m.recommendation.risks.map((r) => ["recomendacion", "Riesgo", r]),
+    ...m.recommendation.validate.map((r) => ["recomendacion", "A validar con el técnico", r]),
+    [],
+    m.ranking.headers,
+    ...m.ranking.rows,
+  ];
+  if (m.resilience) rows.push([], ["# Resistencia a los escenarios"], m.resilience.headers, ...m.resilience.rows);
+  if (m.calendar) rows.push([], ["calendario", "Rotación", m.calendar.title], ...m.calendar.campaigns.map((c) => ["calendario", "Campaña", c]), ...m.calendar.advice.map((a) => ["calendario", "Recomendación", a]));
+  rows.push(
+    [],
+    ...m.assumptions.map((a) => ["supuesto", a, ""]),
+    ...m.sources.map((s) => ["fuente", s, ""]),
+    ...m.warnings.map((w) => ["advertencia", w, ""]),
+    ["advertencia", m.disclaimer, ""],
+  );
+  return "﻿" + rows.map((r) => r.map(esc).join(",")).join("\n") + "\n";
+}
+
+/* ---------------------------------- PDF ---------------------------------- */
+
+/**
+ * Las fuentes estándar del PDF solo tienen caracteres latinos (Windows-1252): los demás se cambian por equivalentes
+ * para que no salgan símbolos raros. Acentos, ñ, °, ± y comillas latinas se mantienen.
+ */
+export function pdfSafe(text: string): string {
+  return text
+    .normalize("NFC")
+    .replace(/[→⇒]/g, "->")
+    .replace(/[←]/g, "<-")
+    .replace(/≥/g, ">=")
+    .replace(/≤/g, "<=")
+    .replace(/×/g, "x")
+    .replace(/[−–—]/g, "-")
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/…/g, "...")
+    .replace(/Σ/g, "Suma")
+    .replace(/ | /g, " ")
+    .replace(/[^\x09\x0A\x0D\x20-\x7E -ÿ]/g, "");
+}
+
+type JsPdf = import("jspdf").jsPDF;
+
+/** Arma el PDF (carga jsPDF bajo demanda para no inflar la página). */
+export async function reportPdf(m: ReportModel): Promise<JsPdf> {
+  const { jsPDF } = await import("jspdf");
+  const { autoTable } = await import("jspdf-autotable");
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const W = doc.internal.pageSize.getWidth();
+  const H = doc.internal.pageSize.getHeight();
+  const M = 15;
+  const green: [number, number, number] = [46, 104, 58];
+  let y = M;
+
+  const ensure = (h: number) => {
+    if (y + h > H - 18) {
+      doc.addPage();
+      y = M;
+    }
+  };
+  const para = (text: string, size = 10, style: "normal" | "bold" = "normal", gap = 1.5) => {
+    doc.setFont("helvetica", style);
+    doc.setFontSize(size);
+    const lines = doc.splitTextToSize(pdfSafe(text), W - 2 * M) as string[];
+    const lh = size * 0.42;
+    for (const line of lines) {
+      ensure(lh);
+      doc.text(line, M, y);
+      y += lh;
+    }
+    y += gap;
+  };
+  const heading = (text: string) => {
+    ensure(14);
+    y += 2;
+    doc.setTextColor(...green);
+    para(text, 13, "bold", 1);
+    doc.setTextColor(0, 0, 0);
+  };
+  const bullets = (items: string[], size = 9.5) => items.forEach((t) => para(`-  ${t}`, size, "normal", 0.6));
+  const table = (head: string[], body: Row[], opts: { first?: number } = {}) => {
+    autoTable(doc, {
+      startY: y,
+      head: [head.map(pdfSafe)],
+      body: body.map((r) => r.map((v) => pdfSafe(v === null || v === undefined ? "" : String(v)))),
+      margin: { left: M, right: M, bottom: 18 },
+      styles: { font: "helvetica", fontSize: 8.5, cellPadding: 1.6, overflow: "linebreak" },
+      headStyles: { fillColor: green, textColor: 255 },
+      alternateRowStyles: { fillColor: [244, 247, 244] },
+      columnStyles: opts.first ? { 0: { cellWidth: opts.first } } : undefined,
+    });
+    y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 4;
+  };
+  const kv = (rows: [string, string][]) => table(["Dato", "Valor"], rows, { first: 55 });
+
+  // Portada / encabezado
+  doc.setTextColor(...green);
+  para(m.title, 17, "bold", 1);
+  doc.setTextColor(90, 90, 90);
+  para(`Generado el ${m.generated} · Origen de los datos: ${m.origin}`, 9, "normal", 0.5);
+  para(`Escenario: ${m.scenario}`, 9, "normal", 2);
+  doc.setTextColor(0, 0, 0);
+  doc.setDrawColor(180, 120, 40);
+  doc.setFillColor(253, 246, 232);
+  const disc = doc.splitTextToSize(pdfSafe(`Importante: ${m.disclaimer}`), W - 2 * M - 6) as string[];
+  const boxH = disc.length * 4 + 5;
+  doc.roundedRect(M, y, W - 2 * M, boxH, 2, 2, "FD");
+  doc.setFontSize(9);
+  doc.text(disc, M + 3, y + 5);
+  y += boxH + 4;
+
+  heading("Recomendación");
+  para(m.recommendation.rotation, 11.5, "bold", 0.8);
+  para(m.recommendation.score, 10);
+  if (m.recommendation.vsActual) para(m.recommendation.vsActual, 10);
+  para(m.recommendation.why, 10);
+  if (m.recommendation.benefits.length) {
+    para("Ventajas", 10, "bold", 0.5);
+    bullets(m.recommendation.benefits);
+  }
+  if (m.recommendation.risks.length) {
+    para("Riesgos", 10, "bold", 0.5);
+    bullets(m.recommendation.risks);
+  }
+  if (m.recommendation.validate.length) {
+    para("Para revisar con el técnico", 10, "bold", 0.5);
+    bullets(m.recommendation.validate);
+  }
+  if (m.recommendation.note) para(m.recommendation.note, 9);
+
+  heading("Datos del campo");
+  kv(m.field);
+  heading("Prioridades del productor");
+  table(["Prioridad", "Valor"], m.priorities, { first: 120 });
+  para(`Peso de cada componente: ${m.weights}`, 9);
+  heading("Resumen climático");
+  kv(m.climate);
+  heading("Rotaciones comparadas y puntajes");
+  table(m.ranking.headers, m.ranking.rows, { first: 12 });
+  para(COMPONENT_ORDER.map((k) => `${COMPONENTS[k].short} = ${COMPONENTS[k].name}`).join(" · "), 8.5);
+  heading("Por qué cada una");
+  for (const e of m.explanations) {
+    para(e.title, 10, "bold", 0.5);
+    para(e.why, 9.5, "normal", 0.5);
+    if (e.risks.length) para(`Riesgos: ${e.risks.join(" ")}`, 9, "normal", 2);
+  }
+  if (m.resilience) {
+    heading("Resistencia a los escenarios climáticos");
+    table(m.resilience.headers, m.resilience.rows, { first: 60 });
+  }
+  if (m.calendar) {
+    heading("Calendario del plan");
+    para(m.calendar.title, 10, "bold");
+    bullets(m.calendar.campaigns);
+    if (m.calendar.advice.length) {
+      para("Recomendaciones del calendario", 10, "bold", 0.5);
+      bullets(m.calendar.advice);
+    }
+  }
+  heading("Supuestos");
+  bullets(m.assumptions, 9);
+  heading("Fuentes");
+  bullets(m.sources, 9);
+  heading("Advertencias");
+  bullets([...m.warnings, m.disclaimer], 9);
+
+  const pages = doc.getNumberOfPages();
+  for (let p = 1; p <= pages; p++) {
+    doc.setPage(p);
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.text(pdfSafe(`FieldShift · ${m.generated} · Herramienta de apoyo: no reemplaza a un ingeniero agrónomo`), M, H - 8);
+    doc.text(`${p} / ${pages}`, W - M, H - 8, { align: "right" });
+  }
+  return doc;
+}

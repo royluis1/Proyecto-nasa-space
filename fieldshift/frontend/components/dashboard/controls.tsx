@@ -4,23 +4,28 @@ import { Droplets } from "lucide-react";
 import { PriorityControls } from "@/components/field/priority-controls";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { STRATEGY_LABELS, rotationTitle } from "@/lib/format";
 import type { UiPriorities } from "@/lib/priorities";
-import { PRESET_SCENARIOS } from "@/lib/scenarios";
-import type { RotationEvaluation } from "@/types/api";
+import { GROUP_LABELS, GROUP_ORDER, IRRIGATION_LABELS, PRESET_SCENARIOS } from "@/lib/scenarios";
+import type { IrrigationLevel, RotationEvaluation } from "@/types/api";
 
 export const MAX_COMPARED = 4;
-/** El riego se elige con su propio interruptor. */
-const SCENARIO_OPTIONS = PRESET_SCENARIOS.filter((s) => s.id !== "con-riego");
+/** El riego se elige con su propio control. */
+const SCENARIO_OPTIONS = PRESET_SCENARIOS.filter((s) => s.group !== "riego");
+const IRRIGATION_HELP: Record<IrrigationLevel, string> = {
+  lote: "Se evalúa con el riego que tiene tu campo hoy.",
+  sin_riego: "Como si no pudieras regar: solo lluvia y el agua guardada en el suelo.",
+  limitado: "Con la mitad del agua de riego: cubre parte de lo que le falta al cultivo.",
+  disponible: "Con riego pleno. Se descuenta el costo del agua aplicada.",
+};
 
 interface Props {
   ui: UiPriorities;
   onUi: (p: UiPriorities) => void;
   scenarioId: string;
   onScenario: (id: string) => void;
-  irrigation: boolean;
-  onIrrigation: (v: boolean) => void;
+  irrigation: IrrigationLevel;
+  onIrrigation: (v: IrrigationLevel) => void;
   fieldIrrigated: boolean;
   demo: boolean;
   evaluations: RotationEvaluation[];
@@ -40,7 +45,11 @@ export function DashboardControls({ ui, onUi, scenarioId, onScenario, irrigation
       <section aria-labelledby="ctl-esc" className="space-y-2">
         <h3 id="ctl-esc" className="font-semibold">Escenario climático</h3>
         <Select aria-label="Elegir el escenario climático" value={scenarioId} onChange={(e) => onScenario(e.target.value)}>
-          {SCENARIO_OPTIONS.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+          {GROUP_ORDER.filter((g) => g !== "riego").map((g) => (
+            <optgroup key={g} label={GROUP_LABELS[g]}>
+              {SCENARIO_OPTIONS.filter((s) => s.group === g).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </optgroup>
+          ))}
         </Select>
         <p className="text-sm text-muted-foreground">{scenario?.help}</p>
         {demo && <p className="text-sm text-muted-foreground">Sin conexión solo están los escenarios predefinidos.</p>}
@@ -48,13 +57,13 @@ export function DashboardControls({ ui, onUi, scenarioId, onScenario, irrigation
 
       <section aria-labelledby="ctl-riego" className="space-y-2">
         <h3 id="ctl-riego" className="font-semibold">Disponibilidad de riego</h3>
-        <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
-          <Label htmlFor="dash-riego" className="flex items-center gap-2"><Droplets aria-hidden className="size-5" /> {fieldIrrigated ? "Tu campo tiene riego" : "Evaluar con riego"}</Label>
-          <Switch id="dash-riego" checked={fieldIrrigated || irrigation} disabled={fieldIrrigated} onCheckedChange={onIrrigation} />
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {fieldIrrigated ? "Se evalúa con el riego que ya tenés." : "Prendelo para ver cómo cambia el ranking si pudieras regar. Se descuenta el costo del agua aplicada."}
-        </p>
+        <Label htmlFor="dash-riego" className="flex items-center gap-2"><Droplets aria-hidden className="size-5" /> Agua de riego</Label>
+        <Select id="dash-riego" value={irrigation} onChange={(e) => onIrrigation(e.target.value as IrrigationLevel)}>
+          {(Object.keys(IRRIGATION_LABELS) as IrrigationLevel[]).map((k) => (
+            <option key={k} value={k}>{k === "lote" ? `${IRRIGATION_LABELS[k]} (${fieldIrrigated ? "con riego" : "secano"})` : IRRIGATION_LABELS[k]}</option>
+          ))}
+        </Select>
+        <p className="text-sm text-muted-foreground">{IRRIGATION_HELP[irrigation]}</p>
       </section>
 
       <section aria-labelledby="ctl-comp" className="space-y-2">

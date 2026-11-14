@@ -13,8 +13,9 @@ API de FieldShift para el NASA Space Apps Challenge 2026 (*Field Shift: Adapting
 | `POST /climate-summary` | **NASA POWER integrado**, con caché y fallback a muestra simulada |
 | `POST /soil-moisture`, `POST /vegetation-index` | **SMAP y MODIS NDVI**: AppEEARS (asincrónico), CSV o GeoTIFF cargado, caché y muestra |
 | `POST /rotations/compare`, `GET /rotations/{id}` | **Motor de rotaciones**: 7 estrategias, puntaje explicable A/S/R/I/E |
-| `POST /scenarios` | Ranking por escenario (lluvia, temperatura, año seco, riego) |
-| `GET /export/report` | JSON y CSV con ranking, explicaciones, fuentes y supuestos |
+| `GET /scenarios/presets`, `POST /scenarios` | **12 escenarios** (año normal, seco, lluvias intensas, olas de calor, lluvia -10/-20/-30 %, +1/+2 °C, sin riego, riego limitado, riego disponible): recalcula puntajes, ranking, riesgos, recomendación y explicaciones |
+| `POST /calendar` | **Calendario de 2 a 4 campañas** (julio a junio): siembra, desarrollo, cosecha, barbecho, cobertura, suelo desnudo, riesgo de calor y de déficit hídrico, y recomendaciones. Usa POWER, SMAP y NDVI |
+| `GET /export/report`, `POST /export/report` | JSON y CSV con campo, prioridades, resumen climático, rotaciones, puntajes, recomendación, resistencia a escenarios, supuestos, fuentes, advertencias y fecha. El PDF lo arma el frontend |
 
 Los datos de muestra (`app/data/fields.json` y `rotations.json`) son **ilustrativos**: coordenadas aproximadas, suelos y rotaciones de ejemplo. Lo creado con `POST` se guarda en memoria y se pierde al reiniciar.
 
@@ -124,6 +125,10 @@ Archivos editables: `app/data/crops.json` (catálogo) y `app/data/rotation_templ
 ## Configuración
 
 Todo por variables de entorno con prefijo `FIELDSHIFT_` (ver `.env.example`). No hay claves en el código; NASA POWER no requiere clave.
+
+Si NASA POWER no responde, el servidor no lo vuelve a intentar en vivo durante `FIELDSHIFT_POWER_COOLDOWN_S` segundos (5 minutos por defecto) y usa la caché o la muestra. Así cada pedido no espera todos los reintentos.
+
+Calendario, escenarios y reporte: ver [`docs/calendario_escenarios_reporte.md`](../docs/calendario_escenarios_reporte.md).
 
 ## Arquitectura
 

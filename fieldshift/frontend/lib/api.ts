@@ -3,11 +3,12 @@
  * errores normalizados y paso automático a datos de ejemplo si el servidor no responde.
  */
 import type {
-  ApiEnvelope, ApiResult, ClimateSummary, ClimateSummaryRequest, CompareRequest, CompareResult, Crop, FieldCreate, FieldOut,
+  ApiEnvelope, ApiResult, CalendarRequest, CalendarTimeline, ClimateSummary, ClimateSummaryRequest, CompareRequest, CompareResult, Crop, FieldCreate, FieldOut,
   ResponseMeta, ScenarioInput, ScenarioResult, SoilMoistureRequest, SoilMoistureSummary, VegetationRequest, VegetationSummary,
 } from "@/types/api";
 import { API_URL, DEMO_FALLBACK, REQUEST_TIMEOUT_MS } from "./config";
 import * as demo from "./demo";
+import { toRequest } from "./scenarios";
 import { getLocalField, isLocalId, listLocalFields, newLocalId, saveLocalField } from "./local-fields";
 import { DEMO_NOTICE } from "./content";
 import { ORIGIN_LABELS } from "./format";
@@ -218,9 +219,16 @@ export const api = {
   async scenarios(fieldId: string, scenarios: ScenarioInput[], priorities?: CompareRequest["priorities"], o: Opts = {}): Promise<ApiResult<ScenarioResult[]>> {
     if (isLocalId(fieldId)) return viaDemo(() => demo.demoScenarios(fieldId, scenarios));
     return call(
-      () => request<ScenarioResult[]>("/scenarios", { method: "POST", body: { field_id: fieldId, scenarios, priorities }, ...o }),
+      () => request<ScenarioResult[]>("/scenarios", { method: "POST", body: { field_id: fieldId, scenarios: scenarios.map(toRequest), priorities }, ...o }),
       () => demo.demoScenarios(fieldId, scenarios),
     );
+  },
+
+  async calendar(req: CalendarRequest, o: Opts = {}): Promise<ApiResult<CalendarTimeline>> {
+    const id = fieldIdOf(req);
+    if (isLocalId(id)) return viaDemo(() => demo.demoCalendar(id, req));
+    const body = { ...req, scenario: req.scenario ? toRequest(req.scenario) : null };
+    return call(() => request<CalendarTimeline>("/calendar", { method: "POST", body, ...o }), () => demo.demoCalendar(id, req));
   },
 
   async climate(req: ClimateSummaryRequest, o: Opts = {}): Promise<ApiResult<ClimateSummary>> {

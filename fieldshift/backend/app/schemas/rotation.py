@@ -20,6 +20,8 @@ from app.schemas.common import Assumption, DataSource, RiskFlag
 from app.schemas.field import Location
 from app.schemas.priority import Priorities
 
+P_LIMITED = 0.5  # = parameters.LIMITED_IRRIGATION_SHARE (sin importar el motor desde los esquemas)
+
 
 class RotationStep(BaseModel):
     crop_id: str
@@ -208,7 +210,21 @@ class ScenarioInput(BaseModel):
     rain_delta_pct: float = Field(default=0, ge=-50, le=30)
     temp_delta_c: float = Field(default=0, ge=0, le=3)
     dry_year: bool = Field(default=False, description="Usar el año más seco observado como análogo.")
-    irrigation: bool = Field(default=False, description="Evaluar como si el lote tuviera riego.")
+    irrigation: bool = Field(default=False, description="Compatibilidad: igual a irrigation_level='disponible'.")
+    irrigation_level: Literal["lote", "sin_riego", "limitado", "disponible"] = Field(
+        default="lote",
+        description="Riego del escenario: 'lote' = el del lote; 'sin_riego' = secano; 'limitado' = la mitad de la lámina; "
+        "'disponible' = riego pleno (80 % del déficit).",
+    )
+    heat_wave: bool = Field(default=False, description="Ola de calor en verano: +3 °C en la Tmax de dic-feb y +10 % de ET0.")
+    heavy_rain: bool = Field(default=False, description="Lluvias intensas: +35 % de lluvia de oct a mar, más erosión hídrica.")
+
+    def irrigation_share(self, field_irrigated: bool) -> float:
+        """Fracción del riego pleno que se aplica (0 = secano)."""
+        level = "disponible" if self.irrigation and self.irrigation_level == "lote" else self.irrigation_level
+        if level == "lote":
+            return 1.0 if field_irrigated else 0.0
+        return {"sin_riego": 0.0, "limitado": P_LIMITED, "disponible": 1.0}[level]
 
 
 class CompareRequest(BaseModel):

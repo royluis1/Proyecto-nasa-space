@@ -21,7 +21,7 @@ function Cell({ value, strong = false }: { value: number | null; strong?: boolea
 export function Heatmap({ evaluations, weights }: { evaluations: RotationEvaluation[]; weights: Weights }) {
   return (
     <div className="space-y-3">
-      <div className="overflow-x-auto">
+      <div className="relative overflow-x-auto">
         <table className="w-full min-w-[40rem] border-separate border-spacing-0 text-sm">
           <caption className="sr-only">Mapa de calor: puntaje de cada rotación en cada componente, de 0 a 100.</caption>
           <thead>

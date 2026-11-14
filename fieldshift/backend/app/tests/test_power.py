@@ -16,7 +16,7 @@ from app.services.et0 import compute_et0
 from app.services.power.cache import CacheEntry, PowerCache, make_key
 from app.services.power.parser import parse_power_json
 from app.services.power.sample import SampleProvider
-from app.services.power.service import PowerService, resolve_parameters
+from app.services.power.service import Cooldown, PowerService, resolve_parameters
 from app.services.power.units import normalize_units
 from app.tests.fixtures import power_response
 from app.utils.exceptions import NoDataError, UpstreamError
@@ -192,6 +192,22 @@ def test_respuesta_invalida_no_se_cachea(tmp_path):
     data = svc.get_daily(-33.85, -65.2, date(2018, 1, 1), date(2018, 1, 31), PARAMS)
     assert data.status == DataStatus.SAMPLE
     assert not list(tmp_path.glob("power_*.json"))
+
+
+def test_tras_una_falla_no_reintenta_en_vivo_durante_el_enfriamiento(tmp_path):
+    clock = {"now": NOW}
+    fetcher = FakeFetcher(error=UpstreamError("caído"))
+    cooldown = Cooldown(300)
+    svc = PowerService(fetcher, PowerCache(tmp_path, 24), SampleProvider(SAMPLE_CSV), now=lambda: clock["now"], cooldown=cooldown)
+    args = (-33.85, -65.2, date(2018, 1, 1), date(2018, 1, 31), PARAMS)
+    assert svc.get_daily(*args).status == DataStatus.SAMPLE and fetcher.calls == 1
+    second = svc.get_daily(*args)
+    assert fetcher.calls == 1 and second.status == DataStatus.SAMPLE
+    assert any("se vuelve a probar" in w for w in second.warnings)
+    clock["now"] = NOW + timedelta(seconds=301)
+    fetcher.error, fetcher.raw = None, power_response("2018-01-01", "2018-01-31")
+    assert svc.get_daily(*args).status == DataStatus.LIVE and fetcher.calls == 2
+    assert not cooldown.active(clock["now"])
 
 
 # ---------- ET0 ----------

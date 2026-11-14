@@ -22,7 +22,7 @@ export type FieldCreate = S["FieldCreate"];
 export type Boundary = S["Boundary"];
 export type Priorities = S["Priorities"];
 
-export type CompareRequest = Optional<S["CompareRequest"], "field_id">;
+export type CompareRequest = Omit<Optional<S["CompareRequest"], "field_id">, "scenario"> & { scenario?: ScenarioInput | null };
 export type CompareResult = S["CompareResult"];
 export type Rotation = S["Rotation"];
 export type RotationStep = S["RotationStep"];
@@ -37,9 +37,22 @@ export type Assumption = S["Assumption"];
 export type DataSource = S["DataSource"];
 export type Provenance = S["Provenance"];
 
-export type ScenarioInput = S["ScenarioInput"];
+/** Los campos nuevos (riego, ola de calor, lluvias intensas) tienen valor por defecto en el servidor. */
+export type ScenarioInput = Optional<S["ScenarioInput"], "id" | "name">;
+export type IrrigationLevel = S["ScenarioInput"]["irrigation_level"];
 export type ScenarioRequest = S["ScenarioRequest"];
 export type ScenarioResult = S["ScenarioResult"];
+export type ScenarioRotationNote = S["ScenarioRotationNote"];
+export type ScenarioPreset = S["ScenarioPreset"];
+
+export type CalendarRequest = Omit<Optional<S["CalendarRequest"], "field_id">, "scenario"> & { scenario?: ScenarioInput | null };
+export type CalendarTimeline = S["CalendarTimeline"];
+export type TimelineCampaign = S["TimelineCampaign"];
+export type TimelineMonth = S["TimelineMonth"];
+export type TimelineAdvice = S["TimelineAdvice"];
+
+export type Report = S["Report"];
+export type ScenarioResilience = S["ScenarioResilience"];
 
 export type ClimateSummary = S["ClimateSummary"];
 export type ClimateSummaryRequest = Optional<S["ClimateSummaryRequest"], "start_date" | "end_date">;

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { GLOSSARY, GLOSSARY_KEYS } from "@/lib/glossary";
-import { INDICATORS, contributions, describeScenario, favorAndPenalty, judge, withIrrigation } from "@/lib/dashboard";
+import { INDICATORS, contributions, describeScenario, favorAndPenalty, judge } from "@/lib/dashboard";
 import { demoCompare } from "@/lib/demo";
 import { componentWeights, toBackendPriorities, DEFAULT_UI_PRIORITIES } from "@/lib/priorities";
 import { friendlyWarning, friendlyWarnings, plain } from "@/lib/plain";
 import { rerank } from "@/lib/ranking";
-import { PRESET_SCENARIOS } from "@/lib/scenarios";
+import { PRESET_SCENARIOS, withIrrigationLevel } from "@/lib/scenarios";
 
 const W = componentWeights(toBackendPriorities(DEFAULT_UI_PRIORITIES));
 
@@ -87,42 +87,43 @@ describe("indicadores comparables", () => {
 });
 
 describe("escenario y riego", () => {
-  it("agregar riego a un escenario lo marca y lo renombra; si ya tiene riego, no cambia", () => {
-    const seco = PRESET_SCENARIOS.find((p) => p.id === "seco-20")!;
-    const r = withIrrigation(seco, true);
-    expect(r.irrigation).toBe(true);
-    expect(r.id).toBe("seco-20+riego");
-    expect(r.name).toMatch(/con riego/);
-    expect(withIrrigation(seco, false)).toBe(seco);
-    const conRiego = PRESET_SCENARIOS.find((p) => p.id === "con-riego")!;
-    expect(withIrrigation(conRiego, true)).toBe(conRiego);
+  it("cambiar el riego de un escenario lo marca y lo renombra; 'como está mi campo' no lo cambia", () => {
+    const seco = PRESET_SCENARIOS.find((p) => p.id === "lluvia-20")!;
+    const r = withIrrigationLevel(seco, "limitado");
+    expect(r.irrigation_level).toBe("limitado");
+    expect(r.id).toBe("lluvia-20+limitado");
+    expect(r.name).toMatch(/riego limitado/);
+    expect(withIrrigationLevel(seco, "lote").id).toBe("lluvia-20");
+    const conRiego = PRESET_SCENARIOS.find((p) => p.id === "riego-disponible")!;
+    expect(withIrrigationLevel(conRiego, "disponible").id).toBe("riego-disponible");
   });
   it("describe el escenario en palabras", () => {
-    const seco = PRESET_SCENARIOS.find((p) => p.id === "seco-20-calor-2")!;
+    const seco = { id: "x", name: "x", rain_delta_pct: -20, temp_delta_c: 2 };
     const t = describeScenario(seco, { rainMm: 711, scenarioRainMm: 569 })!;
     expect(t).toMatch(/llueve 20 % menos/);
-    expect(t).toMatch(/2,0 °C más/);
+    expect(t).toMatch(/2 °C más/);
     expect(t).toMatch(/569 mm/);
     expect(describeScenario(PRESET_SCENARIOS[0], { rainMm: 1, scenarioRainMm: 1 })).toBeNull();
+    expect(describeScenario(PRESET_SCENARIOS.find((p) => p.id === "olas-calor"), { rainMm: 1, scenarioRainMm: 1 })).toMatch(/olas de calor/);
   });
 });
 
 describe("modo demostración con escenario y riego", () => {
   it("un escenario predefinido cambia los puntajes y lo avisa", async () => {
     const base = (await demoCompare("campo-centro")).data;
-    const seco = await demoCompare("campo-centro", PRESET_SCENARIOS.find((p) => p.id === "seco-20-calor-2"));
+    const seco = await demoCompare("campo-centro", PRESET_SCENARIOS.find((p) => p.id === "lluvia-30"));
     const baseTotal = Object.fromEntries(base.evaluations.map((e) => [e.rotation.id, e.score.total]));
     expect(seco.data.evaluations.every((e) => (e.score.total ?? 0) < (baseTotal[e.rotation.id] ?? 0))).toBe(true);
-    expect(seco.data.scenario?.id).toBe("seco-20-calor-2");
+    expect(seco.data.scenario?.id).toBe("lluvia-30");
     expect(seco.meta.warnings.join(" ")).toMatch(/detalle de factores/);
     expect(seco.data.evaluations[0].score.components.every((c) => c.drivers.length > 0)).toBe(true);
   });
   it("con riego sube el puntaje de agua; una combinación sin precalcular vuelve al clima del período y avisa", async () => {
     const base = (await demoCompare("campo-centro")).data;
-    const riego = (await demoCompare("campo-centro", PRESET_SCENARIOS.find((p) => p.id === "con-riego"))).data;
+    const riego = (await demoCompare("campo-centro", PRESET_SCENARIOS.find((p) => p.id === "riego-disponible"))).data;
     const a = (r: typeof base) => r.evaluations.find((e) => e.rotation.strategy === "actual")!.score.components.find((c) => c.key === "A")!.value!;
     expect(a(riego)).toBeGreaterThan(a(base));
-    const combo = await demoCompare("campo-centro", { id: "x", name: "x", rain_delta_pct: -33, temp_delta_c: 1, dry_year: false, irrigation: true });
+    const combo = await demoCompare("campo-centro", { id: "x", name: "x", rain_delta_pct: -33, temp_delta_c: 1, irrigation_level: "disponible" });
     expect(combo.meta.warnings.join(" ")).toMatch(/solo hay escenarios predefinidos/);
     expect(combo.data.scenario).toBeNull();
   });

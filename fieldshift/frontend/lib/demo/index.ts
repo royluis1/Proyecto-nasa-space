@@ -3,9 +3,10 @@
  * Son SIMULADOS: clima, SMAP y NDVI de muestra. Se cargan bajo demanda para no inflar el bundle inicial.
  */
 import type {
-  ApiEnvelope, ClimateSummary, CompareResult, Crop, FieldOut, ResponseMeta, Rotation, ScenarioInput, ScenarioResult,
-  SoilMoistureSummary, VegetationSummary,
+  ApiEnvelope, CalendarRequest, CalendarTimeline, ClimateSummary, CompareResult, Crop, FieldOut, ResponseMeta, Rotation,
+  ScenarioInput, ScenarioResult, SoilMoistureSummary, VegetationSummary,
 } from "@/types/api";
+import { isBaseline, sameEffect } from "../scenarios";
 import { DEMO_NOTICE, DISCLAIMER } from "../content";
 import { ORIGIN_LABELS } from "../format";
 import { getLocalField, isLocalId, listLocalFields } from "../local-fields";
@@ -61,16 +62,9 @@ export async function demoCrops(): Promise<ApiEnvelope<Crop[]>> {
   return env(await load<Crop[]>("crops"));
 }
 
-/** Escenario predefinido que coincide con lo pedido (por id o por parámetros). */
+/** Escenario predefinido que coincide con lo pedido (por id o por su efecto). */
 function findPreset(all: ScenarioResult[], s: ScenarioInput): ScenarioResult | undefined {
-  return (
-    all.find((p) => p.scenario.id === s.id) ??
-    all.find(
-      (p) =>
-        p.scenario.rain_delta_pct === s.rain_delta_pct && p.scenario.temp_delta_c === s.temp_delta_c &&
-        p.scenario.dry_year === s.dry_year && p.scenario.irrigation === s.irrigation,
-    )
-  );
+  return all.find((p) => p.scenario.id === s.id) ?? all.find((p) => sameEffect(p.scenario, s));
 }
 
 /**
@@ -84,8 +78,7 @@ export async function demoCompare(fieldId: string, scenario?: ScenarioInput | nu
   const extra: string[] = note ? [note] : [];
   let applied: ScenarioInput | null = null;
 
-  const isBase = !scenario || (scenario.id === "base" && !scenario.irrigation && !scenario.rain_delta_pct && !scenario.temp_delta_c && !scenario.dry_year);
-  if (!isBase) {
+  if (!isBaseline(scenario)) {
     const preset = findPreset(await load<ScenarioResult[]>(`scenarios-${id}`), scenario!);
     if (preset) {
       applied = preset.scenario;
@@ -127,19 +120,55 @@ export async function demoVegetation(fieldId: string): Promise<ApiEnvelope<Veget
   return env(await load<VegetationSummary>(`vegetation-${id}`), note ? [note] : []);
 }
 
-export const DEMO_SCENARIOS: { id: string; name: string }[] = [
-  { id: "base", name: "Clima del período" },
-  { id: "seco-20", name: "Lluvia -20 %" },
-  { id: "calor-2", name: "+2 °C" },
-  { id: "seco-20-calor-2", name: "Lluvia -20 % y +2 °C" },
-  { id: "anio-seco", name: "Año más seco observado" },
-  { id: "con-riego", name: "Con riego" },
-];
-
 export async function demoScenarios(fieldId: string, requested: ScenarioInput[]): Promise<ApiEnvelope<ScenarioResult[]>> {
   const { id, note } = await exampleIdFor(fieldId);
   const all = await load<ScenarioResult[]>(`scenarios-${id}`);
-  const wanted = requested.map((r) => all.find((s) => s.scenario.id === r.id)).filter((s): s is ScenarioResult => Boolean(s));
+  const wanted = requested
+    .map((r) => {
+      const hit = findPreset(all, r);
+      return hit ? { ...hit, scenario: { ...hit.scenario, id: r.id, name: r.name } } : undefined;
+    })
+    .filter((s): s is ScenarioResult => Boolean(s));
   const extra = wanted.length < requested.length ? ["En modo demostración solo hay escenarios predefinidos: los demás no se calcularon."] : [];
   return env(wanted.length ? wanted : all, [...(note ? [note] : []), ...extra]);
+}
+
+/** Año de la primera campaña por defecto: la próxima que empieza en julio (igual que el backend). */
+export function nextCampaignYear(today = new Date()): number {
+  return today.getMonth() < 6 ? today.getFullYear() : today.getFullYear() + 1;
+}
+
+/** Corre los años de la línea de tiempo (etiquetas y textos) para que empiece en `first`. */
+export function shiftTimeline(tl: CalendarTimeline, first: number): CalendarTimeline {
+  const d = first - (tl.campaigns[0] ? Number(tl.campaigns[0].label.slice(0, 4)) : first);
+  if (!d) return tl;
+  const fix = (t: string) => t.replace(/\b(20\d\d)\b/g, (y) => String(Number(y) + d));
+  return {
+    ...tl,
+    campaigns: tl.campaigns.map((c) => ({
+      ...c,
+      label: `${Number(c.label.slice(0, 4)) + d}/${String(Number(c.label.slice(0, 4)) + d + 1).slice(-2)}`,
+      months: c.months.map((m) => ({ ...m, year: m.year + d, label: fix(m.label) })),
+    })),
+    advice: tl.advice.map((a) => ({ ...a, text: fix(a.text) })),
+  };
+}
+
+/**
+ * Calendario de ejemplo: está precalculado para el año normal y 4 campañas. Con otro escenario se avisa y se muestra
+ * el año normal.
+ */
+export async function demoCalendar(fieldId: string, req: CalendarRequest): Promise<ApiEnvelope<CalendarTimeline>> {
+  const { id, note } = await exampleIdFor(fieldId);
+  const all = await load<CalendarTimeline[]>(`calendar-${id}`);
+  const tl = all.find((t) => t.rotation.id === req.rotation_id) ?? all.find((t) => t.is_recommended) ?? all[0];
+  const n = Math.min(4, Math.max(2, req.campaigns ?? 3));
+  const extra = note ? [note] : [];
+  if (!isBaseline(req.scenario)) extra.push("En modo demostración el calendario está calculado solo para el año normal.");
+  const shifted = shiftTimeline({ ...tl, field_id: fieldId, campaigns: tl.campaigns.slice(0, n), scenario: null }, req.first_campaign_year ?? nextCampaignYear());
+  const campaigns = shifted.campaigns.map((c) => c.index);
+  return env(
+    { ...shifted, advice: shifted.advice.map((a) => ({ ...a, campaigns: a.campaigns.filter((c) => campaigns.includes(c)) })).filter((a) => a.campaigns.length) },
+    [...extra, ...tl.warnings],
+  );
 }

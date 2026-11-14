@@ -234,6 +234,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/scenarios/presets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Escenarios predefinidos
+         * @description Año normal, seco, con lluvias intensas y con olas de calor; lluvia -10, -20 y -30 %; +1 y +2 °C;
+         *     sin riego, con riego limitado y con riego disponible.
+         */
+        get: operations["scenario_presets_scenarios_presets_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/scenarios": {
         parameters: {
             query?: never;
@@ -245,11 +266,33 @@ export interface paths {
         put?: never;
         /**
          * Simular escenarios climáticos
-         * @description Recalcula el ranking bajo cada escenario (lluvia -50 a +30 %, temperatura 0 a +3 °C,
-         *     año seco análogo, riego). Las rotaciones son las mismas en todos los escenarios, así se
-         *     pueden comparar. Los escenarios son supuestos de sensibilidad, no proyecciones climáticas.
+         * @description Recalcula puntajes, ranking, riesgos, recomendación y explicaciones bajo cada escenario (lluvia -50 a
+         *     +30 %, temperatura 0 a +3 °C, año seco análogo, lluvias intensas, olas de calor y nivel de riego). Las
+         *     rotaciones son las mismas en todos los escenarios, así se pueden comparar. Son supuestos de sensibilidad,
+         *     no proyecciones climáticas.
          */
         post: operations["run_scenarios_scenarios_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Calendario agrícola de 2 a 4 campañas
+         * @description Mes a mes: siembra, desarrollo, cosecha, barbecho, cobertura del suelo, riesgo de golpe de calor
+         *     y de déficit hídrico, suelo desnudo y recomendaciones. Usa NASA POWER y, si están, SMAP y NDVI.
+         */
+        post: operations["calendar_calendar_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -265,11 +308,16 @@ export interface paths {
         };
         /**
          * Exportar reporte del lote
-         * @description Reporte con lote, rotaciones, ranking, explicaciones, fuentes, supuestos y advertencia.
+         * @description Reporte con campo, prioridades, resumen climático, rotaciones, puntajes, recomendación, supuestos,
+         *     fuentes, advertencias y fecha de generación. Con las prioridades guardadas del lote.
          */
         get: operations["export_report_export_report_get"];
         put?: never;
-        post?: never;
+        /**
+         * Exportar reporte con prioridades y escenario
+         * @description Igual que GET, pero con las prioridades y el escenario que se elijan, y la tabla de resistencia a escenarios.
+         */
+        post: operations["export_report_custom_export_report_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -306,6 +354,11 @@ export interface components {
             classification: ("seco" | "normal" | "húmedo") | null;
             /** Heat Stress */
             heat_stress: boolean;
+        };
+        /** ApiResponse[CalendarTimeline] */
+        ApiResponse_CalendarTimeline_: {
+            data: components["schemas"]["CalendarTimeline"];
+            meta: components["schemas"]["ResponseMeta"];
         };
         /** ApiResponse[ClimateSummary] */
         ApiResponse_ClimateSummary_: {
@@ -357,6 +410,12 @@ export interface components {
         ApiResponse_list_FieldOut__: {
             /** Data */
             data: components["schemas"]["FieldOut"][];
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[list[ScenarioPreset]] */
+        ApiResponse_list_ScenarioPreset__: {
+            /** Data */
+            data: components["schemas"]["ScenarioPreset"][];
             meta: components["schemas"]["ResponseMeta"];
         };
         /** ApiResponse[list[ScenarioResult]] */
@@ -414,6 +473,59 @@ export interface components {
                 number,
                 number
             ][][];
+        };
+        /** CalendarRequest */
+        CalendarRequest: {
+            /** Field Id */
+            field_id: string;
+            /**
+             * Rotation Id
+             * @description Por defecto, la recomendada para el escenario.
+             */
+            rotation_id?: string | null;
+            /**
+             * Campaigns
+             * @description Campañas (julio a junio) a mostrar.
+             * @default 3
+             */
+            campaigns: number;
+            /**
+             * First Campaign Year
+             * @description Año en que empieza la primera campaña. Por defecto, la próxima.
+             */
+            first_campaign_year?: number | null;
+            scenario?: components["schemas"]["ScenarioInput"] | null;
+            priorities?: components["schemas"]["Priorities"] | null;
+        };
+        /** CalendarTimeline */
+        CalendarTimeline: {
+            /** Field Id */
+            field_id: string;
+            rotation: components["schemas"]["Rotation"];
+            scenario: components["schemas"]["ScenarioInput"] | null;
+            /** Irrigated */
+            irrigated: boolean;
+            /** Campaigns */
+            campaigns: components["schemas"]["TimelineCampaign"][];
+            /** Advice */
+            advice: components["schemas"]["TimelineAdvice"][];
+            /** Recommended Rotation Id */
+            recommended_rotation_id: string;
+            /** Is Recommended */
+            is_recommended: boolean;
+            /** Score Total */
+            score_total: number | null;
+            /** Recommended Total */
+            recommended_total: number | null;
+            /**
+             * Data Used
+             * @description Qué datos NASA se usaron y de dónde salieron.
+             */
+            data_used: string[];
+            /** Assumptions */
+            assumptions: string[];
+            /** Warnings */
+            warnings: string[];
         };
         /** Campaign */
         Campaign: {
@@ -1483,6 +1595,13 @@ export interface components {
              */
             generated_at: string;
             field: components["schemas"]["FieldOut"];
+            priorities: components["schemas"]["Priorities"];
+            /** Weights */
+            weights: {
+                [key: string]: number;
+            };
+            climate: components["schemas"]["ClimateInputSummary"];
+            scenario?: components["schemas"]["ScenarioInput"] | null;
             /** Rotations */
             rotations: components["schemas"]["Rotation"][];
             /** Ranking */
@@ -1493,7 +1612,13 @@ export interface components {
             };
             /** Recommended Rotation Id */
             recommended_rotation_id: string;
+            recommendation: components["schemas"]["Recommendation"];
             confidence: components["schemas"]["Confidence"];
+            /**
+             * Resilience
+             * @default []
+             */
+            resilience: components["schemas"]["ScenarioResilience"][];
             /** Sources */
             sources: components["schemas"]["DataSource"][];
             /** Assumptions */
@@ -1502,6 +1627,25 @@ export interface components {
             warnings: string[];
             /** Disclaimer */
             disclaimer: string;
+        };
+        /** ReportRequest */
+        ReportRequest: {
+            /** Field Id */
+            field_id: string;
+            priorities?: components["schemas"]["Priorities"] | null;
+            /** @description Escenario del reporte. Por defecto, el año normal. */
+            scenario?: components["schemas"]["ScenarioInput"] | null;
+            /**
+             * Scenario Ids
+             * @description Escenarios predefinidos para la tabla de resistencia. [] = sin tabla; None = todos.
+             */
+            scenario_ids?: string[] | null;
+            /**
+             * Format
+             * @default json
+             * @enum {string}
+             */
+            format: "json" | "csv";
         };
         /** ResponseMeta */
         ResponseMeta: {
@@ -1778,10 +1922,40 @@ export interface components {
             dry_year: boolean;
             /**
              * Irrigation
-             * @description Evaluar como si el lote tuviera riego.
+             * @description Compatibilidad: igual a irrigation_level='disponible'.
              * @default false
              */
             irrigation: boolean;
+            /**
+             * Irrigation Level
+             * @description Riego del escenario: 'lote' = el del lote; 'sin_riego' = secano; 'limitado' = la mitad de la lámina; 'disponible' = riego pleno (80 % del déficit).
+             * @default lote
+             * @enum {string}
+             */
+            irrigation_level: "lote" | "sin_riego" | "limitado" | "disponible";
+            /**
+             * Heat Wave
+             * @description Ola de calor en verano: +3 °C en la Tmax de dic-feb y +10 % de ET0.
+             * @default false
+             */
+            heat_wave: boolean;
+            /**
+             * Heavy Rain
+             * @description Lluvias intensas: +35 % de lluvia de oct a mar, más erosión hídrica.
+             * @default false
+             */
+            heavy_rain: boolean;
+        };
+        /** ScenarioPreset */
+        ScenarioPreset: {
+            scenario: components["schemas"]["ScenarioInput"];
+            /**
+             * Group
+             * @enum {string}
+             */
+            group: "clima" | "eventos" | "lluvia" | "temperatura" | "riego";
+            /** Help */
+            help: string;
         };
         /** ScenarioRequest */
         ScenarioRequest: {
@@ -1790,6 +1964,32 @@ export interface components {
             /** Scenarios */
             scenarios: components["schemas"]["ScenarioInput"][];
             priorities?: components["schemas"]["Priorities"] | null;
+        };
+        /**
+         * ScenarioResilience
+         * @description Cómo aguanta una rotación los escenarios simulados.
+         */
+        ScenarioResilience: {
+            /** Rotation Id */
+            rotation_id: string;
+            /** Mean Total */
+            mean_total: number;
+            /** Worst Total */
+            worst_total: number;
+            /** Worst Scenario */
+            worst_scenario: string;
+            /** Worst Rank */
+            worst_rank: number;
+            /**
+             * Wins
+             * @description Escenarios en los que queda primera.
+             */
+            wins: number;
+            /**
+             * Max Drop
+             * @description Mayor caída de puntaje frente al año normal.
+             */
+            max_drop: number;
         };
         /** ScenarioResult */
         ScenarioResult: {
@@ -1802,10 +2002,36 @@ export interface components {
              */
             ranking: components["schemas"]["RotationScore"][];
             /**
+             * Rotations
+             * @description Riesgos y explicación de cada rotación en este escenario.
+             * @default []
+             */
+            rotations: components["schemas"]["ScenarioRotationNote"][];
+            /**
              * Warnings
              * @default []
              */
             warnings: string[];
+        };
+        /**
+         * ScenarioRotationNote
+         * @description Qué cambia para una rotación en el escenario: riesgos y explicación recalculados.
+         */
+        ScenarioRotationNote: {
+            /** Rotation Id */
+            rotation_id: string;
+            /** Summary */
+            summary: string;
+            /** Why */
+            why: string;
+            /** Risks */
+            risks: string[];
+            risk_level?: components["schemas"]["Level"] | null;
+            /**
+             * Risk Flags
+             * @default []
+             */
+            risk_flags: components["schemas"]["RiskFlag"][];
         };
         /** ScoreComponent */
         ScoreComponent: {
@@ -2073,6 +2299,112 @@ export interface components {
          * @enum {string}
          */
         SoilTexture: "arenosa" | "franco_arenosa" | "franca" | "franco_limosa" | "franco_arcillosa" | "arcillosa";
+        /** TimelineAdvice */
+        TimelineAdvice: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "cobertura" | "calor" | "agua" | "siembra" | "rotacion" | "datos";
+            severity: components["schemas"]["Level"];
+            /** Text */
+            text: string;
+            /**
+             * Campaigns
+             * @default []
+             */
+            campaigns: number[];
+        };
+        /** TimelineCampaign */
+        TimelineCampaign: {
+            /** Index */
+            index: number;
+            /**
+             * Label
+             * @example 2027/28
+             */
+            label: string;
+            /** Months */
+            months: components["schemas"]["TimelineMonth"][];
+            /** Covered Months */
+            covered_months: number;
+            /** Bare Months */
+            bare_months: number;
+            /**
+             * Heat Risk Months
+             * @description Meses con riesgo de calor alto.
+             */
+            heat_risk_months: number;
+            /**
+             * Water Risk Months
+             * @description Meses con riesgo hídrico alto.
+             */
+            water_risk_months: number;
+        };
+        /** TimelineMonth */
+        TimelineMonth: {
+            /**
+             * Index
+             * @description Posición en la línea de tiempo.
+             */
+            index: number;
+            /** Campaign */
+            campaign: number;
+            /** Year */
+            year: number;
+            /** Month */
+            month: number;
+            /**
+             * Label
+             * @example nov 2027
+             */
+            label: string;
+            /** Crop Id */
+            crop_id: string | null;
+            /** Crop Name */
+            crop_name: string | null;
+            /**
+             * Is Cover Crop
+             * @default false
+             */
+            is_cover_crop: boolean;
+            /**
+             * Stage
+             * @enum {string}
+             */
+            stage: "siembra" | "desarrollo" | "cosecha" | "barbecho";
+            /**
+             * Harvest Of
+             * @description Cultivo que se cosecha este mes si otro se siembra en el mismo mes.
+             */
+            harvest_of?: string | null;
+            /**
+             * Cover
+             * @description cultivo/cobertura = vivo; rastrojo = barbecho con residuo; desnudo = poco o nada de residuo.
+             * @enum {string}
+             */
+            cover: "cultivo" | "cobertura" | "rastrojo" | "desnudo";
+            /** Bare Soil */
+            bare_soil: boolean;
+            /** @description Riesgo de golpe de calor para el cultivo del mes (None en barbecho). */
+            heat_risk: components["schemas"]["Level"] | null;
+            /** @description Riesgo de déficit hídrico para el cultivo del mes (None en barbecho). */
+            water_risk: components["schemas"]["Level"] | null;
+            /**
+             * Heat Days Pct
+             * @description % de días con Tmax > 35 °C (NASA POWER, con el escenario).
+             */
+            heat_days_pct: number;
+            /** Precip Mm */
+            precip_mm: number;
+            /** Et0 Mm */
+            et0_mm: number;
+            /**
+             * Water Stress Pct
+             * @description Demanda no cubierta después del riego, % (None en barbecho).
+             */
+            water_stress_pct: number | null;
+        };
         /** Trend */
         Trend: {
             /** Slope Per Decade */
@@ -2876,6 +3208,26 @@ export interface operations {
             };
         };
     };
+    scenario_presets_scenarios_presets_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_list_ScenarioPreset__"];
+                };
+            };
+        };
+    };
     run_scenarios_scenarios_post: {
         parameters: {
             query?: never;
@@ -2918,18 +3270,105 @@ export interface operations {
             };
         };
     };
+    calendar_calendar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalendarRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_CalendarTimeline_"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     export_report_export_report_get: {
         parameters: {
             query: {
                 field_id: string;
-                /** @description El PDF llega en una fase posterior. */
+                /** @description El PDF lo arma el frontend con estos mismos datos. */
                 format?: "json" | "csv";
+                /** @description Sumar la tabla de resistencia a los 12 escenarios predefinidos. */
+                scenarios?: boolean;
             };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description JSON (por defecto) o CSV según `format`. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_Report_"];
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_report_custom_export_report_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportRequest"];
+            };
+        };
         responses: {
             /** @description JSON (por defecto) o CSV según `format`. */
             200: {

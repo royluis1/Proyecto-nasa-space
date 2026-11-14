@@ -72,7 +72,10 @@ class WaterBalance:
         return 1 - (self.unmet_mm_year - self.irrigation_mm_year) / self.demand_mm_year
 
 
-def water_balance(calendar: Calendar, climate: ClimateContext, soil: SoilContext, irrigated: bool) -> WaterBalance:
+def water_balance(
+    calendar: Calendar, climate: ClimateContext, soil: SoilContext, irrigated: bool, irrigation_share: float = 1.0
+) -> WaterBalance:
+    """irrigation_share: fracción del riego pleno (riego limitado = 0,5)."""
     n = calendar.n_months
     cap = soil.available_water_mm
     storage = P.INITIAL_STORAGE_FRACTION * cap
@@ -84,23 +87,23 @@ def water_balance(calendar: Calendar, climate: ClimateContext, soil: SoilContext
         stress = [0.0] * n
         for m in range(n):
             month = m % 12
-            rain = climate.precip[month]
+            rain, storm_useful = climate.useful_rain(month)
             i = calendar.owner[m]
             if i is None:
-                storage = min(cap, storage + soil.fallow_efficiency * rain)
+                storage = min(cap, storage + soil.fallow_efficiency * rain + storm_useful)
                 continue
             crop = calendar.steps[i].crop
             pos, length = calendar.position(i, m)
             kc = monthly_kc(pos, length, crop.kc.ini, crop.kc.mid, crop.kc.end) if crop.kc else 0.8
             need = kc * climate.et0[month]
-            pe = effective_rain(rain)
+            pe = effective_rain(rain) + storm_useful
             from_rain = min(need, pe)
             missing = need - from_rain
             from_storage = min(missing, storage)
             storage -= from_storage
             missing -= from_storage
             storage = min(cap, storage + P.CROP_EXCESS_STORAGE * (pe - from_rain))
-            irr = P.IRRIGATION_COVERAGE * missing if irrigated else 0.0
+            irr = P.IRRIGATION_COVERAGE * irrigation_share * missing if irrigated else 0.0
             demand[i] += need
             unmet[i] += missing
             irrigation[i] += irr

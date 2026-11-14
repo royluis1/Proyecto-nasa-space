@@ -15,9 +15,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
 
 from app.config import get_settings  # noqa: E402
-from app.schemas.rotation import CompareRequest, ScenarioInput  # noqa: E402
+from app.schemas.calendar import CalendarRequest  # noqa: E402
+from app.schemas.rotation import CompareRequest  # noqa: E402
 from app.schemas.satellite import SoilMoistureRequest, VegetationRequest  # noqa: E402
 from app.services.climate_summary import build_summary  # noqa: E402
+from app.services.engine.scenarios import PRESETS  # noqa: E402
 from app.services.engine.service import RotationService  # noqa: E402
 from app.services.power.cache import PowerCache  # noqa: E402
 from app.services.power.sample import SampleProvider  # noqa: E402
@@ -28,16 +30,6 @@ from app.services.satellite.service import SatelliteService  # noqa: E402
 from app.utils.exceptions import UpstreamError  # noqa: E402
 
 OUT = ROOT / "frontend" / "lib" / "demo" / "data"
-PRESETS = [
-    ScenarioInput(id="base", name="Clima del período"),
-    ScenarioInput(id="seco-20", name="Lluvia -20 %", rain_delta_pct=-20),
-    ScenarioInput(id="calor-2", name="+2 °C", temp_delta_c=2),
-    ScenarioInput(id="seco-20-calor-2", name="Lluvia -20 % y +2 °C", rain_delta_pct=-20, temp_delta_c=2),
-    ScenarioInput(id="anio-seco", name="Año más seco observado", dry_year=True),
-    ScenarioInput(id="con-riego", name="Con riego", irrigation=True),
-]
-
-
 def dump(obj) -> dict | list:
     if isinstance(obj, list):
         return [dump(x) for x in obj]
@@ -65,6 +57,7 @@ def main() -> None:
 
     write("fields.json", [dump(f) for f in repo.list_fields()])
     write("crops.json", [dump(c) for c in repo.list_crops()])
+    write("scenario-presets.json", [{"scenario": dump(p.scenario), "group": p.group, "help": p.help} for p in PRESETS])
     for field in repo.list_fields():
         fid = field.id
         compare, bundle = service.compare(CompareRequest(field_id=fid))
@@ -81,14 +74,22 @@ def main() -> None:
         write(f"vegetation-{fid}.json", dump(veg))
         results = []
         for preset in PRESETS:
-            res, _ = service.compare(CompareRequest(field_id=fid), preset)
+            res, _ = service.compare(CompareRequest(field_id=fid), preset.scenario)
             ranking = dump(res.ranking)
             for score in ranking:
                 for comp in score["components"]:
                     comp["drivers"] = []  # recorte: en escenarios solo importa el total y el desglose
-            results.append({"scenario": dump(preset), "recommended_rotation_id": res.recommended_rotation_id,
-                            "ranking": ranking, "warnings": []})
+            notes = [{"rotation_id": ev.rotation.id, "summary": ev.recommendation.summary, "why": ev.recommendation.why,
+                      "risks": ev.recommendation.risks, "risk_level": ev.score.risk_level, "risk_flags": []}
+                     for ev in res.evaluations]
+            results.append({"scenario": dump(preset.scenario), "recommended_rotation_id": res.recommended_rotation_id,
+                            "ranking": ranking, "rotations": dump(notes), "warnings": []})
         write(f"scenarios-{fid}.json", results)
+        timelines = []
+        for ev in compare.evaluations:
+            tl, _ = service.timeline(CalendarRequest(field_id=fid, rotation_id=ev.rotation.id, campaigns=4, first_campaign_year=2030))
+            timelines.append(dump(tl))
+        write(f"calendar-{fid}.json", timelines)
         write(f"rotations-{fid}.json", [dump(ev.rotation) for ev in compare.evaluations])
 
 

@@ -1,7 +1,7 @@
 import {
   AlertTriangle, Calculator, CircleHelp, Cpu, Database, Droplet, Eye, FlaskConical, Shapes, ShieldCheck, OctagonAlert,
   BatteryFull, BatteryLow, BatteryMedium, Snowflake, Store, Thermometer, Upload, WifiOff, Wind, Repeat, Shuffle, ClipboardList, Satellite,
-  Info, type LucideIcon,
+  Info, CloudRain, type LucideIcon,
 } from "lucide-react";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { CONFIDENCE_LABELS, LABEL_INFO, LEVEL_LABELS, ORIGIN_HELP, ORIGIN_LABELS, SEVERITY_LABELS } from "@/lib/format";
@@ -68,7 +68,7 @@ export function ConfidenceBadge({ level }: { level: Confidence }) {
 
 const FLAG_ICON: Record<string, LucideIcon> = {
   droplet: Droplet, thermometer: Thermometer, snowflake: Snowflake, wind: Wind, repeat: Repeat, shuffle: Shuffle, store: Store,
-  "clipboard-list": ClipboardList, "help-circle": CircleHelp, "alert-triangle": AlertTriangle,
+  "clipboard-list": ClipboardList, "help-circle": CircleHelp, "alert-triangle": AlertTriangle, "cloud-rain": CloudRain,
 };
 export const flagIcon = (name: string): LucideIcon => FLAG_ICON[name] ?? AlertTriangle;
 
