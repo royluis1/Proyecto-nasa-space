@@ -10,6 +10,8 @@ import { DISCLAIMER } from "@/lib/content";
 import { GLOSSARY, GLOSSARY_KEYS } from "@/lib/glossary";
 import { COMPONENTS, COMPONENT_ORDER, AGGREGATION_NOTE } from "@/lib/format";
 import { GROUPS, PRIORITY_META, type GroupKey } from "@/lib/priorities";
+import { SourceMap } from "@/components/sources/source-map";
+import { APPROACHES } from "@/lib/sources";
 import type { DataLabel } from "@/types/api";
 
 export const metadata: Metadata = { title: "Metodología y fuentes" };
@@ -40,6 +42,22 @@ const SOURCES: { name: string; label: DataLabel; what: string; res: string; use:
     res: "Píxeles de 250 m, un dato cada 16 días desde el año 2000.",
     use: "Cobertura vegetal, períodos de barbecho, tendencia de la biomasa y comparación entre campañas.",
     limits: "En lotes de menos de unas 25 ha mezcla a los vecinos. Las nubes dejan huecos. Mide verdor, no materia orgánica del suelo.",
+  },
+  {
+    name: "NASA SRTM (relieve)",
+    label: "observado",
+    what: "Altura del terreno medida por radar desde el transbordador espacial en el año 2000.",
+    res: "Píxeles de 30 m. Se descarga con una cuenta de NASA Earthdata.",
+    use: "Pendiente del lote y riesgo de erosión por agua en el puntaje de suelo.",
+    limits: "No ve cambios posteriores al 2000 ni microrrelieve; en montes puede medir la copa de los árboles.",
+  },
+  {
+    name: "Open-Meteo (pronóstico, no es NASA)",
+    label: "estimado",
+    what: "Pronóstico del tiempo de los próximos días: temperaturas, lluvia, viento y evaporación.",
+    res: "Celdas de 1 a 11 km según la zona, hasta 16 días.",
+    use: "Lluvia futura, alertas de helada, calor y tormentas, y el riego de la semana.",
+    limits: "Es un pronóstico: pierde precisión después de 3 a 5 días. No es un producto de la NASA.",
   },
   {
     name: "FAO (Kc, Ky, agua útil) y USDA (lluvia efectiva)",
@@ -145,6 +163,45 @@ export default function MetodologiaPage() {
             </CardContent>
           </Card>
         ))}
+      </section>
+
+      <section aria-labelledby="enfoques" className="space-y-3">
+        <h2 id="enfoques" className="text-2xl font-semibold">Tres enfoques</h2>
+        <div className="grid gap-4 md:grid-cols-3">
+          {APPROACHES.map((a) => (
+            <Card key={a.id}>
+              <CardHeader><CardTitle className="text-lg"><span aria-hidden>{a.icon} </span>{a.title}</CardTitle><CardDescription>{a.text}</CardDescription></CardHeader>
+              <CardContent><p className="text-sm">Pantallas: {a.pages.map((x) => x.label).join(", ")}.</p></CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="perfiles" className="space-y-3">
+        <h2 id="perfiles" className="text-2xl font-semibold">Fuentes según el perfil</h2>
+        <p>
+          NASA POWER se consulta en vivo (API pública, sin cuenta). Si no responde, se usa el último dato guardado y, si no hay, un
+          archivo de NASA POWER descargado antes (campo1.csv, datos reales). En POWER, -999 significa “sin dato”. Siempre se muestra la
+          fuente, la fecha de consulta y el tipo (modelado). El pronóstico es de Open-Meteo, que no es de la NASA: se aclara en pantalla.
+        </p>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="space-y-2"><h3 className="font-semibold">🥬 Huerta</h3><SourceMap profile="huerta" /></div>
+          <div className="space-y-2"><h3 className="font-semibold">🚜 Agricultor</h3><SourceMap profile="agricultor" /></div>
+        </div>
+      </section>
+
+      <section aria-labelledby="umbrales" className="space-y-3">
+        <h2 id="umbrales" className="text-2xl font-semibold">Cuándo se activa una alerta</h2>
+        <ul className="list-disc space-y-1 pl-5">
+          <li><strong>Helada:</strong> mínima pronosticada de 0 °C o menos (importante); de 0 a 2 °C, posible helada. Es la temperatura del aire a 2 m: en el suelo y en las hojas puede helar con 2 o 3 °C en el aire.</li>
+          <li><strong>Calor fuerte:</strong> máxima de 35 °C o más; importante desde 38 °C o con 3 días seguidos.</li>
+          <li><strong>Lluvia intensa:</strong> 30 mm o más en un día; importante desde 50 mm.</li>
+          <li><strong>Viento:</strong> ráfagas de 60 km/h o más.</li>
+          <li><strong>Falta de agua:</strong> menos de 5 mm de lluvia en los próximos 10 días con más de 30 mm de evaporación; importante si además el último mes llovió menos de la mitad de lo normal (NASA POWER).</li>
+          <li><strong>Suelo seco:</strong> humedad de suelo SMAP 20 % o más por debajo de lo normal para la época.</li>
+          <li><strong>Riego de la huerta:</strong> evaporación de referencia (ET0) de NASA POWER × 1,0 (huerta en producción) menos el 80 % de la lluvia. 1 mm = 1 litro por m².</li>
+          <li><strong>Fechas de heladas:</strong> última helada de primavera que 8 de cada 10 años ya pasó, y primera de otoño que 8 de cada 10 años todavía no llegó (NASA POWER, 10 años).</li>
+        </ul>
       </section>
 
       <section aria-labelledby="glosario" className="space-y-3">

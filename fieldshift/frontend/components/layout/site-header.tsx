@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BookOpen, Home, MapPinned, Sprout } from "lucide-react";
+import { ProfileChip } from "./profile-chip";
 import { ThemeToggle } from "./theme-toggle";
 
 const links = [
@@ -24,7 +25,10 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <ProfileChip />
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

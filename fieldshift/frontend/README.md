@@ -59,9 +59,12 @@ Si cambia la API, corré `npm run gen:api`: los tipos de `types/api.ts` salen de
 | Ruta | Pantalla |
 |---|---|
 | `/` | Inicio y onboarding |
+| `/ingresar` | Elegir perfil: Huerta o Agricultor (sin contraseña) |
 | `/campos` | Selección de campo (lista + mapa con los campos) |
 | `/campos/nuevo` | Cargar un campo: mapa + formulario |
 | `/campo/[id]/perfil` | Perfil del campo (editable) y las 11 prioridades |
+| `/campo/[id]/huerta` | Panel de huerta: riego, heladas, lluvia, calor, alertas |
+| `/campo/[id]/alertas` | Diagnóstico y alerta temprana (los dos perfiles) |
 | `/campo/[id]/diagnostico` | Diagnóstico climático e hídrico: clima, humedad del suelo y vegetación |
 | `/campo/[id]/dashboard` | Dashboard comparativo: ranking, gráficos, desglose, explicaciones, escenarios y exportación |
 | `/campo/[id]/comparador` | Ranking de rotaciones, que se recalcula al mover las prioridades |
@@ -130,7 +133,7 @@ La lógica de comparación está en `lib/dashboard.ts` (aportes, favorece/penali
 
 ## Tests
 
-`npm test` corre 107 tests de la lógica: prioridades, ranking en vivo, geometría del mapa, GeoJSON, calendario por campañas, escenarios y resistencia, reporte (CSV y PDF), exportación, comparación del dashboard, traducción de términos, datos de ejemplo y el cliente de API (reintentos, errores, paso a modo demostración, recuperación). Las pruebas de pantalla se hicieron con un navegador real (Playwright) contra el backend y sin él.
+`npm test` corre 120 tests de la lógica: prioridades, ranking en vivo, geometría del mapa, GeoJSON, calendario por campañas, escenarios y resistencia, reporte (CSV y PDF), exportación, comparación del dashboard, traducción de términos, datos de ejemplo y el cliente de API (reintentos, errores, paso a modo demostración, recuperación). Las pruebas de pantalla se hicieron con un navegador real (Playwright) contra el backend y sin él.
 
 ## Limitaciones conocidas
 

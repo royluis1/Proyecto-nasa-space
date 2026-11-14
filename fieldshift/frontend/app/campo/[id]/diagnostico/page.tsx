@@ -10,6 +10,7 @@ import {
 import { PageHeader } from "@/components/page-header";
 import { LabelBadge, OriginBadge, RiskLevelBadge } from "@/components/provenance/badges";
 import { TraceInfo } from "@/components/provenance/trace-info";
+import { SourceLine } from "@/components/provenance/source-line";
 import { WarningsList } from "@/components/provenance/warnings";
 import { Stat } from "@/components/stat";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +32,13 @@ function ClimateSection({ r }: { r: ApiResult<ClimateSummary> }) {
         <LabelBadge label="modelado" />
         <span className="text-sm text-muted-foreground">{c.source.provider} · {c.source.resolution}</span>
       </div>
+      <SourceLine
+        source={{
+          name: c.source.provider, is_nasa: true, kind: "modelado", retrieved_at: c.source.retrieved_at, origin: c.source.origin,
+          origin_label: c.source.origin_label, detail: c.source.sample_site ? `Archivo o sitio usado: ${c.source.sample_site}` : null,
+        }}
+        demo={r.demo}
+      />
       <p className="text-lg">
         En promedio llueven <strong>{num(wd.mean_annual_precip_mm)} mm por año</strong>, pero la atmósfera “pide” <strong>{num(wd.mean_annual_et0_mm)} mm</strong>. La diferencia es un
         déficit de agua de <strong>{num(wd.mean_annual_deficit_mm)} mm por año</strong>: en {pct(wd.months_with_deficit_pct)} de los meses se evapora más de lo que llueve.

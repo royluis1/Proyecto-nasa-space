@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { StartLink } from "@/components/layout/profile-chip";
+import { APPROACHES } from "@/lib/sources";
 import { cn } from "@/lib/utils";
 
 const steps = [
@@ -122,7 +124,7 @@ export default function HomePage() {
           </p>
           <div className="flex flex-wrap gap-3">
             <Button size="lg" asChild className="min-h-14 px-6 text-lg font-extrabold">
-              <Link href="/campos">📍 Elegir mi campo</Link>
+              <StartLink>📍 Empezar: huerta o campo</StartLink>
             </Button>
             <Button size="lg" variant="outline" asChild className="min-h-14 border-2 border-primary px-6 text-lg font-extrabold text-primary">
               <Link href="/campo/campo-centro/comparador">👀 Ver un ejemplo</Link>
@@ -146,6 +148,32 @@ export default function HomePage() {
             </li>
           ))}
         </ol>
+      </section>
+
+      {/* Tres enfoques */}
+      <section aria-labelledby="enfoques">
+        <h2 id="enfoques" className="text-3xl font-bold tracking-tight">Tres enfoques</h2>
+        <p className="mb-5 text-muted-foreground">Para huertas y para campos: elegís tu perfil y FieldShift te muestra lo que te sirve.</p>
+        <div className="grid gap-4 md:grid-cols-3">
+          {APPROACHES.map((a) => (
+            <article key={a.id} className="rounded-[1.25rem] border bg-card p-6">
+              <span aria-hidden className="text-4xl">{a.icon}</span>
+              <h3 className="mb-1 mt-2 text-xl font-bold">{a.title}</h3>
+              <p className="text-muted-foreground">{a.text}</p>
+              <p className="mt-2 text-sm">En la app: {a.pages.map((p) => p.label).join(", ")}.</p>
+            </article>
+          ))}
+        </div>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <div className="rounded-[1.25rem] border bg-secondary p-5">
+            <p className="text-lg font-bold"><span aria-hidden>🥬 </span>Huerta</p>
+            <p className="text-muted-foreground">Cuánto regar, cuándo hiela, lluvia pasada y futura, y alertas. Sin puntajes ni rotaciones: lo justo para la huerta.</p>
+          </div>
+          <div className="rounded-[1.25rem] border bg-secondary p-5">
+            <p className="text-lg font-bold"><span aria-hidden>🚜 </span>Agricultor</p>
+            <p className="text-muted-foreground">Rotaciones con puntaje, escenarios, calendario por campañas, relieve, alertas y reporte para el técnico.</p>
+          </div>
+        </div>
       </section>
 
       {/* Ejemplo visual */}

@@ -35,6 +35,7 @@ fieldshift/
 | Frontend y mapa | Hecho: [frontend/README.md](frontend/README.md) |
 | Dashboard comparativo | Hecho: `/campo/[id]/dashboard` |
 | Calendario, escenarios y reporte | Hecho: [guía de uso](docs/calendario_escenarios_reporte.md) |
+| Perfiles Huerta y Agricultor, pronóstico y alerta temprana | Hecho: [perfiles_y_alertas.md](docs/perfiles_y_alertas.md). GPM/IMERG, Landsat y ECOSTRESS, próximamente |
 
 El plan completo está en [docs/plan.md](docs/plan.md).
 

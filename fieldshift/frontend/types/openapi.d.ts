@@ -340,6 +340,69 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/forecast": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pronóstico (Open-Meteo, no es NASA)
+         * @description Temperaturas, lluvia, probabilidad de lluvia, ET0 y viento de los próximos días. Fuente: Open-Meteo, que NO es un
+         *     producto de la NASA; se aclara en la respuesta.
+         */
+        post: operations["forecast_forecast_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Diagnóstico y alerta temprana
+         * @description Heladas, calor fuerte, lluvia intensa, viento, falta de agua y suelo seco, con mensajes según el perfil
+         *     (huerta o agricultor). Usa NASA POWER (lluvia reciente y clima), Open-Meteo (pronóstico) y NASA SMAP.
+         */
+        post: operations["alerts_alerts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/huerta": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Panel de huerta
+         * @description Heladas (fechas típicas), cuánto regar (NASA POWER), calor, lluvia pasada (NASA POWER) y futura (Open-Meteo),
+         *     verdor de la zona (MODIS) y alertas, en lenguaje simple.
+         */
+        post: operations["huerta_huerta_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/export/report": {
         parameters: {
             query?: never;
@@ -369,6 +432,66 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** Alert */
+        Alert: {
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "helada" | "calor" | "lluvia_intensa" | "falta_de_agua" | "suelo_seco" | "viento";
+            severity: components["schemas"]["Severity"];
+            /** Title */
+            title: string;
+            /** Message */
+            message: string;
+            /** Start */
+            start?: string | null;
+            /** End */
+            end?: string | null;
+            /**
+             * Source
+             * @description De dónde sale: Open-Meteo (pronóstico), NASA POWER, NASA SMAP.
+             */
+            source: string;
+        };
+        /** AlertsRequest */
+        AlertsRequest: {
+            /** Field Id */
+            field_id?: string | null;
+            /** Latitude */
+            latitude?: number | null;
+            /** Longitude */
+            longitude?: number | null;
+            /**
+             * Profile
+             * @default agricultor
+             * @enum {string}
+             */
+            profile: "huerta" | "agricultor";
+        };
+        /** AlertsResult */
+        AlertsResult: {
+            /**
+             * Profile
+             * @enum {string}
+             */
+            profile: "huerta" | "agricultor";
+            /** Alerts */
+            alerts: components["schemas"]["Alert"][];
+            forecast: components["schemas"]["Forecast"] | null;
+            past_rain: components["schemas"]["RainSummary"] | null;
+            /**
+             * Future Rain Mm
+             * @description Lluvia pronosticada para los próximos días (Open-Meteo).
+             */
+            future_rain_mm: number | null;
+            /** Sources */
+            sources: components["schemas"]["SourceInfo"][];
+            /** Warnings */
+            warnings: string[];
+        };
         /** AnnualRecord */
         AnnualRecord: {
             /** Year */
@@ -395,6 +518,11 @@ export interface components {
             classification: ("seco" | "normal" | "húmedo") | null;
             /** Heat Stress */
             heat_stress: boolean;
+        };
+        /** ApiResponse[AlertsResult] */
+        ApiResponse_AlertsResult_: {
+            data: components["schemas"]["AlertsResult"];
+            meta: components["schemas"]["ResponseMeta"];
         };
         /** ApiResponse[CalendarTimeline] */
         ApiResponse_CalendarTimeline_: {
@@ -424,6 +552,16 @@ export interface components {
         /** ApiResponse[FieldOut] */
         ApiResponse_FieldOut_: {
             data: components["schemas"]["FieldOut"];
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[Forecast] */
+        ApiResponse_Forecast_: {
+            data: components["schemas"]["Forecast"];
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[HuertaPanel] */
+        ApiResponse_HuertaPanel_: {
+            data: components["schemas"]["HuertaPanel"];
             meta: components["schemas"]["ResponseMeta"];
         };
         /** ApiResponse[Report] */
@@ -1316,6 +1454,76 @@ export interface components {
              */
             sample_note?: string | null;
         };
+        /** Forecast */
+        Forecast: {
+            /** Latitude */
+            latitude: number;
+            /** Longitude */
+            longitude: number;
+            /** Timezone */
+            timezone: string | null;
+            /** Days */
+            days: components["schemas"]["ForecastDay"][];
+            source: components["schemas"]["SourceInfo"];
+        };
+        /** ForecastDay */
+        ForecastDay: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Tmax C */
+            tmax_c: number | null;
+            /** Tmin C */
+            tmin_c: number | null;
+            /** Precip Mm */
+            precip_mm: number | null;
+            /** Precip Probability Pct */
+            precip_probability_pct?: number | null;
+            /**
+             * Et0 Mm
+             * @description Evapotranspiración de referencia FAO-56 calculada por Open-Meteo.
+             */
+            et0_mm?: number | null;
+            /** Wind Max Kmh */
+            wind_max_kmh?: number | null;
+        };
+        /** ForecastRequest */
+        ForecastRequest: {
+            /** Field Id */
+            field_id?: string | null;
+            /** Latitude */
+            latitude?: number | null;
+            /** Longitude */
+            longitude?: number | null;
+            /**
+             * Days
+             * @default 10
+             */
+            days: number;
+        };
+        /** FrostInfo */
+        FrostInfo: {
+            /** Frost Days Per Year */
+            frost_days_per_year: number | null;
+            /**
+             * Frost Months
+             * @description Meses con heladas en al menos 1 de cada 5 años.
+             */
+            frost_months: number[];
+            /**
+             * Last Frost Typical
+             * @description Fecha típica de la última helada de la primavera (día/mes, 8 de cada 10 años antes).
+             */
+            last_frost_typical: string | null;
+            /**
+             * First Frost Typical
+             * @description Fecha típica de la primera helada del otoño (día/mes, 8 de cada 10 años después).
+             */
+            first_frost_typical: string | null;
+            source: components["schemas"]["SourceInfo"];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1329,6 +1537,19 @@ export interface components {
             environment: string;
             /** Version */
             version: string;
+        };
+        /** HeatInfo */
+        HeatInfo: {
+            /** Hot Days Per Year */
+            hot_days_per_year: number | null;
+            /** Hot Months */
+            hot_months: number[];
+            /**
+             * Next Hot Days
+             * @description Días con más de 35 °C en el pronóstico.
+             */
+            next_hot_days: number;
+            source: components["schemas"]["SourceInfo"];
         };
         /** HeatSummary */
         HeatSummary: {
@@ -1344,6 +1565,31 @@ export interface components {
             /** Heat Stress Years */
             heat_stress_years: number[];
         };
+        /** HuertaPanel */
+        HuertaPanel: {
+            /** Field Id */
+            field_id: string | null;
+            /** Name */
+            name: string | null;
+            /** Latitude */
+            latitude: number;
+            /** Longitude */
+            longitude: number;
+            frost: components["schemas"]["FrostInfo"];
+            irrigation: components["schemas"]["IrrigationInfo"];
+            heat: components["schemas"]["HeatInfo"];
+            past_rain: components["schemas"]["RainSummary"] | null;
+            forecast: components["schemas"]["Forecast"] | null;
+            vegetation: components["schemas"]["VegetationInfo"] | null;
+            /** Alerts */
+            alerts: components["schemas"]["Alert"][];
+            /** Tips */
+            tips: string[];
+            /** Sources */
+            sources: components["schemas"]["SourceInfo"][];
+            /** Warnings */
+            warnings: string[];
+        };
         /** Impact */
         Impact: {
             direction: components["schemas"]["ImpactDirection"];
@@ -1356,6 +1602,31 @@ export interface components {
          * @enum {string}
          */
         ImpactDirection: "mejora" | "neutro" | "empeora" | "linea_base";
+        /** IrrigationInfo */
+        IrrigationInfo: {
+            /**
+             * Weekly L Per M2
+             * @description Agua a reponer por semana en esta época (NASA POWER, promedio de 10 años; 1 mm = 1 litro por m²).
+             */
+            weekly_l_per_m2: number;
+            /**
+             * With Forecast L Per M2
+             * @description Lo mismo para los próximos 7 días, con la lluvia y la ET0 pronosticadas.
+             */
+            with_forecast_l_per_m2?: number | null;
+            /** Daily L Per M2 */
+            daily_l_per_m2: number;
+            /**
+             * Basis
+             * @description Cómo se calculó.
+             */
+            basis: string;
+            /** Et0 Weekly Mm */
+            et0_weekly_mm: number;
+            /** Rain Weekly Mm */
+            rain_weekly_mm: number;
+            source: components["schemas"]["SourceInfo"];
+        };
         /**
          * KcValues
          * @description Coeficientes de cultivo tipo FAO-56 (inicial, medio, final).
@@ -1496,6 +1767,15 @@ export interface components {
             /** Missing Days */
             missing_days: number;
         };
+        /** PlaceRequest */
+        PlaceRequest: {
+            /** Field Id */
+            field_id?: string | null;
+            /** Latitude */
+            latitude?: number | null;
+            /** Longitude */
+            longitude?: number | null;
+        };
         /**
          * PowerParameter
          * @description Parámetros diarios de NASA POWER admitidos por FieldShift.
@@ -1600,6 +1880,25 @@ export interface components {
              * @default []
              */
             warnings: string[];
+        };
+        /** RainSummary */
+        RainSummary: {
+            /** Days */
+            days: number;
+            /** Total Mm */
+            total_mm: number | null;
+            /**
+             * Normal Mm
+             * @description Lo normal para esas fechas (NASA POWER, promedio de 10 años).
+             */
+            normal_mm: number | null;
+            /** Pct Of Normal */
+            pct_of_normal: number | null;
+            /** Start */
+            start: string | null;
+            /** End */
+            end: string | null;
+            source: components["schemas"]["SourceInfo"];
         };
         /** Range */
         Range: {
@@ -2362,6 +2661,31 @@ export interface components {
          * @enum {string}
          */
         SoilTexture: "arenosa" | "franco_arenosa" | "franca" | "franco_limosa" | "franco_arcillosa" | "arcillosa";
+        /**
+         * SourceInfo
+         * @description Lo que se muestra en pantalla de cada dato: fuente, fecha de consulta y tipo.
+         */
+        SourceInfo: {
+            /**
+             * Name
+             * @example NASA POWER
+             */
+            name: string;
+            /** Is Nasa */
+            is_nasa: boolean;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "modelado" | "observado" | "pronóstico" | "estimado" | "supuesto";
+            /** Retrieved At */
+            retrieved_at: string | null;
+            origin?: components["schemas"]["DataStatus"] | null;
+            /** Origin Label */
+            origin_label?: string | null;
+            /** Detail */
+            detail?: string | null;
+        };
         /** TerrainRequest */
         TerrainRequest: {
             /** Field Id */
@@ -2612,6 +2936,16 @@ export interface components {
             max: components["schemas"]["Extreme"];
             /** Units */
             units: string;
+        };
+        /** VegetationInfo */
+        VegetationInfo: {
+            /** Mean Ndvi */
+            mean_ndvi: number | null;
+            /** Cover Pct */
+            cover_pct: number | null;
+            /** Text */
+            text: string;
+            source: components["schemas"]["SourceInfo"];
         };
         /**
          * VegetationInput
@@ -3510,6 +3844,159 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_EarthdataStatus_"];
+                };
+            };
+        };
+    };
+    forecast_forecast_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForecastRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_Forecast_"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    alerts_alerts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AlertsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_AlertsResult_"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    huerta_huerta_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlaceRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_HuertaPanel_"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

@@ -1,6 +1,7 @@
 """Orquestación de NASA POWER con fallback.
 
-Orden: caché vigente -> POWER en vivo -> caché vencida -> muestra simulada -> error 503.
+Orden: caché vigente -> POWER en vivo -> caché vencida -> archivo CSV de POWER descargado antes (por ejemplo
+campo1.csv, datos reales) -> muestra simulada -> error 503.
 """
 
 import logging
@@ -12,6 +13,7 @@ import pandas as pd
 
 from app.models.enums import DataStatus
 from app.services.power.cache import PowerCache, make_key
+from app.services.power.file_source import PowerFileProvider
 from app.services.power.parser import parse_power_json
 from app.services.power.sample import SampleProvider
 from app.services.power.units import normalize_units
@@ -76,12 +78,14 @@ class PowerService:
         samples: SampleProvider,
         now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
         cooldown: Cooldown | None = None,
+        files: PowerFileProvider | None = None,
     ) -> None:
         self.fetcher = fetcher
         self.cache = cache
         self.samples = samples
         self.now = now
         self.cooldown = cooldown
+        self.files = files
 
     def get_daily(
         self, lat: float, lon: float, start: date, end: date, params: list[str], community: str = "AG"
@@ -112,6 +116,28 @@ class PowerService:
             return self._from_raw(
                 entry.raw, params, DataStatus.CACHED, entry.fetched_at,
                 [f"NASA POWER no respondió ({reason}). Se usan datos cacheados del {entry.fetched_at:%Y-%m-%d}."],
+            )
+
+        found = self.files.get(lat, lon, start, end, params) if self.files else None
+        if found:
+            pf, df = found
+            warnings = [
+                f"NASA POWER no respondió ({reason}).",
+                f"Se usa el archivo de NASA POWER '{pf.name}' (descargado antes, punto {pf.lat}, {pf.lon}): son datos reales "
+                f"de POWER del {pf.df.index.min():%Y-%m-%d} al {pf.df.index.max():%Y-%m-%d}.",
+            ]
+            if df.index.min() > pd.Timestamp(start) or df.index.max() < pd.Timestamp(end):
+                warnings.append(f"El archivo solo cubre {df.index.min():%Y-%m-%d} a {df.index.max():%Y-%m-%d} del período pedido.")
+            return ClimateData(
+                df=df,
+                units=self.samples.units(params),
+                longnames={p: p for p in params},
+                missing={p: int(df[p].isna().sum()) for p in params},
+                status=DataStatus.UPLOADED,
+                retrieved_at=datetime.fromtimestamp(pf.path.stat().st_mtime, timezone.utc),
+                elevation_m=pf.elevation_m,
+                sample_site=pf.name,
+                warnings=warnings,
             )
 
         sample = self.samples.get(lat, lon, start, end, params)

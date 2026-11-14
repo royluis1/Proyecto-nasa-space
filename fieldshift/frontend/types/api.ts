@@ -62,6 +62,13 @@ export type VegetationSummary = S["VegetationSummary"];
 export type VegetationRequest = Optional<S["VegetationRequest"]>;
 export type DataTrace = S["DataTrace"];
 export type TerrainSummary = S["TerrainSummary"];
+export type Forecast = S["Forecast"];
+export type ForecastDay = S["ForecastDay"];
+export type SourceInfo = S["SourceInfo"];
+export type Alert = S["Alert"];
+export type AlertsResult = S["AlertsResult"];
+export type RainSummary = S["RainSummary"];
+export type HuertaPanel = S["HuertaPanel"];
 export type TerrainRequest = Optional<S["TerrainRequest"]>;
 
 export type ResponseMeta = S["ResponseMeta"];

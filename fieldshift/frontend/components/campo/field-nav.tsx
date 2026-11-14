@@ -2,12 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, CalendarDays, CloudSun, FileText, Layers, LayoutDashboard, UserRound } from "lucide-react";
+import { BarChart3, BellRing, CalendarDays, CloudSun, FileText, Layers, LayoutDashboard, Sprout, UserRound } from "lucide-react";
+import { useProfile } from "@/hooks/use-profile";
 import { cn } from "@/lib/utils";
+
+const huertaSteps = [
+  { slug: "huerta", label: "Mi huerta", icon: Sprout },
+  { slug: "alertas", label: "Alertas", icon: BellRing },
+  { slug: "diagnostico", label: "Clima y satélites", icon: CloudSun },
+];
 
 const steps = [
   { slug: "perfil", label: "Perfil y prioridades", icon: UserRound },
   { slug: "diagnostico", label: "Diagnóstico", icon: CloudSun },
+  { slug: "alertas", label: "Alertas", icon: BellRing },
   { slug: "comparador", label: "Comparador", icon: BarChart3 },
   { slug: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { slug: "calendario", label: "Calendario", icon: CalendarDays },
@@ -17,10 +25,12 @@ const steps = [
 
 export function FieldNav({ fieldId }: { fieldId: string }) {
   const pathname = usePathname();
+  const profile = useProfile();
+  const items = profile === "huerta" ? huertaSteps : steps;
   return (
     <nav aria-label="Pasos del campo" className="-mx-1 overflow-x-auto pb-1 print:hidden">
       <ol className="flex min-w-max gap-1 px-1">
-        {steps.map(({ slug, label, icon: Icon }, i) => {
+        {items.map(({ slug, label, icon: Icon }, i) => {
           const href = `/campo/${fieldId}/${slug}`;
           const current = pathname === href || (slug === "comparador" && pathname.startsWith(`${href}`)) || (slug === "comparador" && pathname.includes("/rotacion/"));
           return (

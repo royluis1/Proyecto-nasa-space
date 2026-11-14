@@ -23,7 +23,10 @@ from app.services.engine.scenarios import PRESETS  # noqa: E402
 from app.services.engine.service import RotationService  # noqa: E402
 from app.services.power.cache import PowerCache  # noqa: E402
 from app.services.power.sample import SampleProvider  # noqa: E402
+from app.services.power.file_source import PowerFileProvider  # noqa: E402
 from app.services.power.service import PowerService, resolve_parameters  # noqa: E402
+from app.services.early_warning import EarlyWarningService  # noqa: E402
+from app.services.forecast.open_meteo import ForecastService  # noqa: E402
 from app.services.repository import Repository  # noqa: E402
 from app.services.satellite.provider import SatelliteProvider  # noqa: E402
 from app.services.satellite.service import SatelliteService  # noqa: E402
@@ -51,7 +54,8 @@ def main() -> None:
         raise UpstreamError("modo sin red")
 
     repo = Repository(s.data_dir)
-    power = PowerService(failing, PowerCache(Path(tempfile.mkdtemp()), 24), SampleProvider(s.nasa_samples_dir / s.power_sample_file))
+    power = PowerService(failing, PowerCache(Path(tempfile.mkdtemp()), 24), SampleProvider(s.nasa_samples_dir / s.power_sample_file),
+                         files=PowerFileProvider([s.nasa_samples_dir / n for n in s.power_fallback_files]))
     samples = {"SPL4SMGP_rootzone": s.nasa_samples_dir / s.smap_sample_file, "MOD13Q1": s.nasa_samples_dir / s.ndvi_sample_file}
     satellite = SatelliteService(repo, SatelliteProvider(Path(tempfile.mkdtemp()), samples))
     terrain = TerrainProvider(Path(tempfile.mkdtemp()), s.nasa_samples_dir / s.srtm_sample_file)  # sin credenciales: muestra
@@ -74,6 +78,10 @@ def main() -> None:
         write(f"soil-moisture-{fid}.json", dump(sm))
         veg, _ = satellite.vegetation(VegetationRequest(field_id=fid))
         write(f"vegetation-{fid}.json", dump(veg))
+        ews = EarlyWarningService(repo, power, ForecastService(None), satellite)  # sin red: sin pronóstico
+        write(f"huerta-{fid}.json", dump(ews.huerta(field_id=fid)))
+        for profile in ("huerta", "agricultor"):
+            write(f"alerts-{fid}-{profile}.json", dump(ews.alerts(profile, field_id=fid)))
         relief, _ = terrain_for_field(terrain, field)
         write(f"terrain-{fid}.json", dump(relief))
         results = []

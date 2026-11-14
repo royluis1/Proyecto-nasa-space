@@ -1,0 +1,35 @@
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { num } from "@/lib/format";
+import type { Forecast } from "@/types/api";
+
+const dayName = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString("es-AR", { weekday: "short", day: "numeric", month: "numeric" });
+
+/** Pronóstico día por día (Open-Meteo), con heladas y calor marcados con texto además de color. */
+export function ForecastTable({ forecast }: { forecast: Forecast }) {
+  return (
+    <Table scrollLabel="Pronóstico: desplazá para ver todos los días">
+      <TableCaption>Pronóstico de Open-Meteo (no es un dato de la NASA). Lluvia en mm; 1 mm = 1 litro por m².</TableCaption>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Día</TableHead><TableHead>Mínima</TableHead><TableHead>Máxima</TableHead><TableHead>Lluvia</TableHead><TableHead>Prob. de lluvia</TableHead><TableHead>Evaporación (ET0)</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {forecast.days.map((d) => {
+          const frost = d.tmin_c != null && d.tmin_c <= 2;
+          const hot = d.tmax_c != null && d.tmax_c >= 35;
+          return (
+            <TableRow key={d.date}>
+              <TableCell className="font-medium capitalize">{dayName(d.date)}</TableCell>
+              <TableCell className={frost ? "font-bold text-agua-700 dark:text-info" : "tabular-nums"}>{num(d.tmin_c)} °C{frost && <span> ❄️ <span className="sr-only">posible</span>helada</span>}</TableCell>
+              <TableCell className={hot ? "font-bold text-destructive" : "tabular-nums"}>{num(d.tmax_c)} °C{hot && <span> 🔥 calor</span>}</TableCell>
+              <TableCell className="tabular-nums">{num(d.precip_mm, 1)} mm</TableCell>
+              <TableCell className="tabular-nums">{d.precip_probability_pct == null ? "—" : `${num(d.precip_probability_pct)} %`}</TableCell>
+              <TableCell className="tabular-nums">{d.et0_mm == null ? "—" : `${num(d.et0_mm, 1)} mm`}</TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
+  );
+}

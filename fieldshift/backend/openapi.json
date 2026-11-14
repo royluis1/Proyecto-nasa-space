@@ -1107,6 +1107,224 @@
     }
    }
   },
+  "/forecast": {
+   "post": {
+    "tags": [
+     "alerta temprana"
+    ],
+    "summary": "Pronóstico (Open-Meteo, no es NASA)",
+    "description": "Temperaturas, lluvia, probabilidad de lluvia, ET0 y viento de los próximos días. Fuente: Open-Meteo, que NO es un\nproducto de la NASA; se aclara en la respuesta.",
+    "operationId": "forecast_forecast_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ForecastRequest"
+       },
+       "examples": {
+        "lote": {
+         "summary": "Lote",
+         "value": {
+          "field_id": "campo-este",
+          "days": 10
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_Forecast_"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not Found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Unprocessable Content",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "503": {
+      "description": "Service Unavailable",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/alerts": {
+   "post": {
+    "tags": [
+     "alerta temprana"
+    ],
+    "summary": "Diagnóstico y alerta temprana",
+    "description": "Heladas, calor fuerte, lluvia intensa, viento, falta de agua y suelo seco, con mensajes según el perfil\n(huerta o agricultor). Usa NASA POWER (lluvia reciente y clima), Open-Meteo (pronóstico) y NASA SMAP.",
+    "operationId": "alerts_alerts_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AlertsRequest"
+       },
+       "examples": {
+        "agricultor": {
+         "summary": "Agricultor",
+         "value": {
+          "field_id": "campo-este"
+         }
+        },
+        "huerta": {
+         "summary": "Huerta",
+         "value": {
+          "field_id": "campo-este",
+          "profile": "huerta"
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_AlertsResult_"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not Found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Unprocessable Content",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "503": {
+      "description": "Service Unavailable",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/huerta": {
+   "post": {
+    "tags": [
+     "alerta temprana"
+    ],
+    "summary": "Panel de huerta",
+    "description": "Heladas (fechas típicas), cuánto regar (NASA POWER), calor, lluvia pasada (NASA POWER) y futura (Open-Meteo),\nverdor de la zona (MODIS) y alertas, en lenguaje simple.",
+    "operationId": "huerta_huerta_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/PlaceRequest"
+       },
+       "examples": {
+        "lote": {
+         "summary": "Huerta en un lote",
+         "value": {
+          "field_id": "campo-este"
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_HuertaPanel_"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not Found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Unprocessable Content",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "503": {
+      "description": "Service Unavailable",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/export/report": {
    "get": {
     "tags": [
@@ -1246,6 +1464,204 @@
  },
  "components": {
   "schemas": {
+   "Alert": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "kind": {
+      "type": "string",
+      "enum": [
+       "helada",
+       "calor",
+       "lluvia_intensa",
+       "falta_de_agua",
+       "suelo_seco",
+       "viento"
+      ],
+      "title": "Kind"
+     },
+     "severity": {
+      "$ref": "#/components/schemas/Severity"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "message": {
+      "type": "string",
+      "title": "Message"
+     },
+     "start": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Start"
+     },
+     "end": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "End"
+     },
+     "source": {
+      "type": "string",
+      "title": "Source",
+      "description": "De dónde sale: Open-Meteo (pronóstico), NASA POWER, NASA SMAP."
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "kind",
+     "severity",
+     "title",
+     "message",
+     "source"
+    ],
+    "title": "Alert"
+   },
+   "AlertsRequest": {
+    "properties": {
+     "field_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Field Id"
+     },
+     "latitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 90.0,
+        "minimum": -90.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Latitude"
+     },
+     "longitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 180.0,
+        "minimum": -180.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Longitude"
+     },
+     "profile": {
+      "type": "string",
+      "enum": [
+       "huerta",
+       "agricultor"
+      ],
+      "title": "Profile",
+      "default": "agricultor"
+     }
+    },
+    "type": "object",
+    "title": "AlertsRequest"
+   },
+   "AlertsResult": {
+    "properties": {
+     "profile": {
+      "type": "string",
+      "enum": [
+       "huerta",
+       "agricultor"
+      ],
+      "title": "Profile"
+     },
+     "alerts": {
+      "items": {
+       "$ref": "#/components/schemas/Alert"
+      },
+      "type": "array",
+      "title": "Alerts"
+     },
+     "forecast": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Forecast"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "past_rain": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/RainSummary"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "future_rain_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Future Rain Mm",
+      "description": "Lluvia pronosticada para los próximos días (Open-Meteo)."
+     },
+     "sources": {
+      "items": {
+       "$ref": "#/components/schemas/SourceInfo"
+      },
+      "type": "array",
+      "title": "Sources"
+     },
+     "warnings": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Warnings"
+     }
+    },
+    "type": "object",
+    "required": [
+     "profile",
+     "alerts",
+     "forecast",
+     "past_rain",
+     "future_rain_mm",
+     "sources",
+     "warnings"
+    ],
+    "title": "AlertsResult"
+   },
    "AnnualRecord": {
     "properties": {
      "year": {
@@ -1375,6 +1791,22 @@
     ],
     "title": "AnnualRecord"
    },
+   "ApiResponse_AlertsResult_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/AlertsResult"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[AlertsResult]"
+   },
    "ApiResponse_CalendarTimeline_": {
     "properties": {
      "data": {
@@ -1470,6 +1902,38 @@
      "meta"
     ],
     "title": "ApiResponse[FieldOut]"
+   },
+   "ApiResponse_Forecast_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/Forecast"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[Forecast]"
+   },
+   "ApiResponse_HuertaPanel_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/HuertaPanel"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[HuertaPanel]"
    },
    "ApiResponse_Report_": {
     "properties": {
@@ -3942,6 +4406,241 @@
     "title": "FieldOut",
     "description": "Campo/lote guardado."
    },
+   "Forecast": {
+    "properties": {
+     "latitude": {
+      "type": "number",
+      "title": "Latitude"
+     },
+     "longitude": {
+      "type": "number",
+      "title": "Longitude"
+     },
+     "timezone": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Timezone"
+     },
+     "days": {
+      "items": {
+       "$ref": "#/components/schemas/ForecastDay"
+      },
+      "type": "array",
+      "title": "Days"
+     },
+     "source": {
+      "$ref": "#/components/schemas/SourceInfo"
+     }
+    },
+    "type": "object",
+    "required": [
+     "latitude",
+     "longitude",
+     "timezone",
+     "days",
+     "source"
+    ],
+    "title": "Forecast"
+   },
+   "ForecastDay": {
+    "properties": {
+     "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+     },
+     "tmax_c": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Tmax C"
+     },
+     "tmin_c": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Tmin C"
+     },
+     "precip_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Precip Mm"
+     },
+     "precip_probability_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Precip Probability Pct"
+     },
+     "et0_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Et0 Mm",
+      "description": "Evapotranspiración de referencia FAO-56 calculada por Open-Meteo."
+     },
+     "wind_max_kmh": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Wind Max Kmh"
+     }
+    },
+    "type": "object",
+    "required": [
+     "date",
+     "tmax_c",
+     "tmin_c",
+     "precip_mm"
+    ],
+    "title": "ForecastDay"
+   },
+   "ForecastRequest": {
+    "properties": {
+     "field_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Field Id"
+     },
+     "latitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 90.0,
+        "minimum": -90.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Latitude"
+     },
+     "longitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 180.0,
+        "minimum": -180.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Longitude"
+     },
+     "days": {
+      "type": "integer",
+      "maximum": 16.0,
+      "minimum": 1.0,
+      "title": "Days",
+      "default": 10
+     }
+    },
+    "type": "object",
+    "title": "ForecastRequest"
+   },
+   "FrostInfo": {
+    "properties": {
+     "frost_days_per_year": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Frost Days Per Year"
+     },
+     "frost_months": {
+      "items": {
+       "type": "integer"
+      },
+      "type": "array",
+      "title": "Frost Months",
+      "description": "Meses con heladas en al menos 1 de cada 5 años."
+     },
+     "last_frost_typical": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Frost Typical",
+      "description": "Fecha típica de la última helada de la primavera (día/mes, 8 de cada 10 años antes)."
+     },
+     "first_frost_typical": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "First Frost Typical",
+      "description": "Fecha típica de la primera helada del otoño (día/mes, 8 de cada 10 años después)."
+     },
+     "source": {
+      "$ref": "#/components/schemas/SourceInfo"
+     }
+    },
+    "type": "object",
+    "required": [
+     "frost_days_per_year",
+     "frost_months",
+     "last_frost_typical",
+     "first_frost_typical",
+     "source"
+    ],
+    "title": "FrostInfo"
+   },
    "HTTPValidationError": {
     "properties": {
      "detail": {
@@ -3977,6 +4676,44 @@
      "version"
     ],
     "title": "HealthResponse"
+   },
+   "HeatInfo": {
+    "properties": {
+     "hot_days_per_year": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Hot Days Per Year"
+     },
+     "hot_months": {
+      "items": {
+       "type": "integer"
+      },
+      "type": "array",
+      "title": "Hot Months"
+     },
+     "next_hot_days": {
+      "type": "integer",
+      "title": "Next Hot Days",
+      "description": "Días con más de 35 °C en el pronóstico."
+     },
+     "source": {
+      "$ref": "#/components/schemas/SourceInfo"
+     }
+    },
+    "type": "object",
+    "required": [
+     "hot_days_per_year",
+     "hot_months",
+     "next_hot_days",
+     "source"
+    ],
+    "title": "HeatInfo"
    },
    "HeatSummary": {
     "properties": {
@@ -4027,6 +4764,125 @@
     ],
     "title": "HeatSummary"
    },
+   "HuertaPanel": {
+    "properties": {
+     "field_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Field Id"
+     },
+     "name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "latitude": {
+      "type": "number",
+      "title": "Latitude"
+     },
+     "longitude": {
+      "type": "number",
+      "title": "Longitude"
+     },
+     "frost": {
+      "$ref": "#/components/schemas/FrostInfo"
+     },
+     "irrigation": {
+      "$ref": "#/components/schemas/IrrigationInfo"
+     },
+     "heat": {
+      "$ref": "#/components/schemas/HeatInfo"
+     },
+     "past_rain": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/RainSummary"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "forecast": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Forecast"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "vegetation": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/VegetationInfo"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "alerts": {
+      "items": {
+       "$ref": "#/components/schemas/Alert"
+      },
+      "type": "array",
+      "title": "Alerts"
+     },
+     "tips": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Tips"
+     },
+     "sources": {
+      "items": {
+       "$ref": "#/components/schemas/SourceInfo"
+      },
+      "type": "array",
+      "title": "Sources"
+     },
+     "warnings": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Warnings"
+     }
+    },
+    "type": "object",
+    "required": [
+     "field_id",
+     "name",
+     "latitude",
+     "longitude",
+     "frost",
+     "irrigation",
+     "heat",
+     "past_rain",
+     "forecast",
+     "vegetation",
+     "alerts",
+     "tips",
+     "sources",
+     "warnings"
+    ],
+    "title": "HuertaPanel"
+   },
    "Impact": {
     "properties": {
      "direction": {
@@ -4054,6 +4910,57 @@
     ],
     "title": "ImpactDirection",
     "description": "Impacto de una rotación frente a la rotación actual."
+   },
+   "IrrigationInfo": {
+    "properties": {
+     "weekly_l_per_m2": {
+      "type": "number",
+      "title": "Weekly L Per M2",
+      "description": "Agua a reponer por semana en esta época (NASA POWER, promedio de 10 años; 1 mm = 1 litro por m²)."
+     },
+     "with_forecast_l_per_m2": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "With Forecast L Per M2",
+      "description": "Lo mismo para los próximos 7 días, con la lluvia y la ET0 pronosticadas."
+     },
+     "daily_l_per_m2": {
+      "type": "number",
+      "title": "Daily L Per M2"
+     },
+     "basis": {
+      "type": "string",
+      "title": "Basis",
+      "description": "Cómo se calculó."
+     },
+     "et0_weekly_mm": {
+      "type": "number",
+      "title": "Et0 Weekly Mm"
+     },
+     "rain_weekly_mm": {
+      "type": "number",
+      "title": "Rain Weekly Mm"
+     },
+     "source": {
+      "$ref": "#/components/schemas/SourceInfo"
+     }
+    },
+    "type": "object",
+    "required": [
+     "weekly_l_per_m2",
+     "daily_l_per_m2",
+     "basis",
+     "et0_weekly_mm",
+     "rain_weekly_mm",
+     "source"
+    ],
+    "title": "IrrigationInfo"
    },
    "KcValues": {
     "properties": {
@@ -4488,6 +5395,49 @@
     ],
     "title": "ParameterInfo"
    },
+   "PlaceRequest": {
+    "properties": {
+     "field_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Field Id"
+     },
+     "latitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 90.0,
+        "minimum": -90.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Latitude"
+     },
+     "longitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 180.0,
+        "minimum": -180.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Longitude"
+     }
+    },
+    "type": "object",
+    "title": "PlaceRequest"
+   },
    "PowerParameter": {
     "type": "string",
     "enum": [
@@ -4731,6 +5681,86 @@
      "scaled"
     ],
     "title": "QualityReport"
+   },
+   "RainSummary": {
+    "properties": {
+     "days": {
+      "type": "integer",
+      "title": "Days"
+     },
+     "total_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Total Mm"
+     },
+     "normal_mm": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Normal Mm",
+      "description": "Lo normal para esas fechas (NASA POWER, promedio de 10 años)."
+     },
+     "pct_of_normal": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pct Of Normal"
+     },
+     "start": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Start"
+     },
+     "end": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "End"
+     },
+     "source": {
+      "$ref": "#/components/schemas/SourceInfo"
+     }
+    },
+    "type": "object",
+    "required": [
+     "days",
+     "total_mm",
+     "normal_mm",
+     "pct_of_normal",
+     "start",
+     "end",
+     "source"
+    ],
+    "title": "RainSummary"
    },
    "Range": {
     "properties": {
@@ -6603,6 +7633,85 @@
     ],
     "title": "SoilTexture"
    },
+   "SourceInfo": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "title": "Name",
+      "examples": [
+       "NASA POWER"
+      ]
+     },
+     "is_nasa": {
+      "type": "boolean",
+      "title": "Is Nasa"
+     },
+     "kind": {
+      "type": "string",
+      "enum": [
+       "modelado",
+       "observado",
+       "pronóstico",
+       "estimado",
+       "supuesto"
+      ],
+      "title": "Kind"
+     },
+     "retrieved_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Retrieved At"
+     },
+     "origin": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/DataStatus"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "origin_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Origin Label"
+     },
+     "detail": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "is_nasa",
+     "kind",
+     "retrieved_at"
+    ],
+    "title": "SourceInfo",
+    "description": "Lo que se muestra en pantalla de cada dato: fuente, fecha de consulta y tipo."
+   },
    "TerrainRequest": {
     "properties": {
      "field_id": {
@@ -7272,6 +8381,47 @@
      "units"
     ],
     "title": "VariableStats"
+   },
+   "VegetationInfo": {
+    "properties": {
+     "mean_ndvi": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Mean Ndvi"
+     },
+     "cover_pct": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cover Pct"
+     },
+     "text": {
+      "type": "string",
+      "title": "Text"
+     },
+     "source": {
+      "$ref": "#/components/schemas/SourceInfo"
+     }
+    },
+    "type": "object",
+    "required": [
+     "mean_ndvi",
+     "cover_pct",
+     "text",
+     "source"
+    ],
+    "title": "VegetationInfo"
    },
    "VegetationInput": {
     "properties": {

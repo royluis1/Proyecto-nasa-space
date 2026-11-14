@@ -4,7 +4,7 @@
  */
 import type {
   ApiEnvelope, CalendarRequest, CalendarTimeline, ClimateSummary, CompareResult, Crop, FieldOut, ResponseMeta, Rotation,
-  ScenarioInput, ScenarioResult, SoilMoistureSummary, TerrainSummary, VegetationSummary,
+  AlertsResult, HuertaPanel, ScenarioInput, ScenarioResult, SoilMoistureSummary, TerrainSummary, VegetationSummary,
 } from "@/types/api";
 import { isBaseline, sameEffect } from "../scenarios";
 import { DEMO_NOTICE, DISCLAIMER } from "../content";
@@ -118,6 +118,20 @@ export async function demoSoilMoisture(fieldId: string): Promise<ApiEnvelope<Soi
 export async function demoVegetation(fieldId: string): Promise<ApiEnvelope<VegetationSummary>> {
   const { id, note } = await exampleIdFor(fieldId);
   return env(await load<VegetationSummary>(`vegetation-${id}`), note ? [note] : []);
+}
+
+const NO_FORECAST = "Sin conexión con el servidor: el pronóstico (Open-Meteo) no está disponible y las alertas son solo de ejemplo.";
+
+export async function demoHuerta(fieldId: string): Promise<ApiEnvelope<HuertaPanel>> {
+  const { id, note } = await exampleIdFor(fieldId);
+  const data = await load<HuertaPanel>(`huerta-${id}`);
+  return env({ ...data, field_id: fieldId }, [...(note ? [note] : []), NO_FORECAST, ...data.warnings]);
+}
+
+export async function demoAlerts(fieldId: string, profile: "huerta" | "agricultor"): Promise<ApiEnvelope<AlertsResult>> {
+  const { id, note } = await exampleIdFor(fieldId);
+  const data = await load<AlertsResult>(`alerts-${id}-${profile}`);
+  return env(data, [...(note ? [note] : []), NO_FORECAST, ...data.warnings]);
 }
 
 export async function demoTerrain(fieldId: string): Promise<ApiEnvelope<TerrainSummary>> {

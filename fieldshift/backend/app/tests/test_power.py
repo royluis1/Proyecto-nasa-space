@@ -313,3 +313,59 @@ def test_muestra_es_plausible():
     annual = data.assign(y=data["date"].str[:4]).groupby(["site_id", "y"])["PRECTOTCORR"].sum()
     assert annual.groupby("site_id").count().min() >= 10
     assert 400 < annual.mean() < 900
+
+
+# ---------- archivo CSV de POWER (campo1.csv) como respaldo ----------
+
+CAMPO1 = SAMPLE_CSV.parent / "power_campo1.csv"
+
+
+def test_lee_el_csv_de_power_con_encabezado_y_menos_999():
+    from app.services.power.file_source import read_power_csv
+
+    f = read_power_csv(CAMPO1)
+    assert (f.lat, f.lon) == (-33.9265, -65.0721) and f.elevation_m == 367.34
+    assert f.df.index.min() == pd.Timestamp("2015-01-01") and f.df.index.max() == pd.Timestamp("2026-10-31")
+    assert f.df.loc["2015-01-01", "T2M_MAX"] == 23.64
+    assert f.df["ALLSKY_SFC_SW_DWN"].isna().sum() == 1  # el -999 queda como "sin dato"
+    assert (f.df.min(numeric_only=True) > -999).all()
+    assert f.df["PS"].iloc[0] == pytest.approx(97.0, abs=0.1)  # presión desde la elevación (FAO-56)
+
+
+def test_csv_de_power_con_mes_y_dia(tmp_path):
+    from app.services.power.file_source import read_power_csv
+
+    p = tmp_path / "x.csv"
+    p.write_text("-BEGIN HEADER-\nLocation: latitude  -33.5   longitude -65.5\n-END HEADER-\n"
+                 "YEAR,MO,DY,T2M,PRECTOTCORR\n2020,1,1,20,-999\n2020,1,2,21,3.5\n")
+    f = read_power_csv(p)
+    assert len(f.df) == 2 and pd.isna(f.df.loc["2020-01-01", "PRECTOTCORR"]) and "PS" not in f.df
+
+
+def test_si_power_falla_usa_el_csv_del_campo_antes_que_la_muestra(tmp_path):
+    from app.services.power.file_source import PowerFileProvider
+
+    svc = PowerService(FakeFetcher(error=UpstreamError("caído")), PowerCache(tmp_path, 24), SampleProvider(SAMPLE_CSV),
+                       now=lambda: NOW, files=PowerFileProvider([CAMPO1]))
+    data = svc.get_daily(-33.85, -65.2, date(2016, 1, 1), date(2025, 12, 31), PARAMS)
+    assert data.status == DataStatus.UPLOADED and data.sample_site == "power_campo1.csv"
+    assert data.elevation_m == 367.34 and len(data.df) == 3653
+    assert any("campo1.csv" in w and "datos reales" in w for w in data.warnings)
+    # lejos del archivo (más de 1°): sigue con la muestra simulada
+    far = svc.get_daily(-32.45, -65.25, date(2018, 1, 1), date(2018, 12, 31), PARAMS)
+    assert far.status == DataStatus.SAMPLE
+
+
+def test_resumen_climatico_con_el_csv_del_campo(tmp_path):
+    from app.services.climate_summary import build_summary
+    from app.services.power.file_source import PowerFileProvider
+    from app.services.power.service import resolve_parameters
+
+    svc = PowerService(FakeFetcher(error=UpstreamError("caído")), PowerCache(tmp_path, 24), SampleProvider(SAMPLE_CSV),
+                       now=lambda: NOW, files=PowerFileProvider([CAMPO1]))
+    params = resolve_parameters(None)
+    data = svc.get_daily(-33.9265, -65.0721, date(2016, 1, 1), date(2025, 12, 31), params)
+    s = build_summary(data, -33.9265, -65.0721, date(2016, 1, 1), date(2025, 12, 31), "AG", "x", False, None)
+    assert s.source.origin == DataStatus.UPLOADED and s.source.provider == "NASA POWER"
+    assert 400 < s.annual[0].precip_mm < 1200
+    assert all(c.et0_mm and c.et0_mm > 0 for c in s.monthly_climatology)  # ET0 con la presión estimada

@@ -1,5 +1,7 @@
 "use client";
 
+import { PROFILES, readProfile } from "@/lib/profile";
+
 import { useRouter } from "next/navigation";
 import { Plus, Save, Trash2 } from "lucide-react";
 import { useId, useMemo, useState } from "react";
@@ -159,7 +161,7 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
       const result = mode === "edit" && !asNew && initial ? await api.updateField(initial.id, body) : await api.createField(body);
       if (result.demo) setNotice("No hay conexión con el servidor: el campo se guardó solo en este navegador.");
       onSaved?.(result.data);
-      router.push(`/campo/${result.data.id}/perfil`);
+      router.push(PROFILES[readProfile() ?? "agricultor"].home(result.data.id));
       router.refresh();
     } catch (e) {
       setSaveError(describeError(e) + (mode === "edit" ? " Si estás sin conexión, usá “Guardar como campo nuevo”." : ""));

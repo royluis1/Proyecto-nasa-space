@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { PROFILES } from "@/lib/profile";
+import { useProfile } from "@/hooks/use-profile";
 import { ArrowRight, Droplets, MapPinned, Plus, Ruler } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AsyncBlock } from "@/components/async-block";
@@ -17,6 +19,7 @@ import { cn } from "@/lib/utils";
 import type { ApiResult, FieldOut } from "@/types/api";
 
 export default function CamposPage() {
+  const profile = useProfile();
   const state = useAsync<ApiResult<FieldOut[]>>((signal) => api.fields({ signal }), []);
   const [selected, setSelected] = useState<string | null>(null);
   const others = useMemo(() => (state.data?.data ?? []).map((f) => ({ id: f.id, name: f.name, lat: f.location.lat, lon: f.location.lon })), [state.data]);
@@ -61,8 +64,8 @@ export default function CamposPage() {
                         {f.sample_note ? " · datos ilustrativos" : ""}
                       </p>
                       <Button asChild>
-                        <Link href={`/campo/${f.id}/perfil`}>
-                          Abrir este campo <ArrowRight aria-hidden />
+                        <Link href={PROFILES[profile ?? "agricultor"].home(f.id)}>
+                          {profile === "huerta" ? "Abrir mi huerta" : "Abrir este campo"} <ArrowRight aria-hidden />
                         </Link>
                       </Button>
                     </CardContent>

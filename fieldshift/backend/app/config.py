@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     sample_data_dir: Path | None = None
     nasa_samples_dir: Path = REPO_ROOT / "data" / "samples"
     power_sample_file: str = "power_sample_san_luis.csv"
+    # CSV reales descargados de NASA POWER: respaldo si la API no responde (antes de la muestra simulada)
+    power_fallback_files: list[str] = ["power_campo1.csv"]
 
     cors_origins: list[str] = ["http://localhost:3000"]
 
@@ -53,6 +55,11 @@ class Settings(BaseSettings):
     earthdata_token: SecretStr | None = None
     earthdata_username: str | None = None
     earthdata_password: SecretStr | None = None
+    # Pronóstico (Open-Meteo, no es NASA). Gratis sin clave para uso no comercial; con plan comercial:
+    # FIELDSHIFT_OPEN_METEO_URL=https://customer-api.open-meteo.com/v1/forecast y FIELDSHIFT_OPEN_METEO_API_KEY.
+    open_meteo_enabled: bool = True
+    open_meteo_url: str = "https://api.open-meteo.com/v1/forecast"
+    open_meteo_api_key: SecretStr | None = None
     srtm_product: Literal["SRTMGL1", "SRTMGL3"] = "SRTMGL1"
     srtm_sample_file: str = "srtm_sample_san_luis.json"
     llm_enabled: bool = False

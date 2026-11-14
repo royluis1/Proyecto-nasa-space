@@ -10,11 +10,12 @@ API de FieldShift para el NASA Space Apps Challenge 2026 (*Field Shift: Adapting
 |---|---|
 | `GET /health`, `POST /fields`, `GET /fields/{id}`, `POST /priorities` | Funcionan con datos de muestra |
 | `GET /crops` | Catálogo editable de 16 cultivos y coberturas |
-| `POST /climate-summary` | **NASA POWER integrado**, con caché y fallback a muestra simulada |
+| `POST /climate-summary` | **NASA POWER integrado**, con caché; si no responde, usa el CSV real de POWER `data/samples/power_campo1.csv` y, por último, la muestra simulada. -999 = sin dato |
 | `POST /soil-moisture`, `POST /vegetation-index` | **SMAP y MODIS NDVI**: AppEEARS (asincrónico), CSV o GeoTIFF cargado, caché y muestra |
 | `POST /rotations/compare`, `GET /rotations/{id}` | **Motor de rotaciones**: 7 estrategias, puntaje explicable A/S/R/I/E |
 | `GET /scenarios/presets`, `POST /scenarios` | **12 escenarios** (año normal, seco, lluvias intensas, olas de calor, lluvia -10/-20/-30 %, +1/+2 °C, sin riego, riego limitado, riego disponible): recalcula puntajes, ranking, riesgos, recomendación y explicaciones |
 | `POST /terrain`, `GET /earthdata/status` | **Relieve SRTM con Earthdata Login**: elevación y pendiente del lote; el motor usa la pendiente si el lote no la tiene cargada |
+| `POST /alerts`, `POST /huerta`, `POST /forecast` | **Alerta temprana y panel de huerta**: heladas, calor, lluvia intensa, viento, falta de agua y suelo seco por perfil; riego en L/m²; pronóstico de Open-Meteo (no es NASA). Ver [`docs/perfiles_y_alertas.md`](../docs/perfiles_y_alertas.md) |
 | `POST /calendar` | **Calendario de 2 a 4 campañas** (julio a junio): siembra, desarrollo, cosecha, barbecho, cobertura, suelo desnudo, riesgo de calor y de déficit hídrico, y recomendaciones. Usa POWER, SMAP y NDVI |
 | `GET /export/report`, `POST /export/report` | JSON y CSV con campo, prioridades, resumen climático, rotaciones, puntajes, recomendación, resistencia a escenarios, supuestos, fuentes, advertencias y fecha. El PDF lo arma el frontend |
 

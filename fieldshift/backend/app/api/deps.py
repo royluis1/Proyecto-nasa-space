@@ -8,6 +8,9 @@ from app.services.engine.service import RotationService
 from app.services.power.cache import PowerCache
 from app.services.power.sample import SampleProvider
 from app.services.earthdata.session import credentials_from_settings
+from app.services.early_warning import EarlyWarningService
+from app.services.forecast.open_meteo import ForecastService, http_fetcher
+from app.services.power.file_source import PowerFileProvider
 from app.services.power.service import Cooldown, PowerService
 from app.services.terrain.service import TerrainProvider
 from app.services.repository import Repository
@@ -40,7 +43,13 @@ def get_power_service() -> PowerService:
         cache=PowerCache(s.cache_dir, s.cache_ttl_hours),
         samples=SampleProvider(s.nasa_samples_dir / s.power_sample_file),
         cooldown=_power_cooldown(s.power_cooldown_s),
+        files=_power_files(tuple(s.power_fallback_files), s.nasa_samples_dir),
     )
+
+
+@lru_cache
+def _power_files(names: tuple[str, ...], folder) -> PowerFileProvider:
+    return PowerFileProvider([folder / n for n in names])  # se lee una vez por proceso
 
 
 @lru_cache
@@ -95,3 +104,20 @@ def get_rotation_service(
     terrain: TerrainProvider = Depends(get_terrain_provider),
 ) -> RotationService:
     return RotationService(repo, power, get_settings().power_base_url, satellite, terrain)
+
+
+@lru_cache
+def get_forecast_service() -> ForecastService:
+    s = get_settings()
+    key = s.open_meteo_api_key.get_secret_value() if s.open_meteo_api_key else None
+    fetcher = http_fetcher(s.open_meteo_url, key, s.request_timeout_s) if s.open_meteo_enabled else None
+    return ForecastService(fetcher, Cooldown(s.power_cooldown_s))  # una por proceso: guarda el pronóstico 3 h
+
+
+def get_early_warning_service(
+    repo: Repository = Depends(get_repository),
+    power: PowerService = Depends(get_power_service),
+    forecast: ForecastService = Depends(get_forecast_service),
+    satellite: SatelliteService = Depends(get_satellite_service),
+) -> EarlyWarningService:
+    return EarlyWarningService(repo, power, forecast, satellite)
