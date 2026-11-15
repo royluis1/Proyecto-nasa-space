@@ -435,6 +435,164 @@
     }
    }
   },
+  "/localidades": {
+   "get": {
+    "tags": [
+     "localidades"
+    ],
+    "summary": "Buscar una ciudad o pueblo",
+    "description": "Busca localidades por nombre, sin importar tildes ni mayúsculas. Primero las que empiezan igual\ny las más grandes. Fuente: IGN, capa Localidad BAHRA.",
+    "operationId": "search_localidades_get",
+    "parameters": [
+     {
+      "name": "q",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 2,
+       "description": "Nombre o parte del nombre.",
+       "examples": [
+        "daract"
+       ],
+       "title": "Q"
+      },
+      "description": "Nombre o parte del nombre."
+     },
+     {
+      "name": "provincia",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Limitar a una provincia.",
+       "examples": [
+        "San Luis"
+       ],
+       "title": "Provincia"
+      },
+      "description": "Limitar a una provincia."
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 50,
+       "minimum": 1,
+       "default": 10,
+       "title": "Limit"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_LocalitySearch_"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/localidades/cerca": {
+   "get": {
+    "tags": [
+     "localidades"
+    ],
+    "summary": "Localidad más cercana a un punto",
+    "description": "La ciudad o pueblo más cercano a unas coordenadas, para decir dónde está el campo o la huerta.\nLa distancia es al centro de la localidad (BAHRA da un punto, no el límite).",
+    "operationId": "nearest_localidades_cerca_get",
+    "parameters": [
+     {
+      "name": "lat",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "number",
+       "maximum": 90,
+       "minimum": -90,
+       "examples": [
+        -33.85
+       ],
+       "title": "Lat"
+      }
+     },
+     {
+      "name": "lon",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "number",
+       "maximum": 180,
+       "minimum": -180,
+       "examples": [
+        -65.2
+       ],
+       "title": "Lon"
+      }
+     },
+     {
+      "name": "max_km",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "number",
+       "maximum": 300,
+       "exclusiveMinimum": 0,
+       "description": "Radio de búsqueda.",
+       "default": 60.0,
+       "title": "Max Km"
+      },
+      "description": "Radio de búsqueda."
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_NearestLocality_"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/crops": {
    "get": {
     "tags": [
@@ -2399,6 +2557,38 @@
      "meta"
     ],
     "title": "ApiResponse[HuertaPanel]"
+   },
+   "ApiResponse_LocalitySearch_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/LocalitySearch"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[LocalitySearch]"
+   },
+   "ApiResponse_NearestLocality_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/NearestLocality"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[NearestLocality]"
    },
    "ApiResponse_ProvincesOut_": {
     "properties": {
@@ -6046,6 +6236,104 @@
     "title": "Level",
     "description": "Escala cualitativa usada en cultivos, riesgo e ingreso relativo."
    },
+   "LocalityOut": {
+    "properties": {
+     "nombre": {
+      "type": "string",
+      "title": "Nombre",
+      "examples": [
+       "Justo Daract"
+      ]
+     },
+     "provincia": {
+      "type": "string",
+      "title": "Provincia",
+      "examples": [
+       "San Luis"
+      ]
+     },
+     "departamento": {
+      "type": "string",
+      "title": "Departamento",
+      "default": "",
+      "examples": [
+       "General Pedernera"
+      ]
+     },
+     "tipo": {
+      "type": "string",
+      "title": "Tipo",
+      "description": "Tipo de asentamiento según BAHRA.",
+      "default": "",
+      "examples": [
+       "Localidad simple"
+      ]
+     },
+     "lat": {
+      "type": "number",
+      "title": "Lat",
+      "examples": [
+       -33.86
+      ]
+     },
+     "lon": {
+      "type": "number",
+      "title": "Lon",
+      "examples": [
+       -65.18
+      ]
+     },
+     "label": {
+      "type": "string",
+      "title": "Label",
+      "description": "Nombre y provincia, para mostrar.",
+      "examples": [
+       "Justo Daract, San Luis"
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "nombre",
+     "provincia",
+     "lat",
+     "lon",
+     "label"
+    ],
+    "title": "LocalityOut"
+   },
+   "LocalitySearch": {
+    "properties": {
+     "query": {
+      "type": "string",
+      "title": "Query"
+     },
+     "results": {
+      "items": {
+       "$ref": "#/components/schemas/LocalityOut"
+      },
+      "type": "array",
+      "title": "Results"
+     },
+     "source": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Source"
+     }
+    },
+    "type": "object",
+    "required": [
+     "query",
+     "results"
+    ],
+    "title": "LocalitySearch"
+   },
    "Location": {
     "properties": {
      "lat": {
@@ -6441,6 +6729,58 @@
      "cover_fraction"
     ],
     "title": "NdviPoint"
+   },
+   "NearestLocality": {
+    "properties": {
+     "locality": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/LocalityOut"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "La más cercana, o null si no hay ninguna dentro del radio."
+     },
+     "distance_km": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Distance Km",
+      "description": "Distancia al centro de la localidad."
+     },
+     "text": {
+      "type": "string",
+      "title": "Text",
+      "description": "Frase lista para mostrar.",
+      "examples": [
+       "Tu huerta está cerca de Justo Daract, San Luis (a 2 km)."
+      ]
+     },
+     "source": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Source"
+     }
+    },
+    "type": "object",
+    "required": [
+     "locality",
+     "text"
+    ],
+    "title": "NearestLocality"
    },
    "ParameterInfo": {
     "properties": {

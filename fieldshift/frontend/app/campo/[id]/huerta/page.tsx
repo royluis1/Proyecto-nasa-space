@@ -7,6 +7,9 @@ import { useCampo } from "@/components/campo/campo-provider";
 import { TodaySatellite } from "@/components/map/today-satellite";
 import { HeatStressCard } from "@/components/satellite/heat-stress-card";
 import { PageHeader } from "@/components/page-header";
+import { PageNotes } from "@/components/layout/page-notes";
+import { LocalityLine } from "@/components/field/locality-line";
+import { Disclosure } from "@/components/ui/disclosure";
 import { SourceLine } from "@/components/provenance/source-line";
 import { WarningsList } from "@/components/provenance/warnings";
 import { SourceMap } from "@/components/sources/source-map";
@@ -67,7 +70,12 @@ function Panel({ r }: { r: ApiResult<HuertaPanel> }) {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle as="h2">Pronóstico</CardTitle><CardDescription>Lluvia y temperaturas de los próximos días.</CardDescription></CardHeader>
+        <CardHeader><CardTitle as="h2">Consejos para esta época</CardTitle></CardHeader>
+        <CardContent><ul className="list-disc space-y-2 pl-5 text-lg">{h.tips.map((t) => <li key={t}>{t}</li>)}</ul></CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle as="h2">El tiempo de los próximos días</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           {h.forecast ? (
             <>
@@ -80,30 +88,26 @@ function Panel({ r }: { r: ApiResult<HuertaPanel> }) {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader><CardTitle as="h2">Consejos para esta época</CardTitle></CardHeader>
-          <CardContent><ul className="list-disc space-y-2 pl-5">{h.tips.map((t) => <li key={t}>{t}</li>)}</ul></CardContent>
-        </Card>
+      <Disclosure variant="card" label="Ver más sobre mi zona: verdor, calor e imagen satelital" contentClassName="space-y-6">
         {h.vegetation && (
-          <Card>
-            <CardHeader><CardTitle as="h2">Verdor de la zona</CardTitle></CardHeader>
-            <CardContent className="space-y-3"><p>{h.vegetation.text}</p><SourceLine source={h.vegetation.source} demo={r.demo} /></CardContent>
-          </Card>
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold">Verdor de la zona</h3>
+            <p>{h.vegetation.text}</p>
+            <SourceLine source={h.vegetation.source} demo={r.demo} />
+          </div>
         )}
-      </div>
+        {field && <HeatStressCard fieldId={field.id} compact />}
+        {field && <TodaySatellite field={field} title="Tu zona hoy, vista desde el espacio" />}
+      </Disclosure>
 
-      {field && <HeatStressCard fieldId={field.id} compact />}
-      {field && <TodaySatellite field={field} title="Tu zona hoy, vista desde el espacio" />}
-
-      <Card>
-        <CardHeader><CardTitle as="h2">De dónde salen los datos</CardTitle><CardDescription>Fuente, fecha de consulta y tipo de cada dato.</CardDescription></CardHeader>
-        <CardContent className="space-y-4">
+      <PageNotes>
+        <WarningsList warnings={friendlyWarnings(r.meta.warnings)} />
+        <p>Los datos describen tu zona, no exactamente tu huerta. Son una ayuda para planificar: mirá también tu tierra y tus plantas.</p>
+        <Disclosure label="De dónde salen los datos" contentClassName="space-y-4">
           {h.sources.map((s) => <SourceLine key={s.name} source={s} demo={r.demo && s.is_nasa} />)}
           <SourceMap profile="huerta" />
-        </CardContent>
-      </Card>
-      <WarningsList warnings={friendlyWarnings(r.meta.warnings)} />
+        </Disclosure>
+      </PageNotes>
     </div>
   );
 }
@@ -113,7 +117,9 @@ export default function HuertaPage() {
   const state = useAsync<ApiResult<HuertaPanel>>((signal) => api.huerta(fieldId, { signal }), [fieldId]);
   return (
     <div className="space-y-6">
-      <PageHeader title={`Mi huerta${field ? `: ${field.name}` : ""}`} description="Cuánto regar, cuándo hiela, cuánto llovió y qué viene, con datos de la NASA y el pronóstico." />
+      <PageHeader title="Mi huerta" description="Cuánto regar, cuándo hiela y qué tiempo viene.">
+        {field && <LocalityLine lat={field.location.lat} lon={field.location.lon} className="text-lg" />}
+      </PageHeader>
       <AsyncBlock state={state} what="los datos de tu huerta">{(r) => <Panel r={r} />}</AsyncBlock>
     </div>
   );

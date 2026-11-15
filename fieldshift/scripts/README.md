@@ -25,3 +25,13 @@ Scripts ya disponibles:
 | `run_rotation_examples.py` | Corre el motor de rotaciones con 4 casos de ejemplo (`--live` para usar NASA POWER) | `docs/examples/` |
 
 Importante: las solicitudes de AppEEARS quedan horas en cola. Pedirlas el primer día.
+
+## build_localities.py
+
+Descarga las ciudades y pueblos de Argentina del IGN (capa Localidad BAHRA) y genera
+`data/samples/localidades_ar.json`. Sirve para buscar la localidad por nombre y para decir dónde está un campo.
+
+```bash
+python scripts/build_localities.py                  # todo el país (~3.500 localidades)
+python scripts/build_localities.py --provincia "San Luis"
+```

@@ -173,6 +173,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/localidades": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Buscar una ciudad o pueblo
+         * @description Busca localidades por nombre, sin importar tildes ni mayúsculas. Primero las que empiezan igual
+         *     y las más grandes. Fuente: IGN, capa Localidad BAHRA.
+         */
+        get: operations["search_localidades_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/localidades/cerca": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Localidad más cercana a un punto
+         * @description La ciudad o pueblo más cercano a unas coordenadas, para decir dónde está el campo o la huerta.
+         *     La distancia es al centro de la localidad (BAHRA da un punto, no el límite).
+         */
+        get: operations["nearest_localidades_cerca_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/crops": {
         parameters: {
             query?: never;
@@ -732,6 +774,16 @@ export interface components {
         /** ApiResponse[HuertaPanel] */
         ApiResponse_HuertaPanel_: {
             data: components["schemas"]["HuertaPanel"];
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[LocalitySearch] */
+        ApiResponse_LocalitySearch_: {
+            data: components["schemas"]["LocalitySearch"];
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[NearestLocality] */
+        ApiResponse_NearestLocality_: {
+            data: components["schemas"]["NearestLocality"];
             meta: components["schemas"]["ResponseMeta"];
         };
         /** ApiResponse[ProvincesOut] */
@@ -2017,6 +2069,57 @@ export interface components {
          * @enum {string}
          */
         Level: "bajo" | "medio" | "alto";
+        /** LocalityOut */
+        LocalityOut: {
+            /**
+             * Nombre
+             * @example Justo Daract
+             */
+            nombre: string;
+            /**
+             * Provincia
+             * @example San Luis
+             */
+            provincia: string;
+            /**
+             * Departamento
+             * @default
+             * @example General Pedernera
+             */
+            departamento: string;
+            /**
+             * Tipo
+             * @description Tipo de asentamiento según BAHRA.
+             * @default
+             * @example Localidad simple
+             */
+            tipo: string;
+            /**
+             * Lat
+             * @example -33.86
+             */
+            lat: number;
+            /**
+             * Lon
+             * @example -65.18
+             */
+            lon: number;
+            /**
+             * Label
+             * @description Nombre y provincia, para mostrar.
+             * @example Justo Daract, San Luis
+             */
+            label: string;
+        };
+        /** LocalitySearch */
+        LocalitySearch: {
+            /** Query */
+            query: string;
+            /** Results */
+            results: components["schemas"]["LocalityOut"][];
+            /** Source */
+            source?: string | null;
+        };
         /** Location */
         Location: {
             /**
@@ -2139,6 +2242,24 @@ export interface components {
              * @default false
              */
             interpolated: boolean;
+        };
+        /** NearestLocality */
+        NearestLocality: {
+            /** @description La más cercana, o null si no hay ninguna dentro del radio. */
+            locality: components["schemas"]["LocalityOut"] | null;
+            /**
+             * Distance Km
+             * @description Distancia al centro de la localidad.
+             */
+            distance_km?: number | null;
+            /**
+             * Text
+             * @description Frase lista para mostrar.
+             * @example Tu huerta está cerca de Justo Daract, San Luis (a 2 km).
+             */
+            text: string;
+            /** Source */
+            source?: string | null;
         };
         /** ParameterInfo */
         ParameterInfo: {
@@ -4186,6 +4307,75 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    search_localidades_get: {
+        parameters: {
+            query: {
+                /** @description Nombre o parte del nombre. */
+                q: string;
+                /** @description Limitar a una provincia. */
+                provincia?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_LocalitySearch_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    nearest_localidades_cerca_get: {
+        parameters: {
+            query: {
+                lat: number;
+                lon: number;
+                /** @description Radio de búsqueda. */
+                max_km?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_NearestLocality_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

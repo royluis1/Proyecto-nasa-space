@@ -86,6 +86,10 @@ export type FieldHeatStress = S["FieldHeatStress"];
 export type SoilMoistureProduct = S["SoilMoistureProduct"];
 export type TerrainRequest = Optional<S["TerrainRequest"]>;
 
+export type LocalityOut = S["LocalityOut"];
+export type LocalitySearch = S["LocalitySearch"];
+export type NearestLocality = S["NearestLocality"];
+
 export type ResponseMeta = S["ResponseMeta"];
 
 /** Sobre de toda respuesta exitosa del backend. */

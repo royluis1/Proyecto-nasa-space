@@ -122,3 +122,17 @@ El mismo evento tiene un mensaje distinto según el perfil. A la huerta le dice,
 
 - **GPM/IMERG**: lluvia satelital diaria de 10 km, desde GES DISC con Earthdata Login. La sesión de Earthdata ya está hecha (`docs/earthdata.md`).
 - ~~Landsat y ECOSTRESS~~: hechos (`GET /fields/{id}/sectors` y `GET /fields/{id}/heat-stress`; tarjetas en Diagnóstico y Mi huerta).
+
+## Dónde está la huerta (ciudad o pueblo)
+
+Para que el perfil Huerta sea simple, no hace falta marcar un punto en el mapa:
+
+- Al cargar un campo se puede **buscar la ciudad o pueblo por nombre** (buscador con lista, sin tildes ni mayúsculas).
+  Al elegirla se completa la ubicación y, si está vacío, el nombre del campo.
+- La pantalla **Mi huerta** muestra arriba dónde está: "En Justo Daract, San Luis". Si la localidad está a más de 3 km
+  dice "Cerca de X, a N km", para no dar a entender que la huerta está dentro del pueblo.
+- El clima, el pronóstico y las alertas se calculan con las **coordenadas del campo**, que son las de esa ciudad si se
+  eligió del buscador.
+
+Endpoints: `GET /localidades?q=` (buscar) y `GET /localidades/cerca?lat=&lon=` (la más cercana).
+Datos: IGN / BAHRA, ver [data_sources.md](data_sources.md).

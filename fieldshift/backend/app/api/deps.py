@@ -16,6 +16,7 @@ from app.services.forecast.open_meteo import ForecastService, http_fetcher
 from app.services.power.file_source import PowerFileProvider
 from app.services.power.service import Cooldown, PowerService
 from app.services.terrain.service import TerrainProvider
+from app.services.localities import LocalityIndex, load_index
 from app.services.repository import Repository
 from app.services.satellite.provider import SatelliteProvider
 from app.services.satellite.service import SatelliteService
@@ -146,3 +147,8 @@ def get_region_repository(repo: Repository = Depends(get_repository)) -> RegionR
     if key not in _REGIONS:
         _REGIONS[key] = RegionRepository(get_settings().nasa_samples_dir, repo.crops)
     return _REGIONS[key]
+
+
+def get_locality_index() -> LocalityIndex:
+    """Ciudades y pueblos del IGN. Se leen una sola vez por archivo."""
+    return load_index(get_settings().nasa_samples_dir / get_settings().localities_file)

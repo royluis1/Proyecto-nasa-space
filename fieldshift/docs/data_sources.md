@@ -53,3 +53,14 @@ GPM/IMERG (lluvia de mayor resolución), ECOSTRESS (evapotranspiración y estré
 ## Atribución
 
 Pendiente: texto de atribución oficial de cada fuente NASA ⚠️.
+
+## Ciudades y pueblos (IGN / BAHRA)
+
+| | |
+|---|---|
+| **Qué es** | 3.526 asentamientos de Argentina (ciudades, pueblos y parajes) con su nombre, departamento, provincia y coordenadas. |
+| **Fuente** | IGN, capa `ign:localidad_bahra` del servicio WFS `wms.ign.gob.ar`. BAHRA es la Base de Asentamientos Humanos de la República Argentina (IGN, INDEC y provincias). |
+| **Licencia** | Reutilización y redistribución libres según el Artículo 2 de la Ley 27.275 (acceso a la información pública), como indica el servicio del IGN. |
+| **Para qué** | Que el usuario elija su localidad por nombre en vez de marcarla en el mapa, y mostrar "tu huerta está en X". |
+| **Cómo se obtuvo** | `python scripts/build_localities.py` → `data/samples/localidades_ar.json`. No es una consulta en vivo: es un archivo del repositorio. |
+| **Límites** | BAHRA da **un punto** por asentamiento (su centro), no el límite del ejido. La distancia que mostramos es al centro de la localidad, así que "a 2 km" puede ser dentro del pueblo. Más allá de 60 km no se asigna ninguna localidad. |

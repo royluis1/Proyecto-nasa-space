@@ -3,8 +3,37 @@
  * errores normalizados y paso automático a datos de ejemplo si el servidor no responde.
  */
 import type {
-  AlertsResult, ApiEnvelope, ApiResult, CalendarRequest, FieldHeatStress, FieldSectors, FieldSoilMoisture, HuertaPanel, ProvincesOut, ZoneAt, ZoneSuitability, ZonesOut, CalendarTimeline, ClimateSummary, ClimateSummaryRequest, CompareRequest, CompareResult, Crop, FieldCreate, FieldOut,
-  ResponseMeta, ScenarioInput, ScenarioResult, SoilMoistureRequest, SoilMoistureSummary, TerrainRequest, TerrainSummary, VegetationRequest, VegetationSummary,
+  AlertsResult,
+  ApiEnvelope,
+  ApiResult,
+  CalendarRequest,
+  CalendarTimeline,
+  ClimateSummary,
+  ClimateSummaryRequest,
+  CompareRequest,
+  CompareResult,
+  Crop,
+  FieldCreate,
+  FieldHeatStress,
+  FieldOut,
+  FieldSectors,
+  FieldSoilMoisture,
+  HuertaPanel,
+  LocalitySearch,
+  NearestLocality,
+  ProvincesOut,
+  ResponseMeta,
+  ScenarioInput,
+  ScenarioResult,
+  SoilMoistureRequest,
+  SoilMoistureSummary,
+  TerrainRequest,
+  TerrainSummary,
+  VegetationRequest,
+  VegetationSummary,
+  ZoneAt,
+  ZoneSuitability,
+  ZonesOut,
 } from "@/types/api";
 import { API_URL, DEMO_FALLBACK, REQUEST_TIMEOUT_MS } from "./config";
 import * as demo from "./demo";
@@ -267,6 +296,16 @@ export const api = {
   async zoneAt(fieldId: string, lat: number, lon: number, o: Opts = {}): Promise<ApiResult<ZoneAt>> {
     if (isLocalId(fieldId)) return viaDemo(() => demo.demoZoneAt(fieldId));
     return call(() => request<ZoneAt>(`/zones/at?lat=${lat}&lon=${lon}`, o), () => demo.demoZoneAt(fieldId));
+  },
+
+  /** Busca ciudades y pueblos por nombre (IGN). Sin backend lanza error: el buscador lo muestra. */
+  async searchLocalities(q: string, o: Opts = {}): Promise<LocalitySearch> {
+    return (await request<LocalitySearch>(`/localidades?q=${encodeURIComponent(q)}&limit=8`, { ...o, retries: 0 })).data;
+  },
+
+  /** Ciudad o pueblo más cercano a un punto, para decir dónde está el campo o la huerta. */
+  async nearestLocality(lat: number, lon: number, o: Opts = {}): Promise<NearestLocality> {
+    return (await request<NearestLocality>(`/localidades/cerca?lat=${lat}&lon=${lon}`, { ...o, retries: 0 })).data;
   },
 
   async fieldSectors(fieldId: string, o: Opts = {}): Promise<ApiResult<FieldSectors>> {

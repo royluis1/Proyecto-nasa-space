@@ -42,6 +42,8 @@ class Settings(BaseSettings):
 
     cors_origins: list[str] = ["http://localhost:3000"]
 
+    # Ciudades y pueblos de Argentina (IGN/BAHRA): ver scripts/build_localities.py
+    localities_file: str = "localidades_ar.json"
     smap_sample_file: str = "smap_sample_san_luis.csv"
     ndvi_sample_file: str = "ndvi_sample_san_luis.csv"
 

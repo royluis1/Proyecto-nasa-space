@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Plus, Save, Trash2 } from "lucide-react";
 import { useId, useMemo, useState } from "react";
 import { FieldMap } from "@/components/map/field-map-loader";
+import { LocalitySearch } from "@/components/field/locality-search";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -182,9 +183,19 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
       <Card>
         <CardHeader>
           <CardTitle as={mode === "create" ? "h2" : "h3"}>1. ¿Dónde está el campo?</CardTitle>
-          <CardDescription>Marcá el punto (o dibujá el lote) para traer el clima y los datos satelitales de esa zona.</CardDescription>
+          <CardDescription>Buscá tu ciudad o pueblo, o marcá el punto en el mapa.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <LocalitySearch
+            id={id("localidad")}
+            label="Buscá tu ciudad o pueblo"
+            help="Es la forma más rápida. Después podés mover el punto en el mapa para afinarlo."
+            onSelect={(loc) => {
+              set("point", { lat: loc.lat, lon: loc.lon });
+              if (!s.name.trim()) set("name", loc.nombre);
+            }}
+          />
+          <p className="text-sm text-muted-foreground">O marcalo directamente en el mapa:</p>
           <div id={id("map")} tabIndex={-1}>
             <FieldMap
               mode="edit"
