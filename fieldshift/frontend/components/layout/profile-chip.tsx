@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { UserRound } from "lucide-react";
-import { PROFILES } from "@/lib/profile";
+import { PROFILES, startHref } from "@/lib/profile";
 import { useProfile } from "@/hooks/use-profile";
 import { useT } from "@/components/i18n/lang-provider";
 
@@ -26,5 +26,5 @@ export function ProfileChip() {
 /** Botón de inicio: si no eligió perfil, primero lo elige. */
 export function StartLink({ className, children }: { className?: string; children: React.ReactNode }) {
   const profile = useProfile();
-  return <Link href={profile ? "/campos" : "/ingresar"} className={className}>{children}</Link>;
+  return <Link href={startHref(profile)} className={className}>{children}</Link>;
 }

@@ -30,6 +30,9 @@ export const PROFILES: Record<Profile, { label: string; icon: string; who: strin
 
 export const isProfile = (v: unknown): v is Profile => v === "huerta" || v === "agricultor";
 
+/** Destino del botón "Empezar"/StartLink: sin perfil se elige en /ingresar; con perfil se va directo a los campos. */
+export const startHref = (profile: Profile | null): string => (profile ? "/campos" : "/ingresar");
+
 export function readProfile(): Profile | null {
   if (typeof window === "undefined") return null;
   try {

@@ -11,16 +11,19 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import { cn } from "@/lib/utils";
 import type { T } from "@/lib/i18n";
 import { useT } from "@/components/i18n/lang-provider";
+import { PUBLIC_NAV_HREFS } from "@/lib/nav";
 import { LangToggle } from "@/components/i18n/lang-toggle";
 import { Logo } from "./logo";
 import { ProfileChip } from "./profile-chip";
 import { ThemeToggle } from "./theme-toggle";
 
-// Header público (sin perfil elegido): solo "Cómo funciona". Regiones, Mis campos y Metodología van en el footer
-// mientras los menús por perfil (otros prompts) no estén; con perfil se muestra además el chip de perfil.
-const links = (t: T) => [
-  { href: "/como-funciona", label: t("Cómo funciona", "How it works") },
-];
+// Header público (sin perfil elegido): solo "Cómo funciona" (PUBLIC_NAV_HREFS). Regiones, Mis campos y Metodología
+// van en el footer mientras los menús por perfil (otros prompts) no estén; con perfil se muestra además el chip.
+const LABELS: Record<(typeof PUBLIC_NAV_HREFS)[number], (t: T) => string> = {
+  "/como-funciona": (t) => t("Cómo funciona", "How it works"),
+};
+
+const links = (t: T) => PUBLIC_NAV_HREFS.map((href) => ({ href, label: LABELS[href](t) }));
 
 const isActive = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
