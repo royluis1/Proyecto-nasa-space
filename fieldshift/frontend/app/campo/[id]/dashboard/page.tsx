@@ -16,12 +16,14 @@ import { RankingList } from "@/components/dashboard/ranking-list";
 import { RotationBreakdown } from "@/components/dashboard/rotation-breakdown";
 import { Timeline } from "@/components/dashboard/timeline";
 import { PageHeader } from "@/components/page-header";
+import { PageNotes } from "@/components/layout/page-notes";
+import { CollapsibleSection } from "@/components/ui/disclosure";
 import { ConfidenceBadge, OriginBadge } from "@/components/provenance/badges";
 import { WarningsList } from "@/components/provenance/warnings";
 import { Term } from "@/components/glossary/term";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -81,7 +83,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <PageHeader
         title="Dashboard comparativo"
-        description={<>Por qué una rotación es mejor que otra, según los datos de tu zona y lo que vos priorizás. Cambiá las prioridades, el clima o el riego y todo se recalcula.</>}
+        description="Qué rotación conviene según tu zona y tus prioridades."
       />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="min-w-0 space-y-8 lg:order-1">
@@ -102,18 +104,13 @@ export default function DashboardPage() {
                 {d.loading && <span className="text-sm text-muted-foreground">Actualizando…</span>}
                 {d.error && <span role="alert" className="text-sm text-destructive">No se pudo actualizar: {d.error}</span>}
               </div>
-              <WarningsList warnings={friendlyWarnings(d.warnings)} />
-
               {best && <FinalRecommendation best={best} actual={actual} weights={weights} fieldId={fieldId} scenarioText={scenarioText} />}
 
-              <section aria-labelledby="sec-ranking" className="space-y-3">
-                <h2 id="sec-ranking" className="text-2xl font-semibold">Ranking de rotaciones</h2>
-                <p className="text-muted-foreground">Tu rotación actual y {Math.max(0, evals.length - 1)} alternativas, ordenadas según tus prioridades. El puntaje va de 0 a 100.</p>
+              <CollapsibleSection title="Ranking de rotaciones" summary={`Tu rotación actual y ${Math.max(0, evals.length - 1)} alternativas, de 0 a 100 puntos.`}>
                 <RankingList evaluations={evals} />
-              </section>
+              </CollapsibleSection>
 
-              <section aria-labelledby="sec-visual" className="space-y-3">
-                <h2 id="sec-visual" className="text-2xl font-semibold">Compará visualmente</h2>
+              <CollapsibleSection title="Compará visualmente" summary="Aporte al puntaje, barras, araña, mapa de calor y línea de tiempo.">
                 <Card>
                   <CardContent className="pt-5">
                     <Tabs defaultValue="aporte">
@@ -133,17 +130,14 @@ export default function DashboardPage() {
                       </TabsContent>
                     </Tabs>
                     <p className="mt-4 text-sm text-muted-foreground">
-                      Los gráficos por componente, de araña y de línea de tiempo muestran las rotaciones que elegiste en el panel (hasta {MAX_COMPARED}). El aporte al puntaje y el mapa de calor muestran todas.
-                      El <Term k="rango">rango probable</Term> de cada puntaje está en el ranking.
+                      Barras, araña y línea de tiempo: las rotaciones elegidas en el panel (hasta {MAX_COMPARED}). El <Term k="rango">rango probable</Term> está en el ranking.
                     </p>
                   </CardContent>
                 </Card>
-              </section>
+              </CollapsibleSection>
 
               {a && b && (
-                <section aria-labelledby="sec-ind" className="space-y-3">
-                  <h2 id="sec-ind" className="text-2xl font-semibold">Indicadores de agua, suelo, riesgo e ingreso</h2>
-                  <p className="text-muted-foreground">Elegí dos rotaciones y mirá cómo se comparan en lo concreto: agua que necesitan, tiempo con cultivo vivo, riesgos e ingreso relativo (que <strong>no</strong> son precios).</p>
+                <CollapsibleSection title="Agua, suelo, riesgo e ingreso" summary="Compará dos rotaciones en lo concreto (el ingreso es relativo, no precios).">
                   <div className="grid gap-4 sm:grid-cols-2">
                     {([["a", "Comparar esta rotación…", a], ["b", "…con esta otra", b]] as const).map(([k, label, ev]) => (
                       <div key={k} className="space-y-1.5">
@@ -158,31 +152,28 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted-foreground">
                     Para la falta de agua usamos el <Term k="estres">estrés hídrico</Term> estimado con la <Term k="et0">evapotranspiración</Term>; el clima viene de NASA POWER (<Term k="reanalisis">reanálisis</Term>), la humedad del suelo de <Term k="smap">SMAP</Term> y el verdor de <Term k="ndvi">NDVI</Term>.
                   </p>
-                </section>
+                </CollapsibleSection>
               )}
 
-              <section aria-labelledby="sec-rot" className="space-y-3">
-                <h2 id="sec-rot" className="text-2xl font-semibold">Rotación por rotación</h2>
-                <p className="text-muted-foreground">Cómo se arma el puntaje de cada una, por qué recibe ese resultado, qué supuestos y riesgos tiene y qué hay que validar.</p>
+              <CollapsibleSection title="Rotación por rotación" summary="Cómo se arma cada puntaje, supuestos, riesgos y qué validar.">
                 <div className="space-y-3">
                   {evals.map((ev, i) => <RotationBreakdown key={ev.rotation.id} ev={ev} actual={actual} weights={weights} fieldId={fieldId} defaultOpen={i === 0} />)}
                 </div>
-              </section>
+              </CollapsibleSection>
 
-              <section aria-labelledby="sec-exp" className="print:hidden">
-                <Card>
-                  <CardHeader>
-                    <CardTitle as="h2" id="sec-exp">Exportar el reporte</CardTitle>
-                    <CardDescription>Con tus prioridades y este escenario. Llevalo a tu ingeniero agrónomo.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-wrap gap-2">
+              <CollapsibleSection title="Exportar el reporte" summary="PDF, CSV o JSON para llevarle a tu ingeniero agrónomo." className="print:hidden">
+                  <div className="flex flex-wrap gap-2">
                     <Button asChild><Link href={`/campo/${fieldId}/reporte`}><FileText aria-hidden /> Ver el reporte completo</Link></Button>
                     <Button variant="outline" onClick={() => downloadText(`fieldshift_${safeFilename(field?.name ?? "campo")}.csv`, buildCsv(field?.name ?? "", origin, d.result!, evals), "text/csv")}><Download aria-hidden /> Descargar CSV</Button>
                     <Button variant="outline" onClick={() => downloadText(`fieldshift_${safeFilename(field?.name ?? "campo")}.json`, buildJson(field?.name ?? "", origin, d.result!, evals), "application/json")}><FileJson aria-hidden /> Descargar JSON</Button>
                     <Button variant="outline" onClick={() => window.print()}><Printer aria-hidden /> Imprimir o guardar en PDF</Button>
-                  </CardContent>
-                </Card>
-              </section>
+                  </div>
+              </CollapsibleSection>
+
+              <PageNotes>
+                <WarningsList warnings={friendlyWarnings(d.warnings)} />
+                <p>El puntaje es una guía para comparar opciones, no una recomendación de siembra. Validalo con tu ingeniero agrónomo.</p>
+              </PageNotes>
             </>
           )}
         </div>

@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { CircleSlash, Droplet, Layers, Leaf, Sprout, Thermometer, Wheat, type LucideIcon } from "lucide-react";
 import { GROUP_INFO } from "@/components/score/rotation-calendar";
 import { LEVEL_LABELS, MONTHS_LONG } from "@/lib/format";
@@ -17,10 +20,12 @@ const LEVEL_CLS: Record<Level, string> = {
   alto: "bg-destructive/15 text-destructive font-semibold",
 };
 
-function RiskCell({ level, icon: Icon, what }: { level: Level | null | undefined; icon: LucideIcon; what: string }) {
-  if (!level) return <td className="h-9 rounded-md text-center text-xs text-muted-foreground"><span aria-hidden>—</span><span className="sr-only">Sin cultivo: no aplica</span></td>;
+const SEL = "ring-2 ring-inset ring-primary";
+
+function RiskCell({ level, icon: Icon, what, selected }: { level: Level | null | undefined; icon: LucideIcon; what: string; selected?: boolean }) {
+  if (!level) return <td className={cn("h-9 rounded-md text-center text-xs text-muted-foreground", selected && SEL)}><span aria-hidden>—</span><span className="sr-only">Sin cultivo: no aplica</span></td>;
   return (
-    <td className={cn("h-9 rounded-md text-center text-xs", LEVEL_CLS[level])} title={`Riesgo de ${what}: ${LEVEL_LABELS[level].toLowerCase()}`}>
+    <td className={cn("h-9 rounded-md text-center text-xs", LEVEL_CLS[level], selected && SEL)} title={`Riesgo de ${what}: ${LEVEL_LABELS[level].toLowerCase()}`}>
       <span className="inline-flex items-center gap-0.5">
         {level !== "bajo" && <Icon aria-hidden className="size-3.5" />}
         {LEVEL_LABELS[level]}
@@ -34,6 +39,8 @@ export function CampaignTimeline({ campaign, crops, rotationName }: { campaign: 
   const name = `${rotationName ? `${rotationName}, c` : "C"}ampaña ${campaign.label}`;
   const months = campaign.months;
   const spans = cropSpans(months);
+  const [sel, setSel] = useState<number | null>(null);
+  const selMonth = months.find((m) => m.index === sel) ?? null;
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -49,9 +56,17 @@ export function CampaignTimeline({ campaign, crops, rotationName }: { campaign: 
             <tr>
               <th scope="col" className="w-20 text-left text-xs font-medium text-muted-foreground"><span className="sr-only">Dato</span></th>
               {months.map((m) => (
-                <th key={m.index} scope="col" abbr={`${MONTHS_LONG[m.month - 1]} ${m.year}`} className="text-center text-xs font-medium text-muted-foreground">
-                  {m.label.split(" ")[0]}
-                  <span className="block text-[10px] font-normal">{m.year}</span>
+                <th key={m.index} scope="col" abbr={`${MONTHS_LONG[m.month - 1]} ${m.year}`} className="p-0 text-center text-xs font-medium text-muted-foreground">
+                  <button
+                    type="button"
+                    onClick={() => setSel(sel === m.index ? null : m.index)}
+                    aria-pressed={sel === m.index}
+                    className={cn("w-full rounded-md px-0.5 py-1 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", sel === m.index && "bg-primary text-primary-foreground hover:bg-primary")}
+                  >
+                    <span className="sr-only">Ver qué pasa en </span>
+                    {m.label.split(" ")[0]}
+                    <span className="block text-[10px] font-normal">{m.year}</span>
+                  </button>
                 </th>
               ))}
             </tr>
@@ -82,7 +97,7 @@ export function CampaignTimeline({ campaign, crops, rotationName }: { campaign: 
               {months.map((m) => {
                 const Icon = STAGE_ICON[m.stage];
                 return (
-                  <td key={m.index} className="h-9 rounded-md text-center text-[11px] leading-tight" title={describeMonth(m)}>
+                  <td key={m.index} className={cn("h-9 rounded-md text-center text-[11px] leading-tight", sel === m.index && SEL)} title={describeMonth(m)}>
                     <Icon aria-hidden className={cn("mx-auto size-4", m.stage === "barbecho" && "text-muted-foreground")} />
                     <span className={cn(m.stage === "barbecho" && "text-muted-foreground")}>{m.stage === "barbecho" ? "—" : stageText(m).split(" ")[0]}</span>
                     {m.harvest_of && <span className="sr-only"> (cosecha de {m.harvest_of})</span>}
@@ -100,6 +115,7 @@ export function CampaignTimeline({ campaign, crops, rotationName }: { campaign: 
                     "h-9 rounded-md text-center text-[11px] leading-tight",
                     m.cover === "cultivo" || m.cover === "cobertura" ? "bg-cultivo-100 text-cultivo-900 dark:bg-cultivo-900/60 dark:text-cultivo-50" : "border",
                     m.cover === "desnudo" && "font-semibold",
+                    sel === m.index && SEL,
                   )}
                 >
                   {m.cover === "cultivo" || m.cover === "cobertura" ? "Vivo" : m.cover === "rastrojo" ? "Rastrojo" : "Desnudo"}
@@ -109,15 +125,22 @@ export function CampaignTimeline({ campaign, crops, rotationName }: { campaign: 
             </tr>
             <tr>
               <th scope="row" className="text-left text-xs font-medium"><span className="inline-flex items-center gap-1"><Thermometer aria-hidden className="size-3.5" />Calor</span></th>
-              {months.map((m) => <RiskCell key={m.index} level={m.heat_risk} icon={Thermometer} what="golpe de calor" />)}
+              {months.map((m) => <RiskCell key={m.index} level={m.heat_risk} icon={Thermometer} what="golpe de calor" selected={sel === m.index} />)}
             </tr>
             <tr>
               <th scope="row" className="text-left text-xs font-medium"><span className="inline-flex items-center gap-1"><Droplet aria-hidden className="size-3.5" />Agua</span></th>
-              {months.map((m) => <RiskCell key={m.index} level={m.water_risk} icon={Droplet} what="falta de agua" />)}
+              {months.map((m) => <RiskCell key={m.index} level={m.water_risk} icon={Droplet} what="falta de agua" selected={sel === m.index} />)}
             </tr>
           </tbody>
         </table>
       </div>
+      <p aria-live="polite" className={cn("rounded-md px-3 py-2 text-sm", selMonth ? "bg-secondary text-secondary-foreground" : "text-muted-foreground")}>
+        {selMonth ? (
+          <><strong>{MONTHS_LONG[selMonth.month - 1]} {selMonth.year}:</strong> {describeMonth(selMonth)}.</>
+        ) : (
+          "Tocá un mes para ver qué pasa en el lote."
+        )}
+      </p>
     </div>
   );
 }

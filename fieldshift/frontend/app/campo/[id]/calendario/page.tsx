@@ -8,6 +8,8 @@ import { AsyncBlock } from "@/components/async-block";
 import { CampaignTimeline, TimelineLegend } from "@/components/calendar/campaign-timeline";
 import { useCampo } from "@/components/campo/campo-provider";
 import { PageHeader } from "@/components/page-header";
+import { PageNotes } from "@/components/layout/page-notes";
+import { Disclosure } from "@/components/ui/disclosure";
 import { WarningsList } from "@/components/provenance/warnings";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -163,7 +165,7 @@ function CalendarioContent() {
     <div className="space-y-6">
       <PageHeader
         title="Calendario agrícola"
-        description="Campaña por campaña: cuándo se siembra y se cosecha, cuándo el suelo queda desnudo y en qué meses hay riesgo de calor o de falta de agua."
+        description="Cuándo se siembra y se cosecha, y en qué meses hay riesgo."
       >
         <Button asChild variant="outline"><Link href={`/campo/${fieldId}/reporte`}><FileDown aria-hidden /> Descargar el plan</Link></Button>
       </PageHeader>
@@ -219,7 +221,6 @@ function CalendarioContent() {
               const tl = r.data;
               return (
                 <div className="space-y-6">
-                  <WarningsList warnings={friendlyWarnings(r.meta.warnings).filter((w) => !/prioridades por defecto/i.test(w))} title="Avisos" />
                   <Card>
                     <CardHeader>
                       <CardTitle as="h2">{rotationTitle(tl.rotation)}</CardTitle>
@@ -229,14 +230,21 @@ function CalendarioContent() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                      <TimelineLegend />
+                      <Disclosure label="¿Cómo leer el calendario?"><TimelineLegend /></Disclosure>
                       {crops.data ? tl.campaigns.map((c) => <CampaignTimeline key={c.index} campaign={c} crops={cropMap} />) : <Skeleton className="h-48 w-full" />}
                     </CardContent>
                   </Card>
 
                   <Card>
-                    <CardHeader><CardTitle as="h2">Recomendaciones</CardTitle><CardDescription>Ordenadas por prioridad. Revisalas con tu ingeniero agrónomo.</CardDescription></CardHeader>
-                    <CardContent><AdviceList advice={tl.advice} campaigns={tl.campaigns} /></CardContent>
+                    <CardHeader><CardTitle as="h2">Qué tener en cuenta</CardTitle></CardHeader>
+                    <CardContent className="space-y-3">
+                      <AdviceList advice={tl.advice.slice(0, 3)} campaigns={tl.campaigns} />
+                      {tl.advice.length > 3 && (
+                        <Disclosure label={`Ver ${tl.advice.length - 3} recomendaciones más`}>
+                          <AdviceList advice={tl.advice.slice(3)} campaigns={tl.campaigns} />
+                        </Disclosure>
+                      )}
+                    </CardContent>
                   </Card>
 
                   {showActual && (
@@ -255,32 +263,24 @@ function CalendarioContent() {
                     </Card>
                   )}
 
-                  <div className="grid gap-6 lg:grid-cols-2">
-                    <Card>
-                      <CardHeader><CardTitle as="h2">Datos usados</CardTitle></CardHeader>
-                      <CardContent><ul className="list-disc space-y-1 pl-5 text-sm">{tl.data_used.map((d) => <li key={d}>{d}</li>)}</ul></CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader><CardTitle as="h2">Supuestos</CardTitle></CardHeader>
-                      <CardContent><ul className="list-disc space-y-1 pl-5 text-sm">{tl.assumptions.map((d) => <li key={d}>{d}</li>)}</ul></CardContent>
-                    </Card>
-                  </div>
+                  <PageNotes>
+                    <WarningsList warnings={friendlyWarnings(r.meta.warnings).filter((w) => !/prioridades por defecto/i.test(w))} title="Avisos" />
+                    <p>Las fechas son típicas, no una recomendación de siembra: ajustalas con tu ingeniero agrónomo según la variedad, el agua del perfil y el pronóstico.</p>
+                    <Disclosure label="Datos usados y supuestos" contentClassName="grid gap-4 lg:grid-cols-2">
+                      <div><h3 className="font-medium text-foreground">Datos usados</h3><ul className="mt-1 list-disc space-y-1 pl-5">{tl.data_used.map((d) => <li key={d}>{d}</li>)}</ul></div>
+                      <div><h3 className="font-medium text-foreground">Supuestos</h3><ul className="mt-1 list-disc space-y-1 pl-5">{tl.assumptions.map((d) => <li key={d}>{d}</li>)}</ul></div>
+                    </Disclosure>
+                  </PageNotes>
                 </div>
               );
             }}
           </AsyncBlock>
 
-          <AsyncBlock state={crops} what="el catálogo de cultivos">
-            {() => (
-              <Card>
-                <CardHeader><CardTitle as="h2">Fechas de siembra</CardTitle><CardDescription>¿Las fechas de la rotación encajan con la época habitual de cada cultivo?</CardDescription></CardHeader>
-                <CardContent><WindowsTable rotation={selected.rotation} crops={cropMap} /></CardContent>
-              </Card>
-            )}
-          </AsyncBlock>
-          <Alert tone="warning" title="Las fechas son típicas, no una recomendación de siembra">
-            <p>Las fechas salen del catálogo de cultivos y los riesgos, del clima promedio con el escenario elegido. Ajustalas con tu ingeniero agrónomo según la variedad, el agua del perfil y el pronóstico de la campaña.</p>
-          </Alert>
+          <Disclosure variant="card" label="¿Las fechas de siembra encajan con la época de cada cultivo?">
+            <AsyncBlock state={crops} what="el catálogo de cultivos">
+              {() => <WindowsTable rotation={selected.rotation} crops={cropMap} />}
+            </AsyncBlock>
+          </Disclosure>
         </>
       )}
     </div>

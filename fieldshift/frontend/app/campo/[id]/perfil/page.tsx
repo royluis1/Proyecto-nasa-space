@@ -7,6 +7,8 @@ import { FieldForm } from "@/components/field/field-form";
 import { PriorityControls } from "@/components/field/priority-controls";
 import { PageHeader } from "@/components/page-header";
 import { AutoProfileCard } from "@/components/zones/auto-profile-card";
+import { PageNotes } from "@/components/layout/page-notes";
+import { Disclosure } from "@/components/ui/disclosure";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +31,6 @@ function LivePreview() {
             <p className="text-lg">
               Hoy la mejor opción es <strong>{rotationTitle(best.rotation)}</strong> ({STRATEGY_LABELS[best.rotation.strategy]}), con <strong>{num(best.score.total, 0)} puntos</strong> de 100.
             </p>
-            <p className="text-sm text-muted-foreground">Se actualiza solo cuando movés los controles.</p>
             <Button asChild>
               <Link href={`/campo/${fieldId}/comparador`}>
                 Ver el comparador completo <ArrowRight aria-hidden />
@@ -57,13 +58,7 @@ export default function PerfilPage() {
   if (!field) return null;
   return (
     <div className="max-w-5xl space-y-8">
-      <PageHeader title="Perfil del campo y prioridades" description="Contanos cómo es tu campo y qué te importa más. El ranking se recalcula mientras movés los controles." />
-      {field.sample_note && (
-        <Alert tone="warning" title="Campo de ejemplo">
-          <p>{field.sample_note} Si lo editás, los cambios se pierden al reiniciar el servidor.</p>
-        </Alert>
-      )}
-
+      <PageHeader title="Tu campo y tus prioridades" description="Mové los controles y el ranking se actualiza al instante." />
       <AutoProfileCard field={field} />
 
       <section aria-labelledby="prioridades" className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
@@ -81,10 +76,17 @@ export default function PerfilPage() {
         </div>
       </section>
 
-      <section aria-labelledby="datos-campo" className="space-y-3">
-        <h2 id="datos-campo" className="text-2xl font-semibold">Datos del campo</h2>
+      <Disclosure variant="card" label="Editar los datos del campo (suelo, riego, rotación actual)">
         <FieldForm key={`${field.id}-${field.name}-${field.area_ha}`} mode="edit" initial={field} onSaved={() => { reloadField(); compare.reload(); }} />
-      </section>
+      </Disclosure>
+
+      {field.sample_note && (
+        <PageNotes>
+          <Alert tone="warning" title="Campo de ejemplo">
+            <p>{field.sample_note} Si lo editás, los cambios se pierden al reiniciar el servidor.</p>
+          </Alert>
+        </PageNotes>
+      )}
     </div>
   );
 }

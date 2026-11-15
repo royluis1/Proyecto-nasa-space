@@ -5,6 +5,8 @@ import { AlertList } from "@/components/alerts/alert-list";
 import { ForecastTable } from "@/components/alerts/forecast-table";
 import { useCampo } from "@/components/campo/campo-provider";
 import { PageHeader } from "@/components/page-header";
+import { PageNotes } from "@/components/layout/page-notes";
+import { Disclosure } from "@/components/ui/disclosure";
 import { SourceLine } from "@/components/provenance/source-line";
 import { WarningsList } from "@/components/provenance/warnings";
 import { Stat } from "@/components/stat";
@@ -29,7 +31,7 @@ function Content({ r }: { r: ApiResult<AlertsResult> }) {
         <Stat label="Lluvia pronosticada" value={a.future_rain_mm != null ? `${num(a.future_rain_mm)} mm` : "Sin pronóstico"} hint={a.forecast ? `Próximos ${a.forecast.days.length} días (Open-Meteo)` : undefined} />
       </div>
       <Card>
-        <CardHeader><CardTitle as="h2">Alertas</CardTitle><CardDescription>Ordenadas por gravedad. Cada una dice qué hacer y de dónde sale.</CardDescription></CardHeader>
+        <CardHeader><CardTitle as="h2">Alertas</CardTitle><CardDescription>De la más grave a la más leve.</CardDescription></CardHeader>
         <CardContent><AlertList alerts={a.alerts} empty="No hay alertas para los próximos días." /></CardContent>
       </Card>
       <Card>
@@ -40,15 +42,15 @@ function Content({ r }: { r: ApiResult<AlertsResult> }) {
           )}
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader><CardTitle as="h2">De dónde salen los datos</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
+      <PageNotes>
+        <WarningsList warnings={friendlyWarnings(r.meta.warnings)} />
+        <Disclosure label="De dónde salen los datos" contentClassName="space-y-4">
           {a.sources.map((s) => <SourceLine key={s.name} source={s} demo={r.demo && s.is_nasa} />)}
           {p && <p className="text-sm text-muted-foreground">{p.source.detail}</p>}
           <SourceMap profile={a.profile} />
-        </CardContent>
-      </Card>
-      <WarningsList warnings={friendlyWarnings(r.meta.warnings)} />
+        </Disclosure>
+        <p>Las alertas orientan; ante un evento extremo seguí los avisos oficiales del Servicio Meteorológico Nacional.</p>
+      </PageNotes>
     </div>
   );
 }
@@ -60,8 +62,8 @@ export default function AlertasPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Diagnóstico y alerta temprana"
-        description="Heladas, calor fuerte, lluvias intensas, viento y falta de agua de los próximos días, con la lluvia reciente y la humedad del suelo."
+        title="Alertas"
+        description="Heladas, calor, tormentas, viento y falta de agua de los próximos días."
       />
       <AsyncBlock state={state} what="las alertas">{(r) => <Content r={r} />}</AsyncBlock>
     </div>

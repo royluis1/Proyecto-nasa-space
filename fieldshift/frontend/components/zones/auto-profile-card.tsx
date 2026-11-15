@@ -4,6 +4,7 @@ import { MapPinned, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { AsyncBlock } from "@/components/async-block";
 import { WarningsList } from "@/components/provenance/warnings";
+import { Disclosure } from "@/components/ui/disclosure";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Swatch, ZonePatternDefs } from "@/components/zones/patterns";
@@ -32,6 +33,7 @@ function SoilBlock({ field }: { field: FieldOut }) {
         <p>Sin dato de suelo. Cargalo en el formulario de abajo o pedí un análisis.</p>
       )}
       {est && (
+        <Disclosure label="Ver la estimación de suelo y su fuente">
         <div className="rounded-md bg-muted p-3 text-sm">
           <p>
             <strong>Estimación:</strong> {est.texture_usda ?? "sin textura"}
@@ -41,6 +43,7 @@ function SoilBlock({ field }: { field: FieldOut }) {
           <p>Fuente: {est.source} · {est.resolution} · {est.depth} · <Badge variant={est.origin === "sample" ? "alerta" : "outline"}>{est.origin_label}</Badge> · tipo: estimado</p>
           <p className="mt-1">{applied.length ? `Se completó con la estimación: ${applied.join(" y ")}.` : "Se usa lo que cargaste: la estimación queda solo como referencia."}</p>
         </div>
+        </Disclosure>
       )}
     </section>
   );
@@ -56,21 +59,24 @@ function ZoneBlock({ z }: { z: ZoneAt }) {
     <div className="space-y-4">
       <section aria-labelledby="ap-zona" className="space-y-1">
         <h3 id="ap-zona" className="flex items-center gap-2 font-semibold">{isZoneClass(zone.zone_class) && <Swatch s={ZONE_STYLES[zone.zone_class]} />} Zona {zone.label.toLowerCase()} ({z.province_name})</h3>
-        {z.cell && (
-          <p className="text-sm">
-            Lluvia {z.cell.climate.precip_mm.toLocaleString("es-AR")} mm/año, déficit {z.cell.climate.deficit_mm.toLocaleString("es-AR")} mm/año, índice de aridez {z.cell.climate.aridity_index.toLocaleString("es-AR", { maximumFractionDigits: 2 })} (celda de NASA POWER de ~55 km).
+        <Link className="inline-flex items-center gap-1 text-sm text-primary underline" href={`/zonas?provincia=${z.province_id}&zona=${zone.zone_id}`}><MapPinned aria-hidden className="size-4" /> Ver en el mapa</Link>
+        <Disclosure label="Ver los datos de la zona">
+          {z.cell && (
+            <p className="text-sm">
+              Lluvia {z.cell.climate.precip_mm.toLocaleString("es-AR")} mm/año, déficit {z.cell.climate.deficit_mm.toLocaleString("es-AR")} mm/año, índice de aridez {z.cell.climate.aridity_index.toLocaleString("es-AR", { maximumFractionDigits: 2 })} (celda de NASA POWER de ~55 km).
+            </p>
+          )}
+          <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            Zonas climáticas derivadas de NASA POWER, no oficiales · <Badge variant={zone.origin === "sample" ? "alerta" : "outline"}>{zone.origin_label}</Badge>
           </p>
-        )}
-        <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-          Zonas climáticas derivadas de NASA POWER, no oficiales · <Badge variant={zone.origin === "sample" ? "alerta" : "outline"}>{zone.origin_label}</Badge>
-          <Link className="inline-flex items-center gap-1 text-primary underline" href={`/zonas?provincia=${z.province_id}&zona=${zone.zone_id}`}><MapPinned aria-hidden className="size-4" /> Ver en el mapa</Link>
-        </p>
+        </Disclosure>
       </section>
 
       {t?.is_transition && (
         <section aria-labelledby="ap-trans" className="space-y-3 rounded-[1rem] border-2 border-warn/70 bg-warn/10 p-4">
           <h3 id="ap-trans" className="flex items-center gap-2 text-lg font-semibold"><TriangleAlert aria-hidden className="size-5" /> Zona de transición</h3>
           <p className="text-lg">{t.message}</p>
+          <Disclosure label="Por qué y qué opciones conviene evaluar" contentClassName="space-y-3">
           <ul className="list-disc pl-5 text-sm">{t.reasons.map((r) => <li key={r}>{r}</li>)}</ul>
           <div>
             <p className="font-medium">Opciones para evaluar (que funcionan en los dos escenarios):</p>
@@ -86,6 +92,7 @@ function ZoneBlock({ z }: { z: ZoneAt }) {
               <div className="mt-3"><SuitabilityList items={t.suitability_other} compact /></div>
             </details>
           )}
+          </Disclosure>
         </section>
       )}
 
@@ -95,11 +102,14 @@ function ZoneBlock({ z }: { z: ZoneAt }) {
           {z.top_crops.map((c) => (
             <li key={c.crop_id} className="flex items-start gap-2">
               <Swatch s={LEVEL_STYLES[c.level]} size={18} />
-              <span><strong>{c.crop_name}</strong> · aptitud {LEVEL_WORD[c.level]}<span className="block text-sm text-muted-foreground">{c.reasons[0]}</span></span>
+              <span><strong>{c.crop_name}</strong> · aptitud {LEVEL_WORD[c.level]}</span>
             </li>
           ))}
         </ol>
-        <p className="text-sm text-muted-foreground">Orientación por reglas de clima: no es una recomendación de siembra. Requiere validación agronómica local.</p>
+        <Disclosure label="Por qué estos cultivos">
+          <ul className="space-y-1 text-sm">{z.top_crops.map((c) => <li key={c.crop_id}><strong>{c.crop_name}:</strong> {c.reasons[0]}</li>)}</ul>
+          <p className="mt-2 text-sm text-muted-foreground">Orientación por reglas de clima: no es una recomendación de siembra. Requiere validación agronómica local.</p>
+        </Disclosure>
       </section>
     </div>
   );
@@ -117,15 +127,17 @@ export function AutoProfileCard({ field }: { field: FieldOut }) {
       <ZonePatternDefs />
       <CardHeader>
         <CardTitle as="h2">Perfil automático de tu campo</CardTitle>
-        <CardDescription>Lo que FieldShift completó solo a partir de la ubicación. Lo que cargues vos siempre tiene prioridad.</CardDescription>
+        <CardDescription>Completado solo con la ubicación. Lo que cargues vos tiene prioridad.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <SoilBlock field={field} />
-        {field.auto_profile && field.auto_profile.warnings.length > 0 && (
-          <WarningsList warnings={friendlyWarnings(field.auto_profile.warnings)} title="Avisos del perfil automático" />
-        )}
         {own ? <ZoneBlock z={own} /> : (
           <AsyncBlock state={zone} what="la zona del campo">{(r) => (r ? <ZoneBlock z={r.data} /> : null)}</AsyncBlock>
+        )}
+        {field.auto_profile && field.auto_profile.warnings.length > 0 && (
+          <Disclosure label="Avisos del perfil automático">
+            <WarningsList warnings={friendlyWarnings(field.auto_profile.warnings)} title="Avisos del perfil automático" />
+          </Disclosure>
         )}
       </CardContent>
     </Card>
