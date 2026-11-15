@@ -10,6 +10,13 @@ export function SiteFooter() {
   return (
     <footer className="mt-12 border-t border-border/60 print:border-0">
       <div className="container space-y-4 py-8 text-sm text-muted-foreground">
+        {/* Enlaces que salieron del header público mientras los menús por perfil no estén armados. */}
+        <nav className="flex flex-wrap gap-x-6 gap-y-2" aria-label={t("Enlaces del sitio", "Site links")}>
+          <Link href="/como-funciona" className="font-medium text-foreground/80 hover:text-foreground">{t("Cómo funciona", "How it works")}</Link>
+          <Link href="/zonas" className="font-medium text-foreground/80 hover:text-foreground">{t("Regiones", "Regions")}</Link>
+          <Link href="/campos" className="font-medium text-foreground/80 hover:text-foreground">{t("Mis campos", "My fields")}</Link>
+          <Link href="/metodologia" className="font-medium text-foreground/80 hover:text-foreground">{t("Metodología", "Methodology")}</Link>
+        </nav>
         <p className="flex items-start gap-2 text-foreground/85">
           <ShieldAlert aria-hidden className="mt-0.5 size-4 shrink-0 text-warning" />
           <span>
