@@ -7,6 +7,7 @@ escala de decenas de km, suficiente para los umbrales de transición (25 km).
 from __future__ import annotations
 
 import math
+from app.i18n import tr
 
 KM_PER_DEG = 111.32
 
@@ -29,7 +30,7 @@ def _polygons(geometry: dict) -> list[list]:
         return [geometry["coordinates"]]
     if geometry["type"] == "MultiPolygon":
         return geometry["coordinates"]
-    raise ValueError(f"Geometría no admitida: {geometry['type']}")
+    raise ValueError(tr(f"Geometría no admitida: {geometry['type']}", f"Unsupported geometry: {geometry['type']}"))
 
 
 def contains(geometry: dict, lat: float, lon: float) -> bool:

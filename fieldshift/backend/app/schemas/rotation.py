@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
-from app.models.constants import DISCLAIMER
+from app.models.constants import disclaimer
 from app.models.enums import (
     AridityZone,
     Confidence,
@@ -154,7 +154,7 @@ class Recommendation(BaseModel):
     evidence: EvidenceBreakdown
     validation_note: str
     requires_agronomist: bool = True
-    disclaimer: str = DISCLAIMER
+    disclaimer: str = Field(default_factory=disclaimer)
     generated_by: str = Field(default="plantilla", pattern="^(plantilla|llm)$")
 
 
@@ -296,4 +296,4 @@ class CompareResult(BaseModel):
     assumptions: list[Assumption]
     sources: list[DataSource]
     warnings: list[str]
-    disclaimer: str = DISCLAIMER
+    disclaimer: str = Field(default_factory=disclaimer)

@@ -11,6 +11,10 @@ from app.schemas.regions import FieldHeatStress, HeatReading
 from app.services.satellite.products import PRODUCTS
 from app.services.satellite.provider import SatelliteProvider
 from app.utils.exceptions import NoDataError
+from app.i18n import tr
+
+LEVEL_WORD_ES = {"alto": "alto", "medio": "medio", "bajo": "bajo"}
+LEVEL_WORD_EN = {"alto": "high", "medio": "medium", "bajo": "low"}
 
 K = 273.15
 HOT_SURFACE_C = 45.0  # superficie muy caliente (supuesto)
@@ -45,7 +49,7 @@ def field_heat_stress(provider: SatelliteProvider, field, today: date | None = N
         mx = round(float(s.max()), 1) if len(s) else None
         hot = int((s > HOT_SURFACE_C).sum())
     except NoDataError as exc:
-        warnings.append(f"ECOSTRESS LST no disponible: {exc.message}")
+        warnings.append(tr(f"ECOSTRESS LST no disponible: {exc.message}", f"ECOSTRESS LST unavailable: {exc.message}"))
 
     try:
         d = provider.get_points(PRODUCTS["ECO_L4T_ESI"], pt, start, end)
@@ -62,23 +66,24 @@ def field_heat_stress(provider: SatelliteProvider, field, today: date | None = N
             if esi_recent is not None:
                 level = "alto" if esi_recent < ESI_HIGH_STRESS else "medio" if esi_recent <= ESI_LOW_STRESS else "bajo"
     except NoDataError as exc:
-        warnings.append(f"ECOSTRESS ESI no disponible: {exc.message}")
+        warnings.append(tr(f"ECOSTRESS ESI no disponible: {exc.message}", f"ECOSTRESS ESI unavailable: {exc.message}"))
 
     parts = []
     if summer is not None:
-        parts.append(f"En verano la superficie llega a {summer:.0f} °C de media en las pasadas del satélite"
-                     + (f", con {hot} observaciones por encima de {HOT_SURFACE_C:.0f} °C." if hot else "."))
+        parts.append(tr(f"En verano la superficie llega a {summer:.0f} °C de media en las pasadas del satélite", f"In summer the surface reaches a mean of {summer:.0f} °C on satellite passes")
+                     + (tr(f", con {hot} observaciones por encima de {HOT_SURFACE_C:.0f} °C.", f", with {hot} observations above {HOT_SURFACE_C:.0f} °C.") if hot else "."))
     if level:
         cmp = ""
         if esi_normal:
-            cmp = " (más estrés que lo normal para la época)" if esi_recent < esi_normal - 0.05 else (
-                " (menos estrés que lo normal)" if esi_recent > esi_normal + 0.05 else " (parecido a lo normal)")
-        parts.append(f"Estrés hídrico de la vegetación {level} en los últimos 3 meses: ESI {esi_recent:.2f}{cmp}.")
-    reading = " ".join(parts) or "Sin datos de ECOSTRESS para esta ubicación."
+            cmp = tr(" (más estrés que lo normal para la época)", " (more stress than normal for the season)") if esi_recent < esi_normal - 0.05 else (
+                tr(" (menos estrés que lo normal)", " (less stress than normal)") if esi_recent > esi_normal + 0.05 else tr(" (parecido a lo normal)", " (similar to normal)"))
+        parts.append(tr(f"Estrés hídrico de la vegetación {LEVEL_WORD_ES.get(level, level)} en los últimos 3 meses: ESI {esi_recent:.2f}{cmp}.",
+                        f"{LEVEL_WORD_EN.get(level, level).capitalize()} vegetation water stress in the last 3 months: ESI {esi_recent:.2f}{cmp}."))
+    reading = " ".join(parts) or tr("Sin datos de ECOSTRESS para esta ubicación.", "No ECOSTRESS data for this location.")
     if lst is None and esi is None:
-        raise NoDataError("No hay datos de ECOSTRESS para este lote.", {"warnings": warnings})
+        raise NoDataError(tr("No hay datos de ECOSTRESS para este lote.", "There is no ECOSTRESS data for this field."), {"warnings": warnings})
     return FieldHeatStress(
-        field_id=field.id, period=f"{start} a {end}", lst=lst, lst_summer_mean_c=summer, lst_max_c=mx, hot_surface_obs=hot,
+        field_id=field.id, period=tr(f"{start} a {end}", f"{start} to {end}"), lst=lst, lst_summer_mean_c=summer, lst_max_c=mx, hot_surface_obs=hot,
         esi=esi, esi_recent=esi_recent, esi_normal=esi_normal, stress_level=level, reading=reading,
         warnings=list(dict.fromkeys(warnings)),
     )

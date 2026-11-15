@@ -44,6 +44,7 @@ from app.services.engine.scoring import (
     total,
 )
 from app.utils.exceptions import InvalidInputError
+from app.i18n import tr
 
 MIN_ROTATIONS = 3
 # El NDVI ve como "suelo desnudo" también la implantación de cada cultivo: margen antes de corregir lo declarado.
@@ -111,33 +112,34 @@ def run(req: EngineRequest, crops: dict[str, Crop], templates: list[RotationTemp
     warnings = list(req.warnings)
     for crop_id in [*req.history, *([req.current_crop] if req.current_crop else [])]:
         if crop_id not in crops:
-            raise InvalidInputError(f"Cultivo desconocido en el historial: '{crop_id}'.", {"crop_id": crop_id})
+            raise InvalidInputError(tr(f"Cultivo desconocido en el historial: '{crop_id}'.", f"Unknown crop in the history: '{crop_id}'."), {"crop_id": crop_id})
 
     soil = soil_from_field(field_)
     share = req.scenario.irrigation_share(field_.irrigated) if req.scenario else (1.0 if field_.irrigated else 0.0)
     irrigated = share > 0
     if irrigated and not field_.irrigated:
         warnings.append(
-            "Escenario con riego limitado: el lote se evalúa con la mitad de la lámina de riego."
+            tr("Escenario con riego limitado: el lote se evalúa con la mitad de la lámina de riego.", "Limited-irrigation scenario: the field is evaluated with half the irrigation depth.")
             if share < 1
-            else "Escenario con riego: el lote se evalúa como si tuviera riego."
+            else tr("Escenario con riego: el lote se evalúa como si tuviera riego.", "Irrigation scenario: the field is evaluated as if it were irrigated.")
         )
     elif irrigated and share < 1:
-        warnings.append("Escenario con riego limitado: el lote se evalúa con la mitad de la lámina de riego.")
+        warnings.append(tr("Escenario con riego limitado: el lote se evalúa con la mitad de la lámina de riego.", "Limited-irrigation scenario: the field is evaluated with half the irrigation depth."))
     elif not irrigated and field_.irrigated:
-        warnings.append("Escenario sin riego: el lote se evalúa en secano.")
+        warnings.append(tr("Escenario sin riego: el lote se evalúa en secano.", "No-irrigation scenario: the field is evaluated as rainfed."))
     if soil.texture_assumed:
-        warnings.append("Textura del suelo no informada: se supone franco arenosa.")
+        warnings.append(tr("Textura del suelo no informada: se supone franco arenosa.", "Soil texture not reported: sandy loam is assumed."))
     climate = apply_scenario(req.climate, req.scenario)
     if req.scenario and req.scenario.dry_year and req.climate.driest_year is None:
-        warnings.append("No hay años completos para elegir un año seco análogo: se usa la climatología.")
+        warnings.append(tr("No hay años completos para elegir un año seco análogo: se usa la climatología.", "There are no complete years to choose an analog dry year: the climatology is used."))
 
     current_id = req.current_crop or (req.history[-1] if req.history else None)
     current = crops.get(current_id) if current_id else None
     repeat = req.history[-1] if len(req.history) >= 2 and req.history[-1] == req.history[-2] else None
     if repeat:
         warnings.append(
-            f"El historial muestra {crops[repeat].name} en las últimas campañas seguidas (monocultivo reciente)."
+            tr(f"El historial muestra {crops[repeat].name} en las últimas campañas seguidas (monocultivo reciente).",
+               f"The history shows {crops[repeat].name} in the last consecutive seasons (recent monoculture).")
         )
 
     ctx = ScoringContext(
@@ -155,9 +157,9 @@ def run(req: EngineRequest, crops: dict[str, Crop], templates: list[RotationTemp
 
     actual = actual_rotation(field_, req.declared_actual, req.history, crops)
     try:
-        warnings += [f"Rotación actual: {w}" for w in calendar_warnings(build_calendar(actual, crops))]
+        warnings += [tr(f"Rotación actual: {w}", f"Current rotation: {w}") for w in calendar_warnings(build_calendar(actual, crops))]
     except RotationCalendarError as exc:
-        raise InvalidInputError(f"La rotación actual no es válida: {exc}") from None
+        raise InvalidInputError(tr(f"La rotación actual no es válida: {exc}", f"The current rotation is not valid: {exc}")) from None
     generated, mixed = generate(field_, actual, templates, crops, zone, field_.irrigated, req.strategies)
 
     # NDVI: si muestra más suelo desnudo que la rotación declarada, se corrige la erosión de la actual.
@@ -168,8 +170,10 @@ def run(req: EngineRequest, crops: dict[str, Crop], templates: list[RotationTemp
         if req.vegetation.bare_soil_fraction > declared_bare + NDVI_BARE_MARGIN:
             actual_erosion_scale = min(2.0, req.vegetation.bare_soil_fraction / max(declared_bare, 0.05))
             warnings.append(
-                f"El NDVI muestra suelo desnudo el {req.vegetation.bare_soil_fraction * 100:.0f} % del tiempo, más que lo declarado "
-                f"({declared_bare * 100:.0f} %): se aumentó la exposición a erosión de la rotación actual."
+                tr(f"El NDVI muestra suelo desnudo el {req.vegetation.bare_soil_fraction * 100:.0f} % del tiempo, más que lo declarado "
+                   f"({declared_bare * 100:.0f} %): se aumentó la exposición a erosión de la rotación actual.",
+                   f"NDVI shows bare soil {req.vegetation.bare_soil_fraction * 100:.0f} % of the time, more than declared "
+                   f"({declared_bare * 100:.0f} %): the current rotation's erosion exposure was increased.")
             )
 
     evaluated: list[Evaluated] = [_evaluate(actual, crops, climate, ctx, weights, actual_erosion_scale)]
@@ -181,7 +185,7 @@ def run(req: EngineRequest, crops: dict[str, Crop], templates: list[RotationTemp
         best.rotation = best.rotation.model_copy(
             update={
                 "id": rotation_id(field_.id, RotationStrategy.MIXTA),
-                "name": f"Mixta recomendada: {best.rotation.name}",
+                "name": tr(f"Mixta recomendada: {best.rotation.name}", f"Recommended mix: {best.rotation.name}"),
                 "rule_ids": [
                     *best.rotation.rule_ids,
                     f"seleccion:mejor de {len(variants)} variantes mixtas con tus prioridades",
@@ -195,12 +199,12 @@ def run(req: EngineRequest, crops: dict[str, Crop], templates: list[RotationTemp
     for ev in evaluated:
         sig = _signature(ev.rotation)
         if sig in seen:
-            warnings.append(f"'{ev.rotation.name}' coincide con '{seen[sig]}': se muestra una sola vez.")
+            warnings.append(tr(f"'{ev.rotation.name}' coincide con '{seen[sig]}': se muestra una sola vez.", f"'{ev.rotation.name}' matches '{seen[sig]}': it is shown only once."))
             continue
         seen[sig] = ev.rotation.name
         unique.append(ev)
     if len(unique) < MIN_ROTATIONS:
-        raise InvalidInputError(f"Se necesitan al menos {MIN_ROTATIONS} rotaciones distintas para comparar.")
+        raise InvalidInputError(tr(f"Se necesitan al menos {MIN_ROTATIONS} rotaciones distintas para comparar.", f"At least {MIN_ROTATIONS} different rotations are needed to compare."))
 
     base = unique[0]
     actual_crop_ids = set(base.metrics.crop_ids)
@@ -294,7 +298,7 @@ def run(req: EngineRequest, crops: dict[str, Crop], templates: list[RotationTemp
         ScoreComponentKey.SOSTENIBILIDAD: "sostenibilidad",
     }
     if req.priorities_default:
-        warnings.append("Prioridades por defecto (estimado): el productor no las cargó.")
+        warnings.append(tr("Prioridades por defecto (estimado): el productor no las cargó.", "Default priorities (estimated): the farmer did not set them."))
 
     return CompareResult(
         field_id=field_.id,
@@ -337,8 +341,8 @@ def run(req: EngineRequest, crops: dict[str, Crop], templates: list[RotationTemp
         recommended_rotation_id=best.rotation.id,
         confidence=overall,
         confidence_reasons=overall_reasons,
-        assumptions=P.ASSUMPTIONS,
-        sources=[P.SOURCES[s] for s in _source_ids(req)],
+        assumptions=P.assumptions(),
+        sources=[P.sources()[s] for s in _source_ids(req)],
         warnings=list(dict.fromkeys(warnings)),
     )
 

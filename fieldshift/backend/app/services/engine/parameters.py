@@ -7,6 +7,7 @@ en docs/assumptions.md y viajan en cada respuesta como `Assumption`.
 
 from app.models.enums import AridityZone, Level, SoilTexture
 from app.schemas.common import Assumption, DataSource
+from app.i18n import current_lang
 
 # --- Escalas cualitativas -> número ---
 LEVEL_VALUE = {Level.BAJO: 0.0, Level.MEDIO: 0.5, Level.ALTO: 1.0}
@@ -299,3 +300,63 @@ ASSUMPTIONS = [
     ),
 ]
 ASSUMPTION_IDS = [a.id for a in ASSUMPTIONS]
+
+
+# --- Textos en inglés de las fuentes y los supuestos (mismos ids) ---
+_SOURCES_EN = {
+    "nasa-power": dict(name="NASA POWER, daily point data", product="AG community: T2M, T2M_MAX, T2M_MIN, PRECTOTCORR, RH2M, WS2M, ALLSKY_SFC_SW_DWN, PS",
+                       spatial_resolution="~0.5° x 0.625° (meteorology); ~1° (radiation)", temporal_resolution="daily", license="NASA open data",
+                       limitations=["Regional setting (~50 km), not the field.", "Reanalysis: modeled data."]),
+    "fao-56": dict(name="FAO-56: crop evapotranspiration", product="Kc (Table 12), available water by texture (Table 19), Penman-Monteith ET0",
+                   spatial_resolution="not applicable", temporal_resolution="not applicable", license="FAO publication",
+                   limitations=["Standard Kc: they do not account for local varieties or management."]),
+    "usda-scs": dict(name="Monthly effective rainfall, simplified USDA-SCS method", provider="USDA Soil Conservation Service (as used in FAO CROPWAT)",
+                     spatial_resolution="not applicable", temporal_resolution="monthly", license="Published method",
+                     citation="USDA-SCS (1970); simplified FAO CROPWAT formula.", limitations=["Empirical formula; it does not consider rain intensity or slope."]),
+    "unep-aridity": dict(name="Aridity index P/ET0", spatial_resolution="not applicable", temporal_resolution="annual", license="Published classification",
+                         citation="UNEP (1992). World Atlas of Desertification. Classes: arid < 0.2; semi-arid < 0.5; dry sub-humid < 0.65.",
+                         limitations=["UNEP's ET0 was calculated with another method; the limits are indicative."]),
+    "catalogo-fieldshift": dict(name="AgroOrbit crop catalog", temporal_resolution="not applicable", license="Editable by the team",
+                                citation="Qualitative attributes; per-crop sources in the `sources` field.",
+                                limitations=["Provisional qualitative values, to be validated with INTA and local agronomists."]),
+    "smap": dict(name="SMAP soil moisture (L4 root zone 0-100 cm; L3 surface)", provider="NASA SMAP, NSIDC DAAC (via AppEEARS)",
+                 product="SPL4SMGP.008 (modeled with assimilation) / SPL3SMP_E.006 (observed)", temporal_resolution="L4: every 3 h; L3: daily with gaps",
+                 license="NASA open data", limitations=["A 9 km pixel averages many fields.", "L4 is modeled; L3 measures only ~5 cm."]),
+    "modis-ndvi": dict(provider="NASA / USGS LP DAAC (via AppEEARS)", product="MOD13Q1.061, 16-day composite", temporal_resolution="16 days",
+                       license="NASA open data", limitations=["At 250 m it mixes neighboring fields on small plots.", "Clouds and 16-day composites."]),
+}
+_ASSUMPTIONS_EN = {
+    "kc": dict(text="Standard crop coefficients Kc (initial, mid, end) to estimate water demand.", value_range="0.30 to 1.20", source="FAO-56 Table 12; cover crops: assumption"),
+    "kc-perfil": dict(text="Monthly Kc profile: first month initial, second month intermediate, middle months mid, last month end."),
+    "lluvia-efectiva": dict(text="Monthly effective rainfall with the simplified USDA-SCS formula."),
+    "agua-util": dict(text="Available water by texture (midpoint of the range) times root depth (1 m if not reported).", source="FAO-56 Table 19"),
+    "eficiencia-barbecho": dict(text="Share of fallow rain that stays stored in the profile, by texture.", value_range="0.15-0.25"),
+    "almacenaje-bajo-cultivo": dict(text="Half of the effective rain the crop does not use is stored in the profile.", value_range="0.5"),
+    "riego": dict(text="Irrigation covers 80 % of the crop's deficit.", value_range="0.8"),
+    "demanda-alta": dict(text="Water resilience is penalized when crop demand exceeds 80 % of annual rain (40 points per 100 % excess, max 40)."),
+    "et0-temperatura": dict(text="ET0 rises 3 % per °C of temperature increase in the scenarios."),
+    "calor-desvio": dict(text="The frequency of days with Tmax > 35 °C under warming shifts with a 5 °C standard deviation."),
+    "heladas": dict(text="A month has frequent frost if mean Tmin is <= 3 °C; occasional if <= 6 °C."),
+    "estres-ingreso": dict(text="Yield drops with the crop's relative deficit: 1 - Ya/Ym = Ky x (1 - ETa/ETm).", value_range="Ky 0.7-1.25",
+                           source="FAO-33 (Doorenbos and Kassam, 1979); unlisted species: assumption"),
+    "rendimiento-relativo": dict(text="Each crop's income is multiplied by its expected relative yield in San Luis (low 0.6; medium 0.85; high 1)."),
+    "biomasa-agua": dict(text="A crop's cover and organic-matter contribution drop by half the relative deficit it suffers."),
+    "plantillas-riego": dict(text="With irrigation, rotation templates are chosen as in a sub-humid zone."),
+    "costo-cobertura": dict(text="Each unharvested cover crop has a relative cost of 0.08 income units per year."),
+    "erosion": dict(text="Erosion exposure: fallow months weighted by the previous crop's residue, the texture's erodibility and the windy months (July to November)."),
+    "atributos-cultivo": dict(text="Qualitative catalog attributes (tolerances, contributions, income, market).", source="AgroOrbit catalog, to be validated with INTA"),
+    "aridez": dict(text="Zone by aridity index P/ET0 with FAO-56 ET0 from NASA POWER."),
+    "textura-por-defecto": dict(text="If the texture is not reported, sandy loam is used."),
+}
+_SOURCES_BY_LANG = {"es": SOURCES, "en": {k: v.model_copy(update=_SOURCES_EN.get(k, {})) for k, v in SOURCES.items()}}
+_ASSUMPTIONS_BY_LANG = {"es": ASSUMPTIONS, "en": [a.model_copy(update=_ASSUMPTIONS_EN.get(a.id, {})) for a in ASSUMPTIONS]}
+
+
+def sources() -> dict[str, DataSource]:
+    """Fuentes en el idioma del pedido."""
+    return _SOURCES_BY_LANG[current_lang()]
+
+
+def assumptions() -> list[Assumption]:
+    """Supuestos en el idioma del pedido."""
+    return _ASSUMPTIONS_BY_LANG[current_lang()]

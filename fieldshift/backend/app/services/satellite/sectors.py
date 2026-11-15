@@ -17,6 +17,10 @@ from app.schemas.regions import FieldSectors, Sector
 from app.services.regions import geo
 from app.services.satellite.products import PRODUCTS
 from app.services.satellite.provider import SatelliteProvider
+from app.i18n import tr
+
+SECTOR_EN = {"Noroeste": "Northwest", "Norte": "North", "Noreste": "Northeast", "Oeste": "West", "Centro": "Center",
+             "Este": "East", "Suroeste": "Southwest", "Sur": "South", "Sureste": "Southeast"}
 
 BARE_NDVI = 0.3
 VIGOR_PCT = 10.0
@@ -71,7 +75,7 @@ def summarize_sectors(points: list[SectorPoint], series: dict[str, list[float]])
         ))
     valid = [r for r in rows if r.mean_ndvi is not None]
     if not valid:
-        return rows, None, None, "No hay observaciones válidas de Landsat en los sectores del lote."
+        return rows, None, None, tr("No hay observaciones válidas de Landsat en los sectores del lote.", "There are no valid Landsat observations in the field's sectors.")
     med = statistics.median(r.mean_ndvi for r in valid)
     for r in valid:
         diff = round((r.mean_ndvi - med) / med * 100, 1) if med else 0.0
@@ -80,13 +84,18 @@ def summarize_sectors(points: list[SectorPoint], series: dict[str, list[float]])
     weakest = min(valid, key=lambda r: r.mean_ndvi)
     barest = max(valid, key=lambda r: r.bare_pct)
     if len(valid) == 1:
-        reading = "Hay un solo punto con datos: no se pueden comparar sectores."
+        reading = tr("Hay un solo punto con datos: no se pueden comparar sectores.", "Only one point has data: sectors cannot be compared.")
     elif weakest.vigor == "más débil":
-        reading = (f"El sector {weakest.name} tuvo un {abs(weakest.vs_field_pct):.0f} % menos de verdor que la mediana del lote"
-                   f"{f' y estuvo con poca vegetación el {barest.bare_pct:.0f} % del tiempo' if barest.id == weakest.id else ''}. "
-                   "Conviene recorrerlo: puede haber manchones de suelo desnudo, erosión, compactación, sales o un bajo.")
+        reading = tr(
+            f"El sector {weakest.name} tuvo un {abs(weakest.vs_field_pct):.0f} % menos de verdor que la mediana del lote"
+            f"{f' y estuvo con poca vegetación el {barest.bare_pct:.0f} % del tiempo' if barest.id == weakest.id else ''}. "
+            "Conviene recorrerlo: puede haber manchones de suelo desnudo, erosión, compactación, sales o un bajo.",
+            f"The {SECTOR_EN.get(weakest.name, weakest.name)} sector had {abs(weakest.vs_field_pct):.0f} % less greenness than the field's median"
+            f"{f' and had little vegetation {barest.bare_pct:.0f} % of the time' if barest.id == weakest.id else ''}. "
+            "It is worth walking it: there may be patches of bare soil, erosion, compaction, salts or a low spot.",
+        )
     else:
-        reading = "Los sectores del lote tuvieron un verdor parecido (diferencias de menos del 10 % contra la mediana)."
+        reading = tr("Los sectores del lote tuvieron un verdor parecido (diferencias de menos del 10 % contra la mediana).", "The field's sectors had similar greenness (differences under 10 % vs. the median).")
     return rows, weakest.id, barest.id, reading
 
 
@@ -101,10 +110,12 @@ def field_sectors(provider: SatelliteProvider, field, today: date | None = None)
     series = {pid: list(s.df["value"]) for pid, s in data.series.items()}
     sectors, weakest, barest, reading = summarize_sectors(pts, series)
     return FieldSectors(
-        field_id=field.id, product=product.appeears_id, resolution=product.spatial_resolution, period=f"{start} a {end}",
+        field_id=field.id, product=product.appeears_id, resolution=product.spatial_resolution, period=tr(f"{start} a {end}", f"{start} to {end}"),
         bare_threshold=BARE_NDVI, sectors=sectors, weakest=weakest, barest=barest, reading=reading,
-        method=("Grilla de 3 x 3 sectores sobre el lote; en cada centro, la serie de NDVI de Landsat (HLS L30, 30 m) de los "
-                f"últimos {YEARS} años. Se compara el NDVI medio de cada sector con la mediana del lote."),
+        method=tr("Grilla de 3 x 3 sectores sobre el lote; en cada centro, la serie de NDVI de Landsat (HLS L30, 30 m) de los "
+                  f"últimos {YEARS} años. Se compara el NDVI medio de cada sector con la mediana del lote.",
+                  "A 3 x 3 grid of sectors over the field; at each center, the Landsat NDVI series (HLS L30, 30 m) of the "
+                  f"last {YEARS} years. Each sector's mean NDVI is compared with the field's median."),
         origin=data.status, origin_label=data.status.origin_label, retrieved_at=data.retrieved_at, task_id=data.task_id,
         limitations=product.limitations, warnings=data.warnings,
     )

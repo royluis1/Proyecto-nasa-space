@@ -29,6 +29,7 @@ from app.services.regions.suitability import rank
 from app.services.regions.zoning import LABELS, LIMITS
 from app.services.regions.zoning import ORDER as ZONE_ORDER
 from app.utils.exceptions import NotFoundError
+from app.i18n import tr
 
 TRANSITION_KM = 25.0  # cerca del borde con otra zona (media celda de POWER)
 AI_MARGIN = 0.05  # índice de aridez a esta distancia o menos de un límite de clase
@@ -51,14 +52,14 @@ class RegionRepository:
     def provinces(self) -> dict:
         path = self.folder / "provincias_argentina.geojson"
         if not path.exists():
-            raise NotFoundError("No están los límites provinciales (data/samples/provincias_argentina.geojson).")
+            raise NotFoundError(tr("No están los límites provinciales (data/samples/provincias_argentina.geojson).", "The province boundaries are missing (data/samples/provincias_argentina.geojson)."))
         return json.loads(path.read_text(encoding="utf-8"))
 
     def province(self, province_id: str) -> dict:
         for f in self.provinces["features"]:
             if f["properties"]["id"] == province_id:
                 return f
-        raise NotFoundError(f"No existe la provincia '{province_id}'.")
+        raise NotFoundError(tr(f"No existe la provincia '{province_id}'.", f"Province '{province_id}' does not exist."))
 
     def zones_file(self, province_id: str) -> dict | None:
         if province_id not in self._zones:
@@ -102,7 +103,7 @@ class RegionRepository:
         p = feature["properties"]
         origin = self._origin(meta)
         return ZoneSummary(
-            zone_id=p["zone_id"], zone_class=p["zone_class"], label=p["zone_label"], province_id=p["province_id"],
+            zone_id=p["zone_id"], zone_class=p["zone_class"], label=LABELS.get(p["zone_class"], p["zone_label"]), province_id=p["province_id"],
             climate=climate_of(p), cells=p["cells"], area_km2=p["area_km2"], origin=origin, origin_label=origin.origin_label,
             period=meta.get("period", ""), method=meta.get("method", ""), generated_at=meta.get("generated_at"),
         )
@@ -113,7 +114,7 @@ class RegionRepository:
         data = self.zones_file(province_id)
         if data is None:
             return ZonesOut(province_id=province_id, province_name=name, available=False,
-                            warning="Zonificación disponible próximamente para esta provincia.")
+                            warning=tr("Zonificación disponible próximamente para esta provincia.", "Zoning for this province is coming soon."))
         meta = data["fieldshift"]
         conf = self.confidence(meta)
         zones = []
@@ -142,7 +143,7 @@ class RegionRepository:
             for f in data["features"]:
                 if f["properties"]["kind"] == "zone" and f["properties"]["zone_id"] == zone_id:
                     return f, data["fieldshift"]
-        raise ZoneNotFoundError(f"No existe la zona '{zone_id}'.")
+        raise ZoneNotFoundError(tr(f"No existe la zona '{zone_id}'.", f"Zone '{zone_id}' does not exist."))
 
     def suitability(self, zone_id: str) -> ZoneSuitability:
         f, meta = self._find_zone(zone_id)
@@ -153,12 +154,12 @@ class RegionRepository:
     def zone_at(self, lat: float, lon: float) -> ZoneAt:
         prov = self.province_at(lat, lon)
         if prov is None:
-            raise NotFoundError("El punto está fuera de las provincias de Argentina cargadas.")
+            raise NotFoundError(tr("El punto está fuera de las provincias de Argentina cargadas.", "The point is outside the loaded Argentine provinces."))
         pid, pname = prov["properties"]["id"], prov["properties"]["name"]
         data = self.zones_file(pid)
         if data is None:
             return ZoneAt(latitude=lat, longitude=lon, province_id=pid, province_name=pname, zones_available=False,
-                          note="Zonificación disponible próximamente para esta provincia.")
+                          note=tr("Zonificación disponible próximamente para esta provincia.", "Zoning for this province is coming soon."))
         meta = data["fieldshift"]
         conf = self.confidence(meta)
         cells = [f for f in data["features"] if f["properties"]["kind"] == "cell"]
@@ -195,7 +196,7 @@ class RegionRepository:
             if dist is None or d < dist:
                 dist, near = d, p["zone_class"]
         if dist is not None and dist <= TRANSITION_KM:
-            reasons.append(f"Está a {dist:.0f} km del borde con la zona {LABELS[near].lower()} (umbral: {TRANSITION_KM:.0f} km).")
+            reasons.append(tr(f"Está a {dist:.0f} km del borde con la zona {LABELS[near].lower()} (umbral: {TRANSITION_KM:.0f} km).", f"It is {dist:.0f} km from the border with the {LABELS[near].lower()} zone (threshold: {TRANSITION_KM:.0f} km)."))
             other = near
 
         # b) índice de aridez cerca de un límite
@@ -203,7 +204,7 @@ class RegionRepository:
         limit = min(LIMITS, key=lambda x: abs(ai - x))
         margin = round(abs(ai - limit), 3)
         if margin <= AI_MARGIN:
-            reasons.append(f"Su índice de aridez ({ai:.2f}) está a {margin:.2f} del límite {limit:.2f} entre dos zonas.")
+            reasons.append(tr(f"Su índice de aridez ({ai:.2f}) está a {margin:.2f} del límite {limit:.2f} entre dos zonas.", f"Its aridity index ({ai:.2f}) is {margin:.2f} from the {limit:.2f} boundary between two zones."))
             other = other or ZONE_ORDER[ZONE_ORDER.index(cls) + (1 if ai < limit else -1)]
 
         # c) años que cambian de zona
@@ -212,7 +213,7 @@ class RegionRepository:
             counts = Counter(y["zone_class"] for y in cp.get("yearly", []) if y["zone_class"] != cls)
             freq = counts.most_common(1)[0][0] if counts else None
             years = round(pct / 10)
-            reasons.append(f"En {pct:.0f} % de los años (unos {years} de cada 10) se comportó como otra zona.")
+            reasons.append(tr(f"En {pct:.0f} % de los años (unos {years} de cada 10) se comportó como otra zona.", f"In {pct:.0f} % of years (about {years} in 10) it behaved like another zone."))
             other = other or freq
 
         if not reasons or other is None:
@@ -220,8 +221,10 @@ class RegionRepository:
                               distance_to_border_km=round(dist, 1) if dist is not None else None, aridity_margin=margin,
                               years_other_class_pct=pct)
         a, b = sorted([cls, other], key=ZONE_ORDER.index, reverse=True)
-        message = (f"Tu campo está en una zona de transición entre {LABELS[a].lower()} y {LABELS[b].lower()}: "
-                   "según el año, se comporta como una u otra.")
+        message = tr(f"Tu campo está en una zona de transición entre {LABELS[a].lower()} y {LABELS[b].lower()}: "
+                     "según el año, se comporta como una u otra.",
+                     f"Your field is in a transition zone between {LABELS[a].lower()} and {LABELS[b].lower()}: "
+                     "depending on the year, it behaves like one or the other.")
         other_clim = shifted_climate(clim, other)
         suit_other = rank(list(self.crops.values()), other_clim, conf)
         return Transition(
@@ -235,31 +238,37 @@ class RegionRepository:
         both = [s.crop_name for s in here if not self.crops[s.crop_id].is_cover_crop and s.level != Level.BAJO
                 and lv.get(s.crop_id) != Level.BAJO and self.crops[s.crop_id].drought_tolerance == Level.ALTO]
         covers = [c.name for c in self.crops.values() if c.is_cover_crop]
-        src = "Catálogo de cultivos de AgroOrbit (tolerancias a validar con INTA)"
+        src = tr("Catálogo de cultivos de AgroOrbit (tolerancias a validar con INTA)", "AgroOrbit crop catalog (tolerances to be validated with INTA)")
         return [
             TransitionOption(
-                title="Cultivos más tolerantes a sequía",
-                detail=", ".join(both) if both else "Ningún cultivo del catálogo queda con aptitud media o alta en las dos zonas.",
-                reason="Tienen aptitud media o alta en las dos zonas: rinden menos en el año húmedo, pero se caen menos en el seco.",
+                title=tr("Cultivos más tolerantes a sequía", "More drought-tolerant crops"),
+                detail=", ".join(both) if both else tr("Ningún cultivo del catálogo queda con aptitud media o alta en las dos zonas.", "No crop in the catalog keeps medium or high suitability in both zones."),
+                reason=tr("Tienen aptitud media o alta en las dos zonas: rinden menos en el año húmedo, pero se caen menos en el seco.",
+                          "They keep medium or high suitability in both zones: they yield less in the wet year, but fall less in the dry one."),
                 source=src,
             ),
             TransitionOption(
-                title="Cultivos de cobertura",
+                title=tr("Cultivos de cobertura", "Cover crops"),
                 detail=", ".join(covers),
-                reason="Protegen el suelo del viento en los años secos y aprovechan el agua de los húmedos. En años secos, secarlos temprano para no gastar el agua del cultivo siguiente.",
-                source=src + "; FAO, agricultura de conservación",
+                reason=tr("Protegen el suelo del viento en los años secos y aprovechan el agua de los húmedos. En años secos, secarlos temprano para no gastar el agua del cultivo siguiente.",
+                          "They shield the soil from wind in dry years and use the water of wet ones. In dry years, terminate them early so they don't spend the next crop's water."),
+                source=src + tr("; FAO, agricultura de conservación", "; FAO, conservation agriculture"),
             ),
             TransitionOption(
-                title="Flexibilidad en la fecha de siembra",
-                detail="Decidir la fecha y el cultivo con el agua que hay en el perfil al momento de sembrar.",
-                reason="En transición, el año define el comportamiento: medir el perfil (y mirar SMAP como contexto) antes de decidir.",
-                source="NASA SMAP (contexto regional) y medición en el lote",
+                title=tr("Flexibilidad en la fecha de siembra", "Flexible planting date"),
+                detail=tr("Decidir la fecha y el cultivo con el agua que hay en el perfil al momento de sembrar.",
+                          "Decide the date and the crop based on the water in the profile at planting time."),
+                reason=tr("En transición, el año define el comportamiento: medir el perfil (y mirar SMAP como contexto) antes de decidir.",
+                          "In a transition zone, the year defines the behavior: measure the profile (and look at SMAP for context) before deciding."),
+                source=tr("NASA SMAP (contexto regional) y medición en el lote", "NASA SMAP (regional context) and measurement in the field"),
             ),
             TransitionOption(
-                title="Barbecho para acumular agua",
-                detail="Barbecho limpio y con rastrojo antes del cultivo más exigente.",
-                reason="Guarda en el perfil parte de la lluvia del barbecho para el cultivo siguiente (eficiencia de barbecho: supuesto del motor).",
-                source="Motor de AgroOrbit, eficiencia de barbecho (docs/assumptions.md)",
+                title=tr("Barbecho para acumular agua", "Fallow to store water"),
+                detail=tr("Barbecho limpio y con rastrojo antes del cultivo más exigente.",
+                          "A clean, residue-covered fallow before the most demanding crop."),
+                reason=tr("Guarda en el perfil parte de la lluvia del barbecho para el cultivo siguiente (eficiencia de barbecho: supuesto del motor).",
+                          "It stores part of the fallow's rain in the profile for the next crop (fallow efficiency: an engine assumption)."),
+                source=tr("Motor de AgroOrbit, eficiencia de barbecho (docs/assumptions.md)", "AgroOrbit engine, fallow efficiency (docs/assumptions.md)"),
             ),
         ]
 

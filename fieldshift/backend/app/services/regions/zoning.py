@@ -7,18 +7,20 @@ from __future__ import annotations
 
 import statistics
 
+from app.i18n import LocalizedMap
 from app.services.engine.parameters import ARIDITY_LIMITS
+from app.i18n import tr
 
 HOT_C = 35.0  # día de calor: Tmax > 35 °C
 COLD_C = 2.0  # día frío con riesgo de helada: Tmin <= 2 °C
 LIMITS = [limit for limit, _ in ARIDITY_LIMITS]  # 0,20 / 0,50 / 0,65
 ORDER = ["arido", "semiarido", "subhumedo_seco", "humedo"]  # de más seca a más húmeda
-LABELS = {
-    "arido": "Árida",
-    "semiarido": "Semiárida",
-    "subhumedo_seco": "Subhúmeda seca",
-    "humedo": "Subhúmeda húmeda o más húmeda",
-}
+LABELS = LocalizedMap({
+    "arido": ("Árida", "Arid"),
+    "semiarido": ("Semiárida", "Semi-arid"),
+    "subhumedo_seco": ("Subhúmeda seca", "Dry sub-humid"),
+    "humedo": ("Subhúmeda húmeda o más húmeda", "Moist sub-humid or wetter"),
+})
 
 
 def classify(aridity_index: float) -> str:
@@ -31,7 +33,7 @@ def classify(aridity_index: float) -> str:
 def summarize(rows: list[dict]) -> dict:
     """rows: [{year, precip, et0, hot, cold}] de años completos -> clima de la celda y clase."""
     if not rows:
-        raise ValueError("No hay años completos para clasificar la celda.")
+        raise ValueError(tr("No hay años completos para clasificar la celda.", "There are no complete years to classify the cell."))
     p = [r["precip"] for r in rows]
     e = [r["et0"] for r in rows]
     ai = statistics.fmean(p) / statistics.fmean(e)

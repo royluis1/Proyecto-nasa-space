@@ -7,7 +7,7 @@ from fastapi import APIRouter, Body, Depends, Query
 from fastapi.responses import Response
 
 from app.api.deps import get_rotation_service
-from app.models.constants import DISCLAIMER
+from app.models.constants import disclaimer
 from app.schemas.common import ApiResponse, ErrorResponse, ResponseMeta
 from app.schemas.priority import Priorities
 from app.schemas.report import Report, ReportRequest, ScenarioResilience
@@ -62,7 +62,7 @@ def _build(
         sources=result.sources,
         assumptions=result.assumptions,
         warnings=result.warnings,
-        disclaimer=DISCLAIMER,
+        disclaimer=disclaimer(),
     )
     return report, climate, result.warnings
 
@@ -73,7 +73,7 @@ def _to_csv(report: Report, origin_label: str) -> str:
     buf = io.StringIO()
     w = csv.writer(buf)
     w.writerow(["# AgroOrbit: reporte para revisar con un ingeniero agrónomo"])
-    w.writerow(["# " + DISCLAIMER])
+    w.writerow(["# " + disclaimer()])
     w.writerow(["# Generado", report.generated_at.isoformat()])
     w.writerow(["# Origen del clima", origin_label])
     w.writerow([])
@@ -127,7 +127,7 @@ def _to_csv(report: Report, origin_label: str) -> str:
         w.writerow(["fuente", src.name, f"{src.provider}. {src.citation}"])
     for warning in report.warnings:
         w.writerow(["advertencia", warning, ""])
-    w.writerow(["advertencia", DISCLAIMER, ""])
+    w.writerow(["advertencia", disclaimer(), ""])
     return "﻿" + buf.getvalue()
 
 

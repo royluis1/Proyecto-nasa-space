@@ -22,6 +22,7 @@ from app.models.enums import DataStatus
 from app.services.satellite.parsers import ParsedSeries, parse_csv
 from app.services.satellite.products import Product
 from app.utils.exceptions import InvalidInputError, NoDataError, UpstreamError
+from app.i18n import tr
 
 logger = logging.getLogger("fieldshift.satellite")
 
@@ -123,9 +124,9 @@ class SatelliteProvider:
                 warnings.append(message)
             except UpstreamError as exc:
                 logger.warning("AppEEARS no disponible: %s", exc.message)
-                warnings.append(f"AppEEARS no disponible ({exc.message}).")
+                warnings.append(tr(f"AppEEARS no disponible ({exc.message}).", f"AppEEARS unavailable ({exc.message})."))
         else:
-            warnings.append("Sin credenciales de AppEEARS: no se consultaron datos en vivo.")
+            warnings.append(tr("Sin credenciales de AppEEARS: no se consultaron datos en vivo.", "No AppEEARS credentials: no live data was queried."))
 
         sample = self._sample(product, lat, lon, start, end)
         if sample is not None:
@@ -133,7 +134,7 @@ class SatelliteProvider:
             sample.warnings = [*warnings, *sample.warnings]
             return sample
         raise NoDataError(
-            f"No hay datos de {product.name} para esta ubicación: cargá un CSV de AppEEARS o configurá las credenciales.",
+            tr(f"No hay datos de {product.name} para esta ubicación: cargá un CSV de AppEEARS o configurá las credenciales.", f"There is no {product.name} data for this location: upload an AppEEARS CSV or set up the credentials."),
             {"warnings": warnings},
         )
 
@@ -147,8 +148,10 @@ class SatelliteProvider:
             tasks[key] = task_id
             self._save_tasks(tasks)
             return task_id, (
-                f"Se pidió la extracción a AppEEARS (tarea {task_id}); suele tardar de minutos a horas. "
-                "Mientras tanto se usan datos de muestra."
+                tr(f"Se pidió la extracción a AppEEARS (tarea {task_id}); suele tardar de minutos a horas. "
+                   "Mientras tanto se usan datos de muestra.",
+                   f"Extraction was requested from AppEEARS (task {task_id}); it usually takes minutes to hours. "
+                   "Meanwhile sample data is used.")
             )
         status = client.task_status(task_id)
         if status == "done":
@@ -171,10 +174,10 @@ class SatelliteProvider:
         if status == "error":
             tasks.pop(key, None)
             self._save_tasks(tasks)
-            raise UpstreamError(f"la tarea {task_id} terminó con error")
+            raise UpstreamError(tr(f"la tarea {task_id} terminó con error", f"task {task_id} ended with an error"))
         return (
             task_id,
-            f"La extracción de AppEEARS (tarea {task_id}) sigue en proceso ({status}): se usan datos de muestra.",
+            tr(f"La extracción de AppEEARS (tarea {task_id}) sigue en proceso ({status}): se usan datos de muestra.", f"The AppEEARS extraction (task {task_id}) is still in progress ({status}): sample data is used."),
         )
 
     def _sample(self, product: Product, lat: float, lon: float, start: date, end: date) -> SatelliteData | None:
@@ -193,8 +196,8 @@ class SatelliteProvider:
         except NoDataError:
             return None
         warning = (
-            f"Se usan DATOS DE MUESTRA SIMULADOS de {product.variable} del sitio '{site['ID']}' "
-            f"({site['Latitude']}, {site['Longitude']}); no son observaciones de tus coordenadas."
+            tr(f"Se usan DATOS DE MUESTRA SIMULADOS de {product.variable} del sitio '{site['ID']}' ", f"Using SIMULATED SAMPLE DATA of {product.variable} from site '{site['ID']}' ")
+            + f"({site['Latitude']}, {site['Longitude']})" + tr("; no son observaciones de tus coordenadas.", "; these are not observations of your coordinates.")
         )
         return SatelliteData(
             clipped, DataStatus.SAMPLE, self.now(), sample_site=str(site["ID"]), warnings=[warning, *series.warnings]
@@ -205,7 +208,7 @@ class SatelliteProvider:
         df = series.df
         series.df = df[(df.index >= pd.Timestamp(start)) & (df.index <= pd.Timestamp(end))]
         if series.df["value"].notna().sum() == 0:
-            raise NoDataError("La serie no tiene datos válidos en el período pedido.")
+            raise NoDataError(tr("La serie no tiene datos válidos en el período pedido.", "The series has no valid data in the requested period."))
         return series
 
     # --- varios puntos en una tarea ---
@@ -220,7 +223,7 @@ class SatelliteProvider:
             except (NoDataError, InvalidInputError):
                 continue
         if not out:
-            raise NoDataError(f"No hay datos válidos de {product.name} en los puntos pedidos.")
+            raise NoDataError(tr(f"No hay datos válidos de {product.name} en los puntos pedidos.", f"There is no valid {product.name} data at the requested points."))
         return out
 
     def get_points(self, product: Product, points: list[tuple[str, float, float]], start: date, end: date) -> MultiPointData:
@@ -243,8 +246,10 @@ class SatelliteProvider:
                                                        points[0][2], start, end, points=points)
                     tasks[key] = task_id
                     self._save_tasks(tasks)
-                    warnings.append(f"Se pidió la extracción a AppEEARS (tarea {task_id}); suele tardar de minutos a horas. "
-                                    "Mientras tanto se usan datos de muestra.")
+                    warnings.append(tr(f"Se pidió la extracción a AppEEARS (tarea {task_id}); suele tardar de minutos a horas. "
+                                       "Mientras tanto se usan datos de muestra.",
+                                       f"Extraction was requested from AppEEARS (task {task_id}); it usually takes minutes to hours. "
+                                       "Meanwhile sample data is used."))
                 else:
                     status = client.task_status(task_id)
                     if status == "done":
@@ -258,21 +263,21 @@ class SatelliteProvider:
                     if status == "error":
                         tasks.pop(key, None)
                         self._save_tasks(tasks)
-                        raise UpstreamError(f"la tarea {task_id} terminó con error")
-                    warnings.append(f"La extracción de AppEEARS (tarea {task_id}) sigue en proceso ({status}): se usan datos de muestra.")
+                        raise UpstreamError(tr(f"la tarea {task_id} terminó con error", f"task {task_id} ended with an error"))
+                    warnings.append(tr(f"La extracción de AppEEARS (tarea {task_id}) sigue en proceso ({status}): se usan datos de muestra.", f"The AppEEARS extraction (task {task_id}) is still in progress ({status}): sample data is used."))
             except (UpstreamError, OSError) as exc:
                 msg = getattr(exc, "message", str(exc))
                 logger.warning("AppEEARS no disponible: %s", msg)
-                warnings.append(f"AppEEARS no disponible ({msg}).")
+                warnings.append(tr(f"AppEEARS no disponible ({msg}).", f"AppEEARS unavailable ({msg})."))
         else:
-            warnings.append("Sin credenciales de AppEEARS: no se consultaron datos en vivo.")
+            warnings.append(tr("Sin credenciales de AppEEARS: no se consultaron datos en vivo.", "No AppEEARS credentials: no live data was queried."))
 
         path = self.samples.get(product.key)
         if path is not None and path.exists():
             try:
                 series = self._parse_points(path.read_text(encoding="utf-8"), product, points, start, end)
-                warnings.append(f"Se usan DATOS DE MUESTRA SIMULADOS de {product.variable}: no son observaciones de tu lote.")
+                warnings.append(tr(f"Se usan DATOS DE MUESTRA SIMULADOS de {product.variable}: no son observaciones de tu lote.", f"Using SIMULATED SAMPLE DATA of {product.variable}: these are not observations of your field."))
                 return MultiPointData(series, DataStatus.SAMPLE, self.now(), task_id=task_id, warnings=warnings)
             except NoDataError:
                 pass
-        raise NoDataError(f"No hay datos de {product.name} para esta ubicación.", {"warnings": warnings})
+        raise NoDataError(tr(f"No hay datos de {product.name} para esta ubicación.", f"There is no {product.name} data for this location."), {"warnings": warnings})

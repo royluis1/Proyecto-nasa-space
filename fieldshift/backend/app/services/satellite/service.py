@@ -10,6 +10,7 @@ from app.services.satellite.products import PRODUCTS
 from app.services.satellite.provider import SatelliteData, SatelliteProvider
 from app.utils.exceptions import InvalidInputError
 from app.utils.validators import is_in_san_luis
+from app.i18n import tr
 
 
 class SatelliteService:
@@ -27,15 +28,15 @@ class SatelliteService:
     def _check_period(product, start, end) -> None:
         if start > end:
             raise InvalidInputError(
-                f"No hay datos de {product.name} en el período pedido (empiezan el {product.first_date})."
+                tr(f"No hay datos de {product.name} en el período pedido (empiezan el {product.first_date}).", f"There is no {product.name} data in the requested period (it starts on {product.first_date}).")
             )
         if (end - start).days > 366 * 20:
-            raise InvalidInputError("El rango máximo es de 20 años.")
+            raise InvalidInputError(tr("El rango máximo es de 20 años.", "The maximum range is 20 years."))
 
     def _warnings(self, data: SatelliteData, lat: float, lon: float) -> list[str]:
         out = list(data.warnings)
         if not is_in_san_luis(lat, lon):
-            out.append("La ubicación está fuera de San Luis: los supuestos agronómicos pueden no aplicar.")
+            out.append(tr("La ubicación está fuera de San Luis: los supuestos agronómicos pueden no aplicar.", "The location is outside San Luis: the agronomic assumptions may not apply."))
         return out
 
     def soil_moisture(self, req: SoilMoistureRequest) -> tuple[SoilMoistureSummary, list[str]]:
@@ -85,6 +86,6 @@ def vegetation_input(v: VegetationSummary) -> VegetationInput | None:
         cover_fraction=v.cover_fraction_mean,
         biomass_trend_pct_per_decade=v.biomass_trend_pct_per_decade,
         trend_significant=v.biomass_trend.significant,
-        period=f"campañas {complete[0]} a {complete[-1]}" if complete else None,
+        period=tr(f"campañas {complete[0]} a {complete[-1]}", f"seasons {complete[0]} to {complete[-1]}") if complete else None,
         origin=v.trace.status,
     )

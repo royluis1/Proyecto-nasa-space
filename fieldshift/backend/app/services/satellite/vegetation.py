@@ -9,6 +9,7 @@ from app.schemas.satellite import Campaign, FallowPeriod, NdviPoint, VegetationS
 from app.services.satellite.common import build_trace, f, quality, trend
 from app.services.satellite.products import Product
 from app.services.satellite.provider import SatelliteData
+from app.i18n import tr
 
 NDVI_SOIL = 0.15  # NDVI de suelo desnudo (supuesto regional)
 NDVI_VEG = 0.85  # NDVI de cobertura completa (supuesto)
@@ -19,17 +20,27 @@ PEAK_MIN = 0.45
 PEAK_DROP = 0.15
 RECENT_CAMPAIGNS = 3
 
-COVER_METHOD = (
-    f"Modelo de píxel dimidiado (Gutman e Ignatov, 1998): (NDVI - {NDVI_SOIL}) / ({NDVI_VEG} - {NDVI_SOIL}), "
-    "limitado a 0-1."
-)
-ASSUMPTIONS = [
-    f"NDVI de suelo desnudo {NDVI_SOIL} y de cobertura completa {NDVI_VEG} (valores típicos; calibrar con el lote).",
-    "Barbecho o suelo desnudo: al menos 2 compuestos seguidos (~1 mes) con NDVI bajo el umbral.",
-    "Se interpola linealmente un compuesto faltante aislado (marcado como interpolado); huecos más largos quedan sin dato.",
-    "Campaña agrícola: de julio a junio. Completa con al menos 18 de ~23 compuestos válidos.",
-    f"NDVI integrado: suma de (NDVI - {NDVI_SOIL}) x 16 días, proxy de la biomasa producida.",
-    f"Ciclo de crecimiento: pico con NDVI >= {PEAK_MIN} separado del anterior por una caída de al menos {PEAK_DROP}.",
+def cover_method() -> str:
+    return tr(
+        f"Modelo de píxel dimidiado (Gutman e Ignatov, 1998): (NDVI - {NDVI_SOIL}) / ({NDVI_VEG} - {NDVI_SOIL}), limitado a 0-1.",
+        f"Dimidiate pixel model (Gutman and Ignatov, 1998): (NDVI - {NDVI_SOIL}) / ({NDVI_VEG} - {NDVI_SOIL}), clamped to 0-1.",
+    )
+
+
+def assumptions() -> list[str]:
+    return [
+    tr(f"NDVI de suelo desnudo {NDVI_SOIL} y de cobertura completa {NDVI_VEG} (valores típicos; calibrar con el lote).",
+       f"Bare-soil NDVI {NDVI_SOIL} and full-cover NDVI {NDVI_VEG} (typical values; calibrate with the field)."),
+    tr("Barbecho o suelo desnudo: al menos 2 compuestos seguidos (~1 mes) con NDVI bajo el umbral.",
+       "Fallow or bare soil: at least 2 consecutive composites (~1 month) with NDVI below the threshold."),
+    tr("Se interpola linealmente un compuesto faltante aislado (marcado como interpolado); huecos más largos quedan sin dato.",
+       "An isolated missing composite is linearly interpolated (marked as interpolated); longer gaps are left empty."),
+    tr("Campaña agrícola: de julio a junio. Completa con al menos 18 de ~23 compuestos válidos.",
+       "Crop season: July to June. Complete with at least 18 of ~23 valid composites."),
+    tr(f"NDVI integrado: suma de (NDVI - {NDVI_SOIL}) x 16 días, proxy de la biomasa producida.",
+       f"Integrated NDVI: sum of (NDVI - {NDVI_SOIL}) x 16 days, a proxy for biomass produced."),
+    tr(f"Ciclo de crecimiento: pico con NDVI >= {PEAK_MIN} separado del anterior por una caída de al menos {PEAK_DROP}.",
+       f"Growth cycle: a peak with NDVI >= {PEAK_MIN} separated from the previous one by a drop of at least {PEAK_DROP}."),
 ]
 
 
@@ -149,7 +160,7 @@ def summarize(
     recent = complete[-RECENT_CAMPAIGNS:]
     recent_valid = valid[valid.index >= pd.Timestamp(int(recent[0].campaign[:4]), 7, 1)] if recent else valid
     integ = pd.Series({int(c.campaign[:4]): c.integrated_ndvi for c in complete}, dtype="float64")
-    t = trend(integ, "NDVI·día por década", scale=1.0, decimals=1)
+    t = trend(integ, tr("NDVI·día por década", "NDVI·day per decade"), scale=1.0, decimals=1)
     pct = round(t.slope_per_decade / integ.mean() * 100, 1) if t.slope_per_decade is not None and integ.mean() else None
     ranked = sorted(complete, key=lambda c: c.integrated_ndvi)
     clim = valid.groupby(valid.index.month).mean()
@@ -160,7 +171,7 @@ def summarize(
         quality=quality(data, expected=expected),
         mean_ndvi=f(valid.mean(), 3),
         cover_fraction_mean=f(cover_fraction(valid).mean(), 3),
-        cover_method=COVER_METHOD,
+        cover_method=cover_method(),
         bare_threshold=threshold,
         bare_soil_fraction=f((valid < threshold).mean(), 3) if len(valid) else None,
         recent_bare_soil_fraction=f((recent_valid < threshold).mean(), 3) if len(recent_valid) else None,
@@ -182,7 +193,7 @@ def summarize(
         ]
         if include_series
         else None,
-        assumptions=ASSUMPTIONS,
+        assumptions=assumptions(),
     )
 
 

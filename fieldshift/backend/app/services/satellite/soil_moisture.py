@@ -17,6 +17,7 @@ from app.schemas.satellite import (
 from app.services.satellite.common import build_trace, f, quality, trend
 from app.services.satellite.products import Product
 from app.services.satellite.provider import SatelliteData
+from app.i18n import tr
 
 MIN_DAYS_MONTH = {"SPL3SMP_E": 8}  # L3 tiene huecos por las pasadas
 DEFAULT_MIN_DAYS = 20
@@ -27,14 +28,22 @@ MIN_MONTHS_YEAR = 10
 STRESS_HIGH_ANOMALY = 10.0  # % por debajo de lo normal
 STRESS_MEDIUM_ANOMALY = 5.0
 
-ASSUMPTIONS = [
-    "Sequía de humedad de suelo: mes con anomalía estandarizada z <= -1 frente al mismo mes de los otros años.",
-    "Mes con baja humedad: promedio por debajo del percentil 25 de todos los meses del período.",
-    "Meses típicamente secos: los 4 meses del año con menor humedad media.",
-    "Estrés hídrico relativo: percentil de los últimos días frente a la misma época de otros años. "
-    "Alto: percentil <= 20 y al menos 10 % por debajo de lo normal; medio: percentil <= 40 y 5 % por debajo.",
-    "Un mes es válido con al menos 20 días con dato (8 para SMAP L3); un año, con al menos 10 meses válidos.",
-]
+def assumptions() -> list[str]:
+    """Supuestos del resumen, en el idioma del pedido."""
+    return [
+        tr("Sequía de humedad de suelo: mes con anomalía estandarizada z <= -1 frente al mismo mes de los otros años.",
+           "Soil-moisture drought: a month with standardized anomaly z <= -1 vs. the same month in other years."),
+        tr("Mes con baja humedad: promedio por debajo del percentil 25 de todos los meses del período.",
+           "Low-moisture month: average below the 25th percentile of all months in the period."),
+        tr("Meses típicamente secos: los 4 meses del año con menor humedad media.",
+           "Typically dry months: the 4 months of the year with the lowest mean moisture."),
+        tr("Estrés hídrico relativo: percentil de los últimos días frente a la misma época de otros años. "
+           "Alto: percentil <= 20 y al menos 10 % por debajo de lo normal; medio: percentil <= 40 y 5 % por debajo.",
+           "Relative water stress: percentile of recent days vs. the same time in other years. "
+           "High: percentile <= 20 and at least 10 % below normal; medium: percentile <= 40 and 5 % below."),
+        tr("Un mes es válido con al menos 20 días con dato (8 para SMAP L3); un año, con al menos 10 meses válidos.",
+           "A month is valid with at least 20 days of data (8 for SMAP L3); a year, with at least 10 valid months."),
+    ]
 
 
 def monthly_table(daily: pd.Series, min_days: int) -> pd.DataFrame:
@@ -188,10 +197,10 @@ def summarize(
         ],
         monthly=months,
         annual_means={int(y): round(float(v), 4) for y, v in annual.items()},
-        trend=trend(annual, f"{product.units} por década"),
+        trend=trend(annual, tr(f"{product.units} por década", f"{product.units} per decade")),
         water_stress=water_stress(daily, recent_days),
         series=[SoilMoisturePoint(date=d.date(), value=f(v)) for d, v in full.items()] if include_series else None,
-        assumptions=ASSUMPTIONS,
+        assumptions=assumptions(),
     )
 
 

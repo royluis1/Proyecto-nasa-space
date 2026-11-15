@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.router import api_router
 from app.config import Settings, get_settings
+from app.i18n import LanguageMiddleware
 from app.models.constants import DISCLAIMER
 from app.utils.errors import register_exception_handlers
 from app.utils.logging import setup_logging
@@ -54,6 +55,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         start = time.perf_counter()
         response = await call_next(request)
         response.headers["X-Request-ID"] = request.state.request_id
+        # Los textos dependen del idioma pedido: los cachés intermedios tienen que separarlos.
+        response.headers["Vary"] = ", ".join(v for v in (response.headers.get("Vary"), "Accept-Language") if v)
         logger.info(
             "request",
             extra={
@@ -65,6 +68,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             },
         )
         return response
+
+    # Va último: es el más externo, así el idioma ya está fijado para el resto (también para los errores).
+    app.add_middleware(LanguageMiddleware)
 
     register_exception_handlers(app)
     app.include_router(api_router)

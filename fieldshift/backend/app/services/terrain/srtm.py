@@ -14,6 +14,7 @@ import zipfile
 from dataclasses import dataclass
 
 import numpy as np
+from app.i18n import tr
 
 VOID = -32768
 M_PER_DEG_LAT = 111_320.0
@@ -51,7 +52,7 @@ def read_hgt(data: bytes) -> np.ndarray:
     """Matriz de elevación en metros (float, NaN sin dato) a partir del contenido de un .hgt."""
     n = int(round(math.sqrt(len(data) // 2)))
     if n * n * 2 != len(data) or n not in (1201, 3601):
-        raise ValueError(f"El archivo no es un .hgt de SRTM válido ({len(data)} bytes).")
+        raise ValueError(tr(f"El archivo no es un .hgt de SRTM válido ({len(data)} bytes).", f"The file is not a valid SRTM .hgt ({len(data)} bytes)."))
     arr = np.frombuffer(data, dtype=">i2").reshape(n, n).astype(float)
     arr[arr == VOID] = np.nan
     return arr
@@ -61,7 +62,7 @@ def read_hgt_zip(blob: bytes) -> np.ndarray:
     with zipfile.ZipFile(io.BytesIO(blob)) as z:
         names = [n for n in z.namelist() if n.lower().endswith(".hgt")]
         if not names:
-            raise ValueError("El zip de SRTM no contiene un archivo .hgt.")
+            raise ValueError(tr("El zip de SRTM no contiene un archivo .hgt.", "The SRTM zip does not contain an .hgt file."))
         return read_hgt(z.read(names[0]))
 
 
@@ -124,7 +125,7 @@ def terrain_stats(
     clipped = i0 < 0 or j0 < 0 or i1 > n - 1 or j1 > n - 1
     i0, j0, i1, j1 = max(0, i0), max(0, j0), min(n - 1, i1), min(n - 1, j1)
     if i1 - i0 < 2 or j1 - j0 < 2:
-        raise ValueError("La zona es demasiado chica o está fuera de la baldosa de SRTM.")
+        raise ValueError(tr("La zona es demasiado chica o está fuera de la baldosa de SRTM.", "The area is too small or outside the SRTM tile."))
     z = smooth(dem[i0 : i1 + 1, j0 : j1 + 1])
 
     # Horn (3x3) sobre el interior
@@ -153,7 +154,7 @@ def terrain_stats(
     valid = ~np.isnan(s) & ~np.isnan(e)
     void = 1 - valid.sum() / total
     if valid.sum() == 0 or void > 0.5:
-        raise ValueError("SRTM no tiene datos suficientes en la zona del lote (vacíos del radar).")
+        raise ValueError(tr("SRTM no tiene datos suficientes en la zona del lote (vacíos del radar).", "SRTM does not have enough data in the field's area (radar voids)."))
     s, e = s[valid], e[valid]
     return TerrainStats(
         elevation_mean_m=round(float(e.mean()), 1),

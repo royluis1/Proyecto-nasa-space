@@ -37,6 +37,7 @@ from app.services.engine.service import climate_period
 from app.services.forecast.open_meteo import ForecastService
 from app.services.power.service import PowerService, resolve_parameters
 from app.utils.exceptions import InvalidInputError, NoDataError
+from app.i18n import is_en, tr
 
 logger = logging.getLogger("fieldshift.alerts")
 
@@ -55,6 +56,12 @@ HUERTA_KC = 1.0  # huerta en plena producción, promedio de hortalizas (FAO-56, 
 EFFECTIVE_RAIN = 0.8  # parte de la lluvia que aprovecha la huerta (supuesto)
 
 FMT = "%d/%m"
+_MONTH_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+
+def _day(d: date) -> str:
+    """Día y mes: 20/11 en español, Nov 20 en inglés."""
+    return f"{_MONTH_EN[d.month - 1]} {d.day}" if is_en() else d.strftime(FMT)
 
 
 def power_source(status: DataStatus, retrieved_at: datetime | None, detail: str | None = None) -> SourceInfo:
@@ -99,7 +106,7 @@ def frost_stats(df: pd.DataFrame, lat: float) -> tuple[float | None, list[int], 
             first.append(au.index.min().day_of_year)
 
     def doy(n: float) -> str:
-        return (date(2001, 1, 1) + timedelta(days=int(round(n)) - 1)).strftime(FMT)
+        return _day(date(2001, 1, 1) + timedelta(days=int(round(n)) - 1))
 
     last_s = doy(pd.Series(last).quantile(0.8)) if last else None  # 8 de cada 10 años, la última fue antes
     first_s = doy(pd.Series(first).quantile(0.2)) if first else None  # 8 de cada 10 años, la primera fue después
@@ -146,7 +153,7 @@ def build_alerts(
     """Alertas tempranas con mensajes según el perfil. Ordenadas por gravedad y fecha."""
     out: list[Alert] = []
     huerta = profile == "huerta"
-    src_fc = "Open-Meteo (pronóstico, no es NASA)"
+    src_fc = tr("Open-Meteo (pronóstico, no es NASA)", "Open-Meteo (forecast, not NASA)")
     days = forecast.days if forecast else []
 
     def spans(pred) -> list[list]:
@@ -164,16 +171,20 @@ def build_alerts(
     for g in spans(lambda d: d.tmin_c is not None and d.tmin_c <= FROST_RISK_C):
         low = min(d.tmin_c for d in g)
         hard = low <= FROST_C
-        when = g[0].date.strftime(FMT) + (f" al {g[-1].date.strftime(FMT)}" if len(g) > 1 else "")
+        when = _day(g[0].date) + (tr(f" al {_day(g[-1].date)}", f" to {_day(g[-1].date)}") if len(g) > 1 else "")
         out.append(Alert(
             id=f"helada-{g[0].date}", kind="helada", severity=Severity.ALTA if hard else Severity.MEDIA,
-            title=f"{'Helada' if hard else 'Posible helada'} el {when} (mínima {low:.0f} °C)",
+            title=tr(f"{'Helada' if hard else 'Posible helada'} el {when} (mínima {low:.0f} °C)", f"{'Frost' if hard else 'Possible frost'} on {when} (low {low:.0f} °C)"),
             message=(
-                "Cubrí las plantas sensibles (tomate, pimiento, zapallo, albahaca) con manta antihelada o nylon esa noche "
-                "y regá a la tarde: el suelo húmedo guarda calor. No trasplantes hasta que pase."
+                tr("Cubrí las plantas sensibles (tomate, pimiento, zapallo, albahaca) con manta antihelada o nylon esa noche "
+                   "y regá a la tarde: el suelo húmedo guarda calor. No trasplantes hasta que pase.",
+                   "Cover sensitive plants (tomato, pepper, squash, basil) with frost cloth or plastic that night "
+                   "and water in the afternoon: moist soil holds heat. Don't transplant until it passes.")
                 if huerta
-                else "Puede dañar cultivos recién emergidos o en floración. Postergá siembras sensibles al frío y revisá "
-                "el lote después de la helada."
+                else tr("Puede dañar cultivos recién emergidos o en floración. Postergá siembras sensibles al frío y revisá "
+                        "el lote después de la helada.",
+                        "It can damage newly emerged or flowering crops. Delay cold-sensitive plantings and check "
+                        "the field after the frost.")
             ),
             start=g[0].date, end=g[-1].date, source=src_fc,
         ))
@@ -182,13 +193,18 @@ def build_alerts(
         top = max(d.tmax_c for d in g)
         out.append(Alert(
             id=f"calor-{g[0].date}", kind="calor", severity=Severity.ALTA if top >= VERY_HOT_C or len(g) >= 3 else Severity.MEDIA,
-            title=f"Calor fuerte: {len(g)} {'día' if len(g) == 1 else 'días'} con más de {HOT_C:.0f} °C desde el {g[0].date.strftime(FMT)} (máxima {top:.0f} °C)",
+            title=tr(f"Calor fuerte: {len(g)} {'día' if len(g) == 1 else 'días'} con más de {HOT_C:.0f} °C desde el {_day(g[0].date)} (máxima {top:.0f} °C)",
+                     f"Strong heat: {len(g)} {'day' if len(g) == 1 else 'days'} above {HOT_C:.0f} °C from {_day(g[0].date)} (high {top:.0f} °C)"),
             message=(
-                "Regá temprano a la mañana o al atardecer, poné media sombra a las hojas tiernas y cubrí el suelo con paja "
-                "para que no se seque."
+                tr("Regá temprano a la mañana o al atardecer, poné media sombra a las hojas tiernas y cubrí el suelo con paja "
+                   "para que no se seque.",
+                   "Water early in the morning or at dusk, shade tender leaves and mulch the soil with straw "
+                   "so it doesn't dry out.")
                 if huerta
-                else "Golpe de calor: si coincide con la floración de maíz o soja puede bajar el rendimiento. Revisá el agua "
-                "del perfil y evitá pulverizar en las horas de más calor."
+                else tr("Golpe de calor: si coincide con la floración de maíz o soja puede bajar el rendimiento. Revisá el agua "
+                        "del perfil y evitá pulverizar en las horas de más calor.",
+                        "Heat stress: if it coincides with corn or soybean flowering it can lower yield. Check soil-profile "
+                        "water and avoid spraying in the hottest hours.")
             ),
             start=g[0].date, end=g[-1].date, source=src_fc,
         ))
@@ -198,12 +214,15 @@ def build_alerts(
             out.append(Alert(
                 id=f"lluvia-{d.date}", kind="lluvia_intensa",
                 severity=Severity.ALTA if d.precip_mm >= VERY_HEAVY_RAIN_MM else Severity.MEDIA,
-                title=f"Lluvia intensa el {d.date.strftime(FMT)} (~{d.precip_mm:.0f} mm)",
+                title=tr(f"Lluvia intensa el {_day(d.date)} (~{d.precip_mm:.0f} mm)", f"Heavy rain on {_day(d.date)} (~{d.precip_mm:.0f} mm)"),
                 message=(
-                    "No riegues esos días, revisá que el agua escurra y no se encharquen los canteros; protegé los almácigos."
+                    tr("No riegues esos días, revisá que el agua escurra y no se encharquen los canteros; protegé los almácigos.",
+                       "Don't water those days, make sure water drains and beds don't flood; protect seedlings.")
                     if huerta
-                    else "Riesgo de erosión y encharcamiento en lotes con suelo desnudo. Evitá pulverizar antes de la lluvia "
-                    "y revisá caminos y bajos."
+                    else tr("Riesgo de erosión y encharcamiento en lotes con suelo desnudo. Evitá pulverizar antes de la lluvia "
+                            "y revisá caminos y bajos.",
+                            "Risk of erosion and waterlogging on fields with bare soil. Avoid spraying before the rain "
+                            "and check roads and low spots.")
                 ),
                 start=d.date, end=d.date, source=src_fc,
             ))
@@ -212,9 +231,9 @@ def build_alerts(
         if d.wind_max_kmh is not None and d.wind_max_kmh >= WIND_KMH:
             out.append(Alert(
                 id=f"viento-{d.date}", kind="viento", severity=Severity.MEDIA,
-                title=f"Viento fuerte el {d.date.strftime(FMT)} (ráfagas de ~{d.wind_max_kmh:.0f} km/h)",
-                message=("Atá tutores y cubrí almácigos." if huerta
-                         else "Más erosión eólica en lotes sin cobertura; no pulverices."),
+                title=tr(f"Viento fuerte el {_day(d.date)} (ráfagas de ~{d.wind_max_kmh:.0f} km/h)", f"Strong wind on {_day(d.date)} (gusts of ~{d.wind_max_kmh:.0f} km/h)"),
+                message=(tr("Atá tutores y cubrí almácigos.", "Tie up stakes and cover seedlings.") if huerta
+                         else tr("Más erosión eólica en lotes sin cobertura; no pulverices.", "More wind erosion on fields without cover; don't spray.")),
                 start=d.date, end=d.date, source=src_fc,
             ))
             break
@@ -228,32 +247,37 @@ def build_alerts(
             need = max(0.0, et0 * HUERTA_KC - EFFECTIVE_RAIN * rain) / len(window) * 7
             out.append(Alert(
                 id="falta-de-agua", kind="falta_de_agua", severity=Severity.ALTA if past_dry else Severity.MEDIA,
-                title=f"Sin lluvia los próximos {len(window)} días" + (" y el último mes llovió poco" if past_dry else ""),
+                title=tr(f"Sin lluvia los próximos {len(window)} días", f"No rain in the next {len(window)} days") + (tr(" y el último mes llovió poco", " and last month was dry") if past_dry else ""),
                 message=(
-                    f"Vas a tener que regar: unos {need:.0f} litros por m² por semana, repartidos en 2 o 3 riegos."
+                    tr(f"Vas a tener que regar: unos {need:.0f} litros por m² por semana, repartidos en 2 o 3 riegos.", f"You will need to water: about {need:.0f} liters per m² per week, split into 2 or 3 waterings.")
                     if huerta
-                    else f"Se pronostican {rain:.0f} mm contra {et0:.0f} mm de evaporación: el perfil se va a secar. "
-                    "Medí la humedad antes de sembrar y ajustá la densidad."
+                    else tr(f"Se pronostican {rain:.0f} mm contra {et0:.0f} mm de evaporación: el perfil se va a secar. "
+                            "Medí la humedad antes de sembrar y ajustá la densidad.",
+                            f"{rain:.0f} mm of rain is forecast against {et0:.0f} mm of evaporation: the soil profile will dry out. "
+                            "Measure moisture before planting and adjust seeding density.")
                 ),
                 start=window[0].date, end=window[-1].date,
-                source=src_fc + (" y NASA POWER (lluvia del último mes)" if past_dry else ""),
+                source=src_fc + (tr(" y NASA POWER (lluvia del último mes)", " and NASA POWER (last month's rain)") if past_dry else ""),
             ))
     elif past is not None and past.pct_of_normal is not None and past.pct_of_normal < DRY_PAST_PCT:
         out.append(Alert(
             id="falta-de-agua", kind="falta_de_agua", severity=Severity.MEDIA,
-            title=f"El último mes llovió el {past.pct_of_normal:.0f} % de lo normal",
-            message=("Revisá la humedad de la tierra antes de cada riego." if huerta
-                     else "El perfil puede estar más seco que lo habitual: medilo antes de sembrar."),
+            title=tr(f"El último mes llovió el {past.pct_of_normal:.0f} % de lo normal", f"Last month's rain was {past.pct_of_normal:.0f} % of normal"),
+            message=(tr("Revisá la humedad de la tierra antes de cada riego.", "Check soil moisture before each watering.") if huerta
+                     else tr("El perfil puede estar más seco que lo habitual: medilo antes de sembrar.", "The soil profile may be drier than usual: measure it before planting.")),
             start=past.start, end=past.end, source="NASA POWER",
         ))
 
     if smap_anomaly_pct is not None and smap_anomaly_pct <= SMAP_DRY_PCT:
         out.append(Alert(
             id="suelo-seco", kind="suelo_seco", severity=Severity.MEDIA,
-            title=f"Suelo más seco que lo normal ({smap_anomaly_pct:.0f} %)",
-            message=("La tierra de la zona está más seca que otros años: regá más seguido y cubrí el suelo." if huerta
-                     else "SMAP muestra la zona de raíces más seca que lo habitual para la época. Es un dato regional (9 km): "
-                     "confirmalo en el lote."),
+            title=tr(f"Suelo más seco que lo normal ({smap_anomaly_pct:.0f} %)", f"Soil drier than normal ({smap_anomaly_pct:.0f} %)"),
+            message=(tr("La tierra de la zona está más seca que otros años: regá más seguido y cubrí el suelo.",
+                        "The soil in the area is drier than in other years: water more often and cover the soil.") if huerta
+                     else tr("SMAP muestra la zona de raíces más seca que lo habitual para la época. Es un dato regional (9 km): "
+                             "confirmalo en el lote.",
+                             "SMAP shows the root zone drier than usual for the season. This is regional data (9 km): "
+                             "confirm it in the field.")),
             source="NASA SMAP",
         ))
 
@@ -278,7 +302,7 @@ class EarlyWarningService:
             f = self.repo.get_field(field_id)
             return f, f.location.lat, f.location.lon
         if lat is None or lon is None:
-            raise InvalidInputError("Indicá field_id, o latitude y longitude.")
+            raise InvalidInputError(tr("Indicá field_id, o latitude y longitude.", "Provide field_id, or latitude and longitude."))
         return None, lat, lon
 
     def history(self, lat: float, lon: float):
@@ -292,16 +316,17 @@ class EarlyWarningService:
         try:
             data = self.power.get_daily(lat, lon, start, end, ["T2M", "T2M_MAX", "T2M_MIN", "PRECTOTCORR"], "AG")
         except NoDataError as exc:
-            return None, [f"Lluvia reciente no disponible: {exc.message}"]
+            return None, [tr(f"Lluvia reciente no disponible: {exc.message}", f"Recent rain unavailable: {exc.message}")]
         rain = data.df["PRECTOTCORR"].dropna()
-        warnings = [f"Lluvia reciente: {w}" for w in data.warnings]
+        warnings = [tr(f"Lluvia reciente: {w}", f"Recent rain: {w}") for w in data.warnings]
         if rain.empty:
-            return None, [*warnings, "NASA POWER todavía no tiene la lluvia de las últimas semanas."]
+            return None, [*warnings, tr("NASA POWER todavía no tiene la lluvia de las últimas semanas.", "NASA POWER does not have the last few weeks' rain yet.")]
         first, last = rain.index.min().date(), rain.index.max().date()
         total = round(float(rain.sum()), 1)
         normal = normal_rain(hist_df, first, last)
         pct = round(100 * total / normal, 0) if normal else None
-        detail = f"Lluvia del {first:%d/%m} al {last:%d/%m}" + (" (POWER publica con unos días de atraso)" if last < end else "")
+        detail = tr(f"Lluvia del {_day(first)} al {_day(last)}", f"Rain from {_day(first)} to {_day(last)}") + (
+            tr(" (POWER publica con unos días de atraso)", " (POWER publishes with a few days' delay)") if last < end else "")
         return RainSummary(days=(last - first).days + 1, total_mm=total, normal_mm=normal, pct_of_normal=pct, start=first,
                            end=last, source=power_source(data.status, data.retrieved_at, detail)), warnings
 
@@ -318,7 +343,7 @@ class EarlyWarningService:
             req = SoilMoistureRequest(field_id=field_id) if field_id else SoilMoistureRequest(latitude=lat, longitude=lon)
             summary, w = self.satellite.soil_moisture(req)
         except (NoDataError, InvalidInputError) as exc:
-            return None, None, [f"SMAP no disponible: {exc.message}"]
+            return None, None, [tr(f"SMAP no disponible: {exc.message}", f"SMAP unavailable: {exc.message}")]
         anomaly = summary.water_stress.anomaly_pct
         src = trace_source("NASA SMAP", summary.trace)
         return anomaly, src, [f"SMAP: {x}" for x in w]
@@ -334,7 +359,7 @@ class EarlyWarningService:
         warnings += w
         anomaly, smap_src, w = self._smap(field.id if field else None, lat, lon)
         warnings += w
-        sources = [power_source(hist.status, hist.retrieved_at, "Clima de los últimos 10 años y lluvia reciente")]
+        sources = [power_source(hist.status, hist.retrieved_at, tr("Clima de los últimos 10 años y lluvia reciente", "Weather of the last 10 years and recent rain"))]
         if fc:
             sources.append(fc.source)
         if smap_src:
@@ -356,7 +381,7 @@ class EarlyWarningService:
         warnings: list[str] = []
         hist, start, end, _ = self.history(lat, lon)
         warnings += hist.warnings
-        src = power_source(hist.status, hist.retrieved_at, f"Promedio {start.year}-{end.year}")
+        src = power_source(hist.status, hist.retrieved_at, tr(f"Promedio {start.year}-{end.year}", f"Average {start.year}-{end.year}"))
         summary = build_summary(hist, lat, lon, start, end, "AG", "power", include_daily=False, field_id=field_id)
 
         fdays, fmonths, last, first = frost_stats(hist.df, lat)
@@ -380,9 +405,12 @@ class EarlyWarningService:
         irrigation = IrrigationInfo(
             weekly_l_per_m2=round(weekly, 0), daily_l_per_m2=round(weekly / 7, 1),
             with_forecast_l_per_m2=with_fc,
-            basis=(f"En {MONTHS[month - 1]} la evaporación normal es de ~{et0_w:.0f} mm por semana y llueven ~{rain_w:.0f} mm "
-                   f"(NASA POWER). Se repone lo que falta para una huerta en producción (Kc {HUERTA_KC:g}); "
-                   "1 mm = 1 litro por m²."),
+            basis=tr(f"En {MONTHS[month - 1]} la evaporación normal es de ~{et0_w:.0f} mm por semana y llueven ~{rain_w:.0f} mm "
+                     f"(NASA POWER). Se repone lo que falta para una huerta en producción (Kc {HUERTA_KC:g}); "
+                     "1 mm = 1 litro por m².",
+                     f"In {MONTHS_EN[month - 1]} normal evaporation is ~{et0_w:.0f} mm per week and it rains ~{rain_w:.0f} mm "
+                     f"(NASA POWER). The shortfall is replaced for a producing garden (Kc {HUERTA_KC:g}); "
+                     "1 mm = 1 liter per m²."),
             et0_weekly_mm=round(et0_w, 1), rain_weekly_mm=round(rain_w, 1), source=src,
         )
 
@@ -401,18 +429,21 @@ class EarlyWarningService:
             try:
                 vreq = VegetationRequest(field_id=field.id) if field else VegetationRequest(latitude=lat, longitude=lon)
                 v, vw = self.satellite.vegetation(vreq)
-                level = ("poca vegetación" if (v.mean_ndvi or 0) < 0.3 else "vegetación moderada" if (v.mean_ndvi or 0) < 0.5
-                         else "mucha vegetación")
+                level = (tr("poca vegetación", "little vegetation") if (v.mean_ndvi or 0) < 0.3
+                         else tr("vegetación moderada", "moderate vegetation") if (v.mean_ndvi or 0) < 0.5
+                         else tr("mucha vegetación", "a lot of vegetation"))
                 cover = round(v.cover_fraction_mean * 100, 0) if v.cover_fraction_mean is not None else None
                 vegetation = VegetationInfo(
                     mean_ndvi=v.mean_ndvi, cover_pct=cover,
-                    text=f"La zona alrededor tiene {level} (NDVI medio {v.mean_ndvi:.2f}). Es un píxel de 250 m: describe el "
-                         "entorno, no tu huerta." if v.mean_ndvi is not None else "Sin datos de verdor para la zona.",
+                    text=tr(f"La zona alrededor tiene {level} (NDVI medio {v.mean_ndvi:.2f}). Es un píxel de 250 m: describe el "
+                            "entorno, no tu huerta.",
+                            f"The surrounding area has {level} (mean NDVI {v.mean_ndvi:.2f}). It is a 250 m pixel: it describes the "
+                            "surroundings, not your garden.") if v.mean_ndvi is not None else tr("Sin datos de verdor para la zona.", "No greenness data for the area."),
                     source=trace_source("NASA MODIS (NDVI)", v.trace),
                 )
                 warnings += [f"NDVI: {x}" for x in vw]
             except (NoDataError, InvalidInputError) as exc:
-                warnings.append(f"NDVI no disponible: {exc.message}")
+                warnings.append(tr(f"NDVI no disponible: {exc.message}", f"NDVI unavailable: {exc.message}"))
 
         tips = huerta_tips(frost, heat, irrigation, month, lat)
         sources = [src] + ([fc.source] if fc else []) + ([smap_src] if smap_src else []) + ([vegetation.source] if vegetation else [])
@@ -424,19 +455,20 @@ class EarlyWarningService:
 
 
 MONTHS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+MONTHS_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
 
 def huerta_tips(frost: FrostInfo, heat: HeatInfo, irr: IrrigationInfo, month: int, lat: float) -> list[str]:
     tips = []
     if month in frost.frost_months:
-        tips.append("En este mes suele helar: tené a mano manta antihelada y sembrá verduras de hoja resistentes (acelga, lechuga, espinaca, haba).")
+        tips.append(tr("En este mes suele helar: tené a mano manta antihelada y sembrá verduras de hoja resistentes (acelga, lechuga, espinaca, haba).", "Frost is common this month: keep frost cloth handy and plant hardy leafy greens (chard, lettuce, spinach, broad beans)."))
     elif frost.last_frost_typical:
-        tips.append(f"Las heladas suelen terminar hacia el {frost.last_frost_typical}: después de esa fecha es seguro trasplantar tomate, pimiento y zapallo.")
+        tips.append(tr(f"Las heladas suelen terminar hacia el {frost.last_frost_typical}: después de esa fecha es seguro trasplantar tomate, pimiento y zapallo.", f"Frost usually ends around {frost.last_frost_typical}: after that date it is safe to transplant tomato, pepper and squash."))
     if month in heat.hot_months:
-        tips.append("Es época de calor fuerte: regá temprano o al atardecer y cubrí el suelo con paja o pasto seco.")
+        tips.append(tr("Es época de calor fuerte: regá temprano o al atardecer y cubrí el suelo con paja o pasto seco.", "It is the season of strong heat: water early or at dusk and mulch the soil with straw or dry grass."))
     if irr.weekly_l_per_m2 >= 25:
-        tips.append("La demanda de agua es alta: el riego por goteo y la cobertura del suelo ahorran hasta la mitad del agua.")
+        tips.append(tr("La demanda de agua es alta: el riego por goteo y la cobertura del suelo ahorran hasta la mitad del agua.", "Water demand is high: drip irrigation and mulching save up to half the water."))
     elif irr.weekly_l_per_m2 <= 5:
-        tips.append("En esta época la lluvia y el rocío cubren casi todo: regá solo si la tierra está seca a 5 cm de profundidad.")
-    tips.append("Rotá las familias de cultivos entre canteros cada temporada (hojas, frutos, raíces, legumbres) para cuidar el suelo.")
+        tips.append(tr("En esta época la lluvia y el rocío cubren casi todo: regá solo si la tierra está seca a 5 cm de profundidad.", "At this time of year rain and dew cover almost everything: water only if the soil is dry 5 cm down."))
+    tips.append(tr("Rotá las familias de cultivos entre canteros cada temporada (hojas, frutos, raíces, legumbres) para cuidar el suelo.", "Rotate crop families between beds each season (leaves, fruits, roots, legumes) to care for the soil."))
     return tips

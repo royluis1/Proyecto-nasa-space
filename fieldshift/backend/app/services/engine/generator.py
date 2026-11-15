@@ -14,6 +14,7 @@ from app.schemas.field import FieldOut
 from app.schemas.rotation import Rotation, RotationStep, RotationTemplate
 from app.services.engine.calendar import RotationCalendarError, build_calendar
 from app.utils.exceptions import InvalidInputError
+from app.i18n import tr
 
 GENERATED_STRATEGIES = [
     RotationStrategy.CONSERVADORA,
@@ -136,23 +137,23 @@ def conservative(actual: Rotation, crops: dict[str, Crop], zone: str, irrigated:
             candidate = rot.model_copy(update={"steps": [*rot.steps, cover]})
             if _valid(candidate, crops):
                 rot = candidate
-                changes.append(f"cobertura de gramíneas en el invierno del año {year}")
+                changes.append(tr(f"cobertura de gramíneas en el invierno del año {year}", f"grass cover crop in the winter of year {year}"))
                 applied.append("C3-cobertura")
                 break
 
-    detail = "; ".join(changes) if changes else "sin cambios posibles por reglas"
+    detail = "; ".join(changes) if changes else tr("sin cambios posibles por reglas", "no changes possible by the rules")
     chrono = sorted(rot.steps, key=lambda s: (s.year, s.start_month))
     sequence = " – ".join(crops[s.crop_id].name for s in chrono)
     return rot.model_copy(
         update={
             "id": rotation_id(actual.field_id, RotationStrategy.CONSERVADORA),
-            "name": f"Conservadora: {sequence}",
+            "name": tr(f"Conservadora: {sequence}", f"Conservative: {sequence}"),
             "strategy": RotationStrategy.CONSERVADORA,
             "origin": "generada",
-            "description": f"Mantiene la base de la rotación actual con cambios mínimos ({detail}).",
+            "description": tr(f"Mantiene la base de la rotación actual con cambios mínimos ({detail}).", f"Keeps the base of the current rotation with minimal changes ({detail})."),
             "rule_ids": [f"regla:{r}" for r in dict.fromkeys(applied)],
             "management": (
-                ["secar la cobertura en agosto para no consumir el agua del barbecho"]
+                [tr("secar la cobertura en agosto para no consumir el agua del barbecho", "terminate the cover crop in August so it does not use the fallow's water")]
                 if "C3-cobertura" in applied
                 else []
             ),
@@ -167,7 +168,8 @@ def actual_rotation(field: FieldOut, declared: Rotation | None, history: list[st
     recent = history[-3:]
     if not recent:
         raise InvalidInputError(
-            "El lote no tiene rotación actual ni historial de cultivos: cargá al menos el cultivo actual (`current_crop`)."
+            tr("El lote no tiene rotación actual ni historial de cultivos: cargá al menos el cultivo actual (`current_crop`).",
+               "The field has no current rotation or crop history: add at least the current crop (`current_crop`).")
         )
     steps = [
         RotationStep(
@@ -181,14 +183,14 @@ def actual_rotation(field: FieldOut, declared: Rotation | None, history: list[st
     rotation = Rotation(
         id=rotation_id(field.id, RotationStrategy.ACTUAL),
         field_id=field.id,
-        name="Actual (según historial): " + " – ".join(crops[c].name for c in recent),
+        name=tr("Actual (según historial): ", "Current (from history): ") + " – ".join(crops[c].name for c in recent),
         strategy=RotationStrategy.ACTUAL,
         duration_years=len(steps),
         steps=steps,
-        description="Reconstruida desde el historial de cultivos, con fechas típicas de cada cultivo.",
+        description=tr("Reconstruida desde el historial de cultivos, con fechas típicas de cada cultivo.", "Rebuilt from the crop history, with typical dates for each crop."),
     )
     if not _valid(rotation, crops):
-        raise InvalidInputError("No se pudo reconstruir la rotación actual desde el historial: cargala explícitamente.")
+        raise InvalidInputError(tr("No se pudo reconstruir la rotación actual desde el historial: cargala explícitamente.", "The current rotation could not be rebuilt from the history: enter it explicitly."))
     return rotation
 
 

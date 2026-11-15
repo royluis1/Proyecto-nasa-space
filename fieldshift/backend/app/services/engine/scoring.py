@@ -9,6 +9,7 @@ cada uno está en docs/scoring.md.
 
 from dataclasses import dataclass, field
 
+from app.i18n import LocalizedMap, decimal, tr
 from app.models.enums import Confidence, CropCycle, DataLabel, Level, ScoreComponentKey
 from app.models.provenance import Provenance
 from app.schemas.crop import Crop
@@ -24,14 +25,15 @@ from app.services.engine.calendar import Calendar
 from app.services.engine.context import ClimateContext, SoilContext
 from app.services.engine.water import WaterBalance, water_balance
 
-COMPONENT_NAMES = {
-    ScoreComponentKey.AGUA: "Resiliencia hídrica",
-    ScoreComponentKey.SUELO: "Salud del suelo",
-    ScoreComponentKey.RIESGO: "Resiliencia climática",
-    ScoreComponentKey.INGRESO: "Ingreso relativo estimado",
-    ScoreComponentKey.SOSTENIBILIDAD: "Sostenibilidad y diversificación",
-}
+COMPONENT_NAMES = LocalizedMap({
+    ScoreComponentKey.AGUA: ("Resiliencia hídrica", "Water resilience"),
+    ScoreComponentKey.SUELO: ("Salud del suelo", "Soil health"),
+    ScoreComponentKey.RIESGO: ("Resiliencia climática", "Climate resilience"),
+    ScoreComponentKey.INGRESO: ("Ingreso relativo estimado", "Estimated relative income"),
+    ScoreComponentKey.SOSTENIBILIDAD: ("Sostenibilidad y diversificación", "Sustainability and diversification"),
+})
 COMPONENT_ORDER = list(COMPONENT_NAMES)
+TEXTURE_EN = {"arenosa": "sandy", "franco_arenosa": "sandy loam", "franca": "loam", "franco_limosa": "silt loam", "franco_arcillosa": "clay loam", "arcillosa": "clay"}
 
 _PROV = {
     ScoreComponentKey.AGUA: Provenance(
@@ -73,8 +75,8 @@ EXPECTED_DROUGHT_PCT = 16.0
 
 
 def fmt(x: float, decimals: int = 1) -> str:
-    """Número con coma decimal, para los textos."""
-    return f"{x:.{decimals}f}".replace(".", ",")
+    """Número para los textos: coma decimal en español, punto en inglés."""
+    return decimal(x, decimals)
 
 
 def clamp(x: float, lo: float = 0.0, hi: float = 100.0) -> float:
@@ -186,17 +188,19 @@ def compute_metrics(
         shortest = round(min(gaps) / 12)
         if shortest < crop.rotation.return_interval_years.min:
             intervals.append(
-                f"{crop.name} se siembra en campañas seguidas; conviene volver cada {crop.rotation.return_interval_years.min:g} años o más"
+                tr(f"{crop.name} se siembra en campañas seguidas; conviene volver cada {crop.rotation.return_interval_years.min:g} años o más",
+                   f"{crop.name} is planted in consecutive seasons; it is better to return every {crop.rotation.return_interval_years.min:g} years or more")
                 if shortest <= 1
-                else f"{crop.name} vuelve cada {shortest} años; conviene cada {crop.rotation.return_interval_years.min:g} o más"
+                else tr(f"{crop.name} vuelve cada {shortest} años; conviene cada {crop.rotation.return_interval_years.min:g} o más",
+                        f"{crop.name} returns every {shortest} years; every {crop.rotation.return_interval_years.min:g} or more is better")
             )
 
     bad, good = [], []
     for prev, cur in _cyclic_pairs(crops):
         if prev.id in cur.rotation.avoid_predecessors and not (prev.id == cur.id and cur.cycle == CropCycle.PERENNE):
-            bad.append(f"{cur.name} después de {prev.name}")
+            bad.append(tr(f"{cur.name} después de {prev.name}", f"{cur.name} after {prev.name}"))
         elif prev.id in cur.rotation.good_predecessors:
-            good.append(f"{cur.name} después de {prev.name}")
+            good.append(tr(f"{cur.name} después de {prev.name}", f"{cur.name} after {prev.name}"))
 
     income = 0.0
     income_notes = []
@@ -214,10 +218,10 @@ def compute_metrics(
         value = P.INCOME_VALUE[crop.relative_income] * yield_mult * factor
         if crop.local_market == Level.BAJO:
             value *= P.LOW_MARKET_FACTOR
-            income_notes.append(f"{crop.name}: mercado local limitado")
+            income_notes.append(tr(f"{crop.name}: mercado local limitado", f"{crop.name}: limited local market"))
         if sw.stress > 0.25:
             stressed.append(
-                f"{crop.name} ({sw.stress * 100:.0f} % de déficit, rinde ~{factor * 100:.0f} % de su potencial)"
+                tr(f"{crop.name} ({sw.stress * 100:.0f} % de déficit, rinde ~{factor * 100:.0f} % de su potencial)", f"{crop.name} ({sw.stress * 100:.0f} % deficit, yields ~{factor * 100:.0f} % of its potential)")
             )
         income += value
 
@@ -292,11 +296,13 @@ def water_component(m: Metrics, ctx: ScoringContext) -> tuple[float, list[ScoreD
     coverage = w.coverage_with_irrigation if ctx.irrigated else w.coverage
     drivers = [
         _d(
-            "Demanda cubierta por lluvia y agua almacenada" + (" y riego" if ctx.irrigated else ""),
+            tr("Demanda cubierta por lluvia y agua almacenada", "Demand covered by rain and stored water") + (tr(" y riego", " and irrigation") if ctx.irrigated else ""),
             100 * coverage,
-            f"Los cultivos demandan ~{w.demand_mm_year:.0f} mm/año (Kc x ET0); la lluvia efectiva y el perfil cubren "
-            f"{w.coverage * 100:.0f} %"
-            + (f" y el riego suma ~{w.irrigation_mm_year:.0f} mm/año." if ctx.irrigated else "."),
+            tr(f"Los cultivos demandan ~{w.demand_mm_year:.0f} mm/año (Kc x ET0); la lluvia efectiva y el perfil cubren "
+               f"{w.coverage * 100:.0f} %",
+               f"The crops demand ~{w.demand_mm_year:.0f} mm/yr (Kc x ET0); effective rain and the soil profile cover "
+               f"{w.coverage * 100:.0f} %")
+            + (tr(f" y el riego suma ~{w.irrigation_mm_year:.0f} mm/año.", f" and irrigation adds ~{w.irrigation_mm_year:.0f} mm/yr.") if ctx.irrigated else "."),
             _PROV[ScoreComponentKey.AGUA],
         )
     ]
@@ -305,36 +311,36 @@ def water_component(m: Metrics, ctx: ScoringContext) -> tuple[float, list[ScoreD
     if pen > 0:
         drivers.append(
             _d(
-                "Penalización por alta demanda hídrica",
+                tr("Penalización por alta demanda hídrica", "Penalty for high water demand"),
                 -pen,
-                f"La demanda equivale al {ratio * 100:.0f} % de la lluvia anual (se penaliza desde el {P.DEMAND_PENALTY_FROM * 100:.0f} %).",
+                tr(f"La demanda equivale al {ratio * 100:.0f} % de la lluvia anual (se penaliza desde el {P.DEMAND_PENALTY_FROM * 100:.0f} %).", f"Demand equals {ratio * 100:.0f} % of annual rain (penalized from {P.DEMAND_PENALTY_FROM * 100:.0f} %)."),
             )
         )
     if ctx.irrigated and w.irrigation_mm_year > 0:
         drivers.append(
             _d(
-                "Ajuste por riego: costo del agua aplicada",
+                tr("Ajuste por riego: costo del agua aplicada", "Irrigation adjustment: cost of applied water"),
                 -min(15.0, w.irrigation_mm_year / 40),
-                f"El riego cubre el déficit, pero ~{w.irrigation_mm_year:.0f} mm/año tienen costo y presionan el acuífero.",
+                tr(f"El riego cubre el déficit, pero ~{w.irrigation_mm_year:.0f} mm/año tienen costo y presionan el acuífero.", f"Irrigation covers the deficit, but ~{w.irrigation_mm_year:.0f} mm/yr has a cost and stresses the aquifer."),
             )
         )
     drivers.append(
         _d(
-            "Tolerancia a sequía de los cultivos",
+            tr("Tolerancia a sequía de los cultivos", "Crop drought tolerance"),
             6 * m.drought_tolerance,
-            f"Promedio de tolerancia a sequía: {fmt(m.drought_tolerance, 2)} (0 = baja, 1 = alta).",
+            tr(f"Promedio de tolerancia a sequía: {fmt(m.drought_tolerance, 2)} (0 = baja, 1 = alta).", f"Average drought tolerance: {fmt(m.drought_tolerance, 2)} (0 = low, 1 = high)."),
         )
     )
     if ctx.soil_moisture:
         sm = ctx.soil_moisture
         shift = max(-5.0, min(5.0, sm.anomaly_pct / 5)) * max(0.5, min(1.2, ratio))
-        label = "observado, capa superficial" if sm.product == "SMAP_L3" else "modelado, zona de raíces"
+        label = tr("observado, capa superficial", "observed, surface layer") if sm.product == "SMAP_L3" else tr("modelado, zona de raíces", "modeled, root zone")
         drivers.append(
             _d(
-                "Humedad de suelo actual (SMAP)",
+                tr("Humedad de suelo actual (SMAP)", "Current soil moisture (SMAP)"),
                 shift,
-                f"{sm.product} ({label}): {sm.anomaly_pct:+.0f} % respecto de lo normal"
-                + (f" en {sm.period}." if sm.period else "."),
+                tr(f"{sm.product} ({label}): {sm.anomaly_pct:+.0f} % respecto de lo normal", f"{sm.product} ({label}): {sm.anomaly_pct:+.0f} % compared with normal")
+                + (tr(f" en {sm.period}.", f" in {sm.period}.") if sm.period else "."),
                 Provenance(
                     label=DataLabel.OBSERVADO if sm.product == "SMAP_L3" else DataLabel.MODELADO,
                     source_id="smap",
@@ -358,10 +364,12 @@ def _ndvi_drivers(ctx: ScoringContext) -> list[ScoreDriver]:
     if v.cover_fraction is not None:
         out.append(
             _d(
-                "Cobertura observada (NDVI)",
+                tr("Cobertura observada (NDVI)", "Observed cover (NDVI)"),
                 0.0,
-                f"{v.product}: cobertura vegetal estimada {v.cover_fraction * 100:.0f} % y suelo desnudo "
-                f"{v.bare_soil_fraction * 100:.0f} % del tiempo" + (f" ({v.period})." if v.period else "."),
+                tr(f"{v.product}: cobertura vegetal estimada {v.cover_fraction * 100:.0f} % y suelo desnudo "
+                   f"{v.bare_soil_fraction * 100:.0f} % del tiempo",
+                   f"{v.product}: estimated plant cover {v.cover_fraction * 100:.0f} % and bare soil "
+                   f"{v.bare_soil_fraction * 100:.0f} % of the time") + (f" ({v.period})." if v.period else "."),
                 prov,
             )
         )
@@ -370,27 +378,27 @@ def _ndvi_drivers(ctx: ScoringContext) -> list[ScoreDriver]:
         if v.trend_significant and t < 0:
             out.append(
                 _d(
-                    "Tendencia de biomasa en baja (NDVI)",
+                    tr("Tendencia de biomasa en baja (NDVI)", "Declining biomass trend (NDVI)"),
                     -6.0,
-                    f"El NDVI integrado por campaña cae {abs(t):.0f} % por década (tendencia significativa).",
+                    tr(f"El NDVI integrado por campaña cae {abs(t):.0f} % por década (tendencia significativa).", f"Seasonal integrated NDVI falls {abs(t):.0f} % per decade (significant trend)."),
                     prov,
                 )
             )
         elif v.trend_significant and t > 0:
             out.append(
                 _d(
-                    "Tendencia de biomasa en alza (NDVI)",
+                    tr("Tendencia de biomasa en alza (NDVI)", "Rising biomass trend (NDVI)"),
                     4.0,
-                    f"El NDVI integrado por campaña sube {t:.0f} % por década (tendencia significativa).",
+                    tr(f"El NDVI integrado por campaña sube {t:.0f} % por década (tendencia significativa).", f"Seasonal integrated NDVI rises {t:.0f} % per decade (significant trend)."),
                     prov,
                 )
             )
         else:
             out.append(
                 _d(
-                    "Tendencia de biomasa (NDVI)",
+                    tr("Tendencia de biomasa (NDVI)", "Biomass trend (NDVI)"),
                     0.0,
-                    f"Cambio de {t:+.0f} % por década en el NDVI integrado, sin tendencia significativa.",
+                    tr(f"Cambio de {t:+.0f} % por década en el NDVI integrado, sin tendencia significativa.", f"Change of {t:+.0f} % per decade in integrated NDVI, no significant trend."),
                     prov,
                 )
             )
@@ -403,38 +411,43 @@ def soil_component(
     n = m.calendar.n_months
     drivers = [
         _d(
-            "Bonificación por cobertura vegetal",
+            tr("Bonificación por cobertura vegetal", "Bonus for plant cover"),
             40 * m.covered_effective / n,
-            f"El lote tiene cultivo vivo {m.covered_months / n * 100:.0f} % de los meses "
-            f"({fmt(m.winter_covered_per_year)} de 5 meses de invierno por año); con el déficit hídrico, la biomasa "
-            f"equivale a {m.covered_effective / n * 100:.0f} %.",
+            tr(f"El lote tiene cultivo vivo {m.covered_months / n * 100:.0f} % de los meses "
+               f"({fmt(m.winter_covered_per_year)} de 5 meses de invierno por año); con el déficit hídrico, la biomasa "
+               f"equivale a {m.covered_effective / n * 100:.0f} %.",
+               f"The field has a living crop {m.covered_months / n * 100:.0f} % of the months "
+               f"({fmt(m.winter_covered_per_year)} of 5 winter months per year); with the water deficit, biomass "
+               f"equals {m.covered_effective / n * 100:.0f} %."),
         ),
         _d(
-            "Aporte de materia orgánica",
+            tr("Aporte de materia orgánica", "Organic matter contribution"),
             30 * min(1.0, m.om_per_year / 1.2),
-            f"Aporte de rastrojo y raíces ajustado por agua: {fmt(m.om_per_year, 2)} por año (1,2 o más = máximo).",
+            tr(f"Aporte de rastrojo y raíces ajustado por agua: {fmt(m.om_per_year, 2)} por año (1,2 o más = máximo).", f"Residue and root contribution adjusted for water: {fmt(m.om_per_year, 2)} per year (1.2 or more = maximum)."),
         ),
         _d(
-            "Bonificación por leguminosas",
+            tr("Bonificación por leguminosas", "Bonus for legumes"),
             15 * min(1.0, m.legume_steps_per_year / 0.5),
-            f"{fmt(m.legume_steps_per_year, 2)} cultivos que fijan nitrógeno por año (0,5 o más = máximo).",
+            tr(f"{fmt(m.legume_steps_per_year, 2)} cultivos que fijan nitrógeno por año (0,5 o más = máximo).", f"{fmt(m.legume_steps_per_year, 2)} nitrogen-fixing crops per year (0.5 or more = maximum)."),
         ),
         _d(
-            "Diversidad de profundidad de raíces",
+            tr("Diversidad de profundidad de raíces", "Root-depth diversity"),
             7.5 * (m.root_levels - 1),
-            f"{m.root_levels} profundidades de raíz distintas exploran distintas capas del perfil.",
+            tr(f"{m.root_levels} profundidades de raíz distintas exploran distintas capas del perfil.", f"{m.root_levels} different root depths explore different layers of the profile."),
         ),
     ]
     pen = min(40.0, m.erosion_index * erosion_scale * ctx.soil.wind_erodibility * ctx.soil.slope_factor * 3)
-    detail = (
+    detail = tr(
         f"{fmt(m.bare_months_per_year)} meses por año sin cultivo vivo; exposición ponderada por rastrojo y viento "
-        f"{fmt(m.erosion_index * erosion_scale)}, textura {ctx.soil.texture.value.replace('_', ' ')}"
+        f"{fmt(m.erosion_index * erosion_scale)}, textura {ctx.soil.texture.value.replace('_', ' ')}",
+        f"{fmt(m.bare_months_per_year)} months per year without a living crop; exposure weighted by residue and wind "
+        f"{fmt(m.erosion_index * erosion_scale)}, texture {TEXTURE_EN.get(ctx.soil.texture.value, ctx.soil.texture.value)}",
     )
     if ctx.soil.slope_pct:
-        detail += f", pendiente {fmt(ctx.soil.slope_pct)} %"
+        detail += tr(f", pendiente {fmt(ctx.soil.slope_pct)} %", f", slope {fmt(ctx.soil.slope_pct)} %")
     if erosion_scale != 1.0:
-        detail += f" (ajustada por NDVI x{fmt(erosion_scale, 2)})"
-    drivers.append(_d("Penalización por erosión", -pen, detail + "."))
+        detail += tr(f" (ajustada por NDVI x{fmt(erosion_scale, 2)})", f" (adjusted by NDVI x{fmt(erosion_scale, 2)})")
+    drivers.append(_d(tr("Penalización por erosión", "Erosion penalty"), -pen, detail + "."))
     if is_actual and ctx.vegetation is not None:
         drivers += _ndvi_drivers(ctx)
     return clamp(sum(d.points for d in drivers)), drivers, pen
@@ -444,28 +457,29 @@ def risk_component(m: Metrics, ctx: ScoringContext, first_crop: Crop) -> tuple[f
     climate_prov = _PROV[ScoreComponentKey.RIESGO]
     drivers = [
         _d(
-            "Resiliencia climática base",
+            tr("Resiliencia climática base", "Baseline climate resilience"),
             100,
-            "Se parte de 100 y se descuenta la exposición de cada cultivo.",
+            tr("Se parte de 100 y se descuenta la exposición de cada cultivo.", "It starts at 100 and subtracts each crop's exposure."),
             climate_prov,
         ),
         _d(
-            "Exposición a sequía",
+            tr("Exposición a sequía", "Drought exposure"),
             -60 * m.drought_risk,
-            f"Déficit en los meses con cultivo x sensibilidad a sequía (índice {fmt(m.drought_risk, 2)}"
-            + (f"; variabilidad de lluvia {ctx.climate.precip_cv_pct:.0f} %)." if ctx.climate.precip_cv_pct else ")."),
+            tr(f"Déficit en los meses con cultivo x sensibilidad a sequía (índice {fmt(m.drought_risk, 2)}",
+               f"Deficit in cropped months x drought sensitivity (index {fmt(m.drought_risk, 2)}")
+            + (tr(f"; variabilidad de lluvia {ctx.climate.precip_cv_pct:.0f} %).", f"; rainfall variability {ctx.climate.precip_cv_pct:.0f} %).") if ctx.climate.precip_cv_pct else ")."),
             climate_prov,
         ),
         _d(
-            "Exposición a calor",
+            tr("Exposición a calor", "Heat exposure"),
             -30 * m.heat_risk,
-            f"Días con Tmax > 35 °C en los meses con cultivo x sensibilidad al calor (índice {fmt(m.heat_risk, 2)}).",
+            tr(f"Días con Tmax > 35 °C en los meses con cultivo x sensibilidad al calor (índice {fmt(m.heat_risk, 2)}).", f"Days with Tmax > 35 °C in cropped months x heat sensitivity (index {fmt(m.heat_risk, 2)})."),
             climate_prov,
         ),
         _d(
-            "Exposición a heladas",
+            tr("Exposición a heladas", "Frost exposure"),
             -15 * m.frost_risk,
-            f"Meses fríos con cultivo x sensibilidad a heladas (índice {fmt(m.frost_risk, 2)}).",
+            tr(f"Meses fríos con cultivo x sensibilidad a heladas (índice {fmt(m.frost_risk, 2)}).", f"Cold cropped months x frost sensitivity (index {fmt(m.frost_risk, 2)})."),
             climate_prov,
         ),
     ]
@@ -473,17 +487,17 @@ def risk_component(m: Metrics, ctx: ScoringContext, first_crop: Crop) -> tuple[f
         pen = min(30.0, 10 * m.monoculture_weight)
         drivers.append(
             _d(
-                "Penalización por monocultivo",
+                tr("Penalización por monocultivo", "Monoculture penalty"),
                 -pen,
-                "Se repite en campañas seguidas: "
+                tr("Se repite en campañas seguidas: ", "Repeated in consecutive seasons: ")
                 + ", ".join(dict.fromkeys(m.monoculture))
-                + ". Aumentan plagas y enfermedades.",
+                + tr(". Aumentan plagas y enfermedades.", ". Pests and diseases increase."),
             )
         )
     if m.interval_violations:
         drivers.append(
             _d(
-                "Intervalo de retorno corto",
+                tr("Intervalo de retorno corto", "Short return interval"),
                 -min(18.0, 6 * len(m.interval_violations)),
                 "; ".join(m.interval_violations) + ".",
             )
@@ -491,7 +505,7 @@ def risk_component(m: Metrics, ctx: ScoringContext, first_crop: Crop) -> tuple[f
     if m.bad_predecessors:
         drivers.append(
             _d(
-                "Antecesores desfavorables",
+                tr("Antecesores desfavorables", "Unfavorable previous crops"),
                 -min(15.0, 5 * len(m.bad_predecessors)),
                 "; ".join(m.bad_predecessors) + ".",
             )
@@ -499,7 +513,7 @@ def risk_component(m: Metrics, ctx: ScoringContext, first_crop: Crop) -> tuple[f
     if m.good_predecessors:
         drivers.append(
             _d(
-                "Antecesores favorables",
+                tr("Antecesores favorables", "Favorable previous crops"),
                 min(6.0, 2 * len(m.good_predecessors)),
                 "; ".join(m.good_predecessors[:3]) + ".",
             )
@@ -510,10 +524,12 @@ def risk_component(m: Metrics, ctx: ScoringContext, first_crop: Crop) -> tuple[f
         excess = max(0.0, sm.drought_frequency_pct - EXPECTED_DROUGHT_PCT)
         drivers.append(
             _d(
-                "Frecuencia de sequías de suelo (SMAP)",
+                tr("Frecuencia de sequías de suelo (SMAP)", "Soil drought frequency (SMAP)"),
                 -min(10.0, excess / 2) * sensitivity,
-                f"SMAP {'L3' if sm.product == 'SMAP_L3' else 'L4'}: {sm.drought_frequency_pct:.0f} % de los meses con sequía de humedad de suelo "
-                f"(lo esperable es ~{EXPECTED_DROUGHT_PCT:.0f} %); pesa más en cultivos poco tolerantes.",
+                tr(f"SMAP {'L3' if sm.product == 'SMAP_L3' else 'L4'}: {sm.drought_frequency_pct:.0f} % de los meses con sequía de humedad de suelo "
+                   f"(lo esperable es ~{EXPECTED_DROUGHT_PCT:.0f} %); pesa más en cultivos poco tolerantes.",
+                   f"SMAP {'L3' if sm.product == 'SMAP_L3' else 'L4'}: {sm.drought_frequency_pct:.0f} % of months with soil-moisture drought "
+                   f"(about {EXPECTED_DROUGHT_PCT:.0f} % is expected); it weighs more on less tolerant crops."),
                 Provenance(
                     label=DataLabel.OBSERVADO if sm.product == "SMAP_L3" else DataLabel.MODELADO,
                     source_id="smap",
@@ -527,10 +543,10 @@ def risk_component(m: Metrics, ctx: ScoringContext, first_crop: Crop) -> tuple[f
             extra = 8.0 if (ctx.history_repeat == first_crop.id) else 5.0
             drivers.append(
                 _d(
-                    "Inicio desfavorable sobre el cultivo actual",
+                    tr("Inicio desfavorable sobre el cultivo actual", "Unfavorable start after the current crop"),
                     -extra,
-                    f"Empieza con {first_crop.name} sobre {cur.name} (cultivo actual)"
-                    + (", que ya se repitió en el historial." if ctx.history_repeat == first_crop.id else "."),
+                    tr(f"Empieza con {first_crop.name} sobre {cur.name} (cultivo actual)", f"It starts with {first_crop.name} after {cur.name} (current crop)")
+                    + (tr(", que ya se repitió en el historial.", ", which was already repeated in the history.") if ctx.history_repeat == first_crop.id else "."),
                 )
             )
     return clamp(sum(d.points for d in drivers)), drivers
@@ -539,24 +555,26 @@ def risk_component(m: Metrics, ctx: ScoringContext, first_crop: Crop) -> tuple[f
 def income_component(m: Metrics) -> tuple[float, list[ScoreDriver]]:
     value = 100 * min(1.0, max(0.0, m.income_per_year) / P.INCOME_REFERENCE)
     detail = (
-        f"Ingreso relativo de los cultivos de cosecha, ajustado por rendimiento esperado y déficit hídrico (Ky de FAO-33): "
-        f"{fmt(m.income_per_year, 2)} por año ({fmt(P.INCOME_REFERENCE)} = 100 puntos). Es un índice cualitativo, no un margen en pesos."
+        tr(f"Ingreso relativo de los cultivos de cosecha, ajustado por rendimiento esperado y déficit hídrico (Ky de FAO-33): "
+           f"{fmt(m.income_per_year, 2)} por año ({fmt(P.INCOME_REFERENCE)} = 100 puntos). Es un índice cualitativo, no un margen en pesos.",
+           f"Relative income of harvested crops, adjusted for expected yield and water deficit (FAO-33 Ky): "
+           f"{fmt(m.income_per_year, 2)} per year ({fmt(P.INCOME_REFERENCE)} = 100 points). It is a qualitative index, not a margin in pesos.")
     )
-    drivers = [_d("Ingreso relativo de los cultivos", value, detail, _PROV[ScoreComponentKey.INGRESO])]
+    drivers = [_d(tr("Ingreso relativo de los cultivos", "Relative income of the crops"), value, detail, _PROV[ScoreComponentKey.INGRESO])]
     if m.stressed_crops:
         drivers.append(
-            _d("Castigo por déficit hídrico", 0.0, "Ya incluido arriba: " + ", ".join(m.stressed_crops) + ".")
+            _d(tr("Castigo por déficit hídrico", "Water-deficit penalty"), 0.0, tr("Ya incluido arriba: ", "Already included above: ") + ", ".join(m.stressed_crops) + ".")
         )
     if m.cover_steps:
         drivers.append(
             _d(
-                "Costo de coberturas",
+                tr("Costo de coberturas", "Cover-crop cost"),
                 0.0,
-                f"Ya incluido arriba: {m.cover_steps} cobertura(s) sin cosecha restan ingreso.",
+                tr(f"Ya incluido arriba: {m.cover_steps} cobertura(s) sin cosecha restan ingreso.", f"Already included above: {m.cover_steps} unharvested cover crop(s) reduce income."),
             )
         )
     if m.income_notes:
-        drivers.append(_d("Mercado local", 0.0, "Ya incluido arriba: " + "; ".join(m.income_notes) + "."))
+        drivers.append(_d(tr("Mercado local", "Local market"), 0.0, tr("Ya incluido arriba: ", "Already included above: ") + "; ".join(m.income_notes) + "."))
     return clamp(value), drivers
 
 
@@ -569,34 +587,34 @@ def sustainability_component(m: Metrics) -> tuple[float, list[ScoreDriver]]:
         and (m.calendar.steps[i].crop.is_cover_crop or m.calendar.steps[i].crop.cycle == CropCycle.PERENNE)
     )
     drivers = [
-        _d("Base", 20, "Puntaje de partida."),
+        _d(tr("Base", "Baseline"), 20, tr("Puntaje de partida.", "Starting score.")),
         _d(
-            "Bonificación por diversificación de cultivos",
+            tr("Bonificación por diversificación de cultivos", "Bonus for crop diversification"),
             min(30.0, (m.distinct_crops - 1) * 10),
-            f"{m.distinct_crops} cultivos distintos.",
+            tr(f"{m.distinct_crops} cultivos distintos.", f"{m.distinct_crops} distinct crops."),
         ),
         _d(
-            "Bonificación por familias botánicas",
+            tr("Bonificación por familias botánicas", "Bonus for plant families"),
             min(20.0, (m.families - 1) * 10),
-            f"{m.families} familias botánicas: cortan ciclos de plagas y enfermedades.",
+            tr(f"{m.families} familias botánicas: cortan ciclos de plagas y enfermedades.", f"{m.families} plant families: they break pest and disease cycles."),
         ),
         _d(
-            "Bonificación por leguminosas",
+            tr("Bonificación por leguminosas", "Bonus for legumes"),
             15 * min(1.0, m.legume_steps_per_year / 0.5),
-            "Fijan nitrógeno y reducen la dependencia de fertilizantes.",
+            tr("Fijan nitrógeno y reducen la dependencia de fertilizantes.", "They fix nitrogen and reduce fertilizer dependence."),
         ),
         _d(
-            "Coberturas y pasturas",
+            tr("Coberturas y pasturas", "Cover crops and pastures"),
             15 * min(1.0, service_months / n / 0.4),
-            f"{service_months / n * 100:.0f} % de los meses con coberturas o pasturas (40 % o más = máximo).",
+            tr(f"{service_months / n * 100:.0f} % de los meses con coberturas o pasturas (40 % o más = máximo).", f"{service_months / n * 100:.0f} % of months with cover crops or pastures (40 % or more = maximum)."),
         ),
     ]
     if m.monoculture:
         drivers.append(
             _d(
-                "Penalización por monocultivo",
+                tr("Penalización por monocultivo", "Monoculture penalty"),
                 -min(30.0, 15 * len(m.monoculture)),
-                "Repetir el mismo cultivo reduce la biodiversidad del sistema.",
+                tr("Repetir el mismo cultivo reduce la biodiversidad del sistema.", "Repeating the same crop reduces the system's biodiversity."),
             )
         )
     return clamp(sum(d.points for d in drivers)), drivers

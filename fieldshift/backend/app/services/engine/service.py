@@ -16,6 +16,7 @@ from app.services.power.service import PowerService, resolve_parameters
 from app.services.repository import Repository
 from app.services.satellite.service import SatelliteService, soil_moisture_input, vegetation_input
 from app.utils.exceptions import InvalidInputError, NoDataError, RotationNotFoundError
+from app.i18n import tr
 
 DEFAULT_CLIMATE_YEARS = 10
 
@@ -33,11 +34,11 @@ def climate_period(start_year: int | None, end_year: int | None, today: date | N
     end = end_year or today.year - 1
     start = start_year or end - DEFAULT_CLIMATE_YEARS + 1
     if start > end:
-        raise InvalidInputError("start_year no puede ser posterior a end_year.")
+        raise InvalidInputError(tr("start_year no puede ser posterior a end_year.", "start_year cannot be after end_year."))
     if end >= today.year:
-        raise InvalidInputError("El período climático tiene que terminar en un año completo (anterior al actual).")
+        raise InvalidInputError(tr("El período climático tiene que terminar en un año completo (anterior al actual).", "The climate period must end in a complete year (before the current one)."))
     if end - start + 1 > 20:
-        raise InvalidInputError("El período climático puede tener como máximo 20 años.")
+        raise InvalidInputError(tr("El período climático puede tener como máximo 20 años.", "The climate period can be at most 20 years."))
     return date(start, 1, 1), date(end, 12, 31)
 
 
@@ -87,7 +88,7 @@ class RotationService:
         for rid in req.rotation_ids or []:
             rot = self.repo.get_rotation(rid)
             if rot.field_id != field.id:
-                raise InvalidInputError("Hay rotaciones que no pertenecen a este lote.", {"rotation_ids": [rid]})
+                raise InvalidInputError(tr("Hay rotaciones que no pertenecen a este lote.", "Some rotations do not belong to this field."), {"rotation_ids": [rid]})
             if rot.id != field.current_rotation_id:
                 extra.append(rot)
         history = req.history if req.history is not None else field.crop_history
@@ -118,7 +119,7 @@ class RotationService:
         try:
             summary, w = terrain_for_field(self.terrain, field)
         except (NoDataError, InvalidInputError) as exc:
-            return field, [f"SRTM no disponible para el lote: {exc.message}"]
+            return field, [tr(f"SRTM no disponible para el lote: {exc.message}", f"SRTM unavailable for the field: {exc.message}")]
         location = field.location.model_copy(
             update={"slope_pct": summary.slope_mean_pct, "elevation_m": field.location.elevation_m or summary.elevation_mean_m}
         )
@@ -135,14 +136,14 @@ class RotationService:
                 sm = soil_moisture_input(summary)
                 warnings += [f"SMAP: {x}" for x in w]
             except (NoDataError, InvalidInputError) as exc:
-                warnings.append(f"SMAP no disponible para el lote: {exc.message}")
+                warnings.append(tr(f"SMAP no disponible para el lote: {exc.message}", f"SMAP unavailable for the field: {exc.message}"))
         if veg is None:
             try:
                 summary, w = self.satellite.vegetation(VegetationRequest(field_id=req.field_id))
                 veg = vegetation_input(summary)
                 warnings += [f"NDVI: {x}" for x in w]
             except (NoDataError, InvalidInputError) as exc:
-                warnings.append(f"NDVI no disponible para el lote: {exc.message}")
+                warnings.append(tr(f"NDVI no disponible para el lote: {exc.message}", f"NDVI unavailable for the field: {exc.message}"))
         return sm, veg, warnings
 
     def timeline(self, req: CalendarRequest, today: date | None = None) -> tuple[CalendarTimeline, ClimateBundle]:
@@ -151,7 +152,7 @@ class RotationService:
         by_id = {ev.rotation.id: ev for ev in result.evaluations}
         rotation_id = req.rotation_id or result.recommended_rotation_id
         if rotation_id not in by_id:
-            raise RotationNotFoundError(f"La rotación '{rotation_id}' no está entre las comparadas para este lote.")
+            raise RotationNotFoundError(tr(f"La rotación '{rotation_id}' no está entre las comparadas para este lote.", f"Rotation '{rotation_id}' is not among those compared for this field."))
         ev, best = by_id[rotation_id], by_id[result.recommended_rotation_id]
         field = self.repo.get_field(req.field_id)
         share = req.scenario.irrigation_share(field.irrigated) if req.scenario else (1.0 if field.irrigated else 0.0)
@@ -171,11 +172,13 @@ class RotationService:
         )
         advice = list(tl.advice)
         if rotation_id == best.rotation.id:
-            text = "Es la rotación con mejor puntaje para este escenario y tus prioridades."
+            text = tr("Es la rotación con mejor puntaje para este escenario y tus prioridades.", "It is the best-scoring rotation for this scenario and your priorities.")
         else:
-            text = (
+            text = tr(
                 f"Para este escenario, la rotación con mejor puntaje es «{best.rotation.name}» "
-                f"({best.score.total:.0f} puntos contra {ev.score.total:.0f} de esta)."
+                f"({best.score.total:.0f} puntos contra {ev.score.total:.0f} de esta).",
+                f"For this scenario, the best-scoring rotation is “{best.rotation.name}” "
+                f"({best.score.total:.0f} points vs. {ev.score.total:.0f} for this one).",
             )
         advice.insert(0, TimelineAdvice(kind="rotacion", severity=Level.BAJO if rotation_id == best.rotation.id else Level.MEDIO,
                                         text=text, campaigns=[c.index for c in tl.campaigns]))
@@ -203,7 +206,7 @@ class RotationService:
         for ev in result.evaluations:
             if ev.rotation.id == rotation_id:
                 return ev, result, bundle
-        raise RotationNotFoundError(f"No existe la rotación '{rotation_id}'.")
+        raise RotationNotFoundError(tr(f"No existe la rotación '{rotation_id}'.", f"Rotation '{rotation_id}' does not exist."))
 
     def _field_of(self, rotation_id: str) -> str:
         if rotation_id in self.repo.rotations:
@@ -212,4 +215,4 @@ class RotationService:
             suffix = rotation_id.removeprefix(field_id + "-")
             if suffix != rotation_id and suffix.split("-")[0] in {s.value for s in RotationStrategy}:
                 return field_id
-        raise RotationNotFoundError(f"No existe la rotación '{rotation_id}'.")
+        raise RotationNotFoundError(tr(f"No existe la rotación '{rotation_id}'.", f"Rotation '{rotation_id}' does not exist."))

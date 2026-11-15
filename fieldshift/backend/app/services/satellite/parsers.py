@@ -18,6 +18,7 @@ import pandas as pd
 
 from app.services.satellite.products import Product
 from app.utils.exceptions import InvalidInputError
+from app.i18n import tr
 
 MAX_SITE_DISTANCE_DEG = 0.25  # en un CSV con varios puntos, el más cercano debe estar a menos de esto
 
@@ -63,7 +64,7 @@ def parse_csv(text: str, product: Product, lat: float | None = None, lon: float 
     try:
         raw = pd.read_csv(io.StringIO(text), comment="#")
     except (pd.errors.ParserError, pd.errors.EmptyDataError, UnicodeDecodeError) as exc:
-        raise InvalidInputError(f"No se pudo leer el CSV: {exc}") from None
+        raise InvalidInputError(tr(f"No se pudo leer el CSV: {exc}", f"The CSV could not be read: {exc}")) from None
     raw.columns = [str(c).strip() for c in raw.columns]
     cols = list(raw.columns)
 
@@ -71,7 +72,7 @@ def parse_csv(text: str, product: Product, lat: float | None = None, lon: float 
     value_col = _find(cols, product.layer, product.variable, "value", "valor")
     if date_col is None or value_col is None:
         raise InvalidInputError(
-            f"El CSV necesita una columna de fecha y una de {product.variable}. Columnas encontradas: {cols[:10]}.",
+            tr(f"El CSV necesita una columna de fecha y una de {product.variable}. Columnas encontradas: {cols[:10]}.", f"The CSV needs a date column and a {product.variable} column. Columns found: {cols[:10]}."),
             {"esperado": ["Date o date", f"...{product.layer} o value"]},
         )
     qa_col = _find(cols, product.qa_layer) if product.qa_layer else None
@@ -83,11 +84,11 @@ def parse_csv(text: str, product: Product, lat: float | None = None, lon: float 
     lat_col, lon_col = _find(cols, "Latitude", "lat"), _find(cols, "Longitude", "lon")
     if id_col and raw[id_col].nunique() > 1:
         if lat is None or lat_col is None or lon_col is None:
-            raise InvalidInputError("El CSV tiene varios puntos: indicá las coordenadas para elegir uno.")
+            raise InvalidInputError(tr("El CSV tiene varios puntos: indicá las coordenadas para elegir uno.", "The CSV has several points: provide coordinates to choose one."))
         sites = raw.groupby(id_col)[[lat_col, lon_col]].first()
         dist = np.hypot(sites[lat_col] - lat, sites[lon_col] - lon)
         if dist.min() > MAX_SITE_DISTANCE_DEG:
-            raise InvalidInputError("Ningún punto del CSV está cerca de la ubicación pedida.")
+            raise InvalidInputError(tr("Ningún punto del CSV está cerca de la ubicación pedida.", "No point in the CSV is near the requested location."))
         raw = raw[raw[id_col] == dist.idxmin()]
     if id_col:
         out.site_id = str(raw[id_col].iloc[0]) if len(raw) else None
@@ -98,7 +99,7 @@ def parse_csv(text: str, product: Product, lat: float | None = None, lon: float 
     values = pd.to_numeric(raw[value_col], errors="coerce").astype("float64")
     bad_dates = int(dates.isna().sum())
     if bad_dates:
-        out.warnings.append(f"{bad_dates} filas con fecha ilegible se descartaron.")
+        out.warnings.append(tr(f"{bad_dates} filas con fecha ilegible se descartaron.", f"{bad_dates} rows with unreadable dates were discarded."))
 
     is_fill = values.isin(product.fill_values)
     if product.scale and values[~is_fill].abs().max(skipna=True) > 1.5:
@@ -114,13 +115,13 @@ def parse_csv(text: str, product: Product, lat: float | None = None, lon: float 
         out.bad_quality = int((~ok & values.notna()).sum())
         values = values.where(ok)
     elif product.qa_rule:
-        out.warnings.append("El CSV no trae capa de calidad: no se pudieron descartar nubes ni datos dudosos.")
+        out.warnings.append(tr("El CSV no trae capa de calidad: no se pudieron descartar nubes ni datos dudosos.", "The CSV has no quality layer: clouds and dubious data could not be discarded."))
 
     df = pd.DataFrame({"value": values.to_numpy()}, index=dates).loc[lambda d: d.index.notna()]
     df.index = df.index.tz_localize(None).normalize() if df.index.tz is not None else df.index.normalize()
     df = df.groupby(level=0).mean()  # sub-diario -> diario; duplicados -> promedio
     df.index.name = "date"
     if df["value"].notna().sum() == 0:
-        raise InvalidInputError("El CSV no tiene ningún valor válido de " + product.variable + ".")
+        raise InvalidInputError(tr("El CSV no tiene ningún valor válido de ", "The CSV has no valid value of ") + product.variable + ".")
     out.df = df.sort_index()
     return out

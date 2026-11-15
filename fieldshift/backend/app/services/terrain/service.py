@@ -20,19 +20,26 @@ from app.services.earthdata.session import EarthdataAuthError
 from app.services.power.service import Cooldown
 from app.services.terrain.srtm import read_hgt_zip, slope_class, terrain_stats, tile_name
 from app.utils.exceptions import InvalidInputError, NoDataError, UpstreamError
+from app.i18n import tr
 
 logger = logging.getLogger("fieldshift.terrain")
 
 CMR_GRANULES = "https://cmr.earthdata.nasa.gov/search/granules.json"
 LPDAAC_PATTERN = "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/{p}.003/{t}.{p}.hgt/{t}.{p}.hgt.zip"
 SAMPLE_MAX_DEG = 1.0
-LIMITATIONS = [
-    "SRTM es del año 2000: no ve cambios posteriores (terrazas, canales, caminos).",
-    "Resolución de ~30 m: no detecta microrrelieve, bajos chicos ni surcos.",
-    "SRTM tiene un ruido de algunos metros: se suaviza con una media de 3 x 3 píxeles, pero en llanuras muy planas la pendiente puede salir algo más alta que la real.",
-    "Es la superficie del radar: en montes o arboledas puede medir la copa y no el suelo.",
-    "La pendiente informa sobre la erosión por agua; la erosión eólica, central en San Luis, depende sobre todo de la cobertura.",
-]
+def limitations() -> list[str]:
+    return [
+        tr("SRTM es del año 2000: no ve cambios posteriores (terrazas, canales, caminos).",
+           "SRTM is from the year 2000: it does not see later changes (terraces, channels, roads)."),
+        tr("Resolución de ~30 m: no detecta microrrelieve, bajos chicos ni surcos.",
+           "~30 m resolution: it does not detect micro-relief, small low spots or rills."),
+        tr("SRTM tiene un ruido de algunos metros: se suaviza con una media de 3 x 3 píxeles, pero en llanuras muy planas la pendiente puede salir algo más alta que la real.",
+           "SRTM has a few meters of noise: it is smoothed with a 3 x 3 pixel mean, but on very flat plains the slope can come out somewhat higher than it really is."),
+        tr("Es la superficie del radar: en montes o arboledas puede medir la copa y no el suelo.",
+           "It is the radar surface: in woodland or tree stands it may measure the canopy, not the ground."),
+        tr("La pendiente informa sobre la erosión por agua; la erosión eólica, central en San Luis, depende sobre todo de la cobertura.",
+           "Slope speaks to water erosion; wind erosion, central in San Luis, depends mostly on cover."),
+    ]
 
 
 def default_radius(area_ha: float | None) -> float:
@@ -45,13 +52,17 @@ def default_radius(area_ha: float | None) -> float:
 def interpret(slope: float, p90: float) -> str:
     cls = slope_class(slope)
     base = {
-        "plano": "Lote prácticamente plano: el riesgo de erosión por agua es bajo; puede haber encharcamiento en bajos.",
-        "suave": "Pendiente suave: con lluvias intensas y suelo desnudo puede haber escurrimiento y erosión en surcos.",
-        "moderada": "Pendiente moderada: conviene cobertura permanente, siembra en contorno o en curvas de nivel.",
-        "fuerte": "Pendiente fuerte: alto riesgo de erosión por agua; requiere manejo conservacionista y validación técnica.",
+        "plano": tr("Lote prácticamente plano: el riesgo de erosión por agua es bajo; puede haber encharcamiento en bajos.",
+                    "Practically flat field: water-erosion risk is low; low spots may waterlog."),
+        "suave": tr("Pendiente suave: con lluvias intensas y suelo desnudo puede haber escurrimiento y erosión en surcos.",
+                    "Gentle slope: with heavy rain and bare soil there can be runoff and rill erosion."),
+        "moderada": tr("Pendiente moderada: conviene cobertura permanente, siembra en contorno o en curvas de nivel.",
+                       "Moderate slope: permanent cover, contour planting or contour lines are advisable."),
+        "fuerte": tr("Pendiente fuerte: alto riesgo de erosión por agua; requiere manejo conservacionista y validación técnica.",
+                     "Steep slope: high water-erosion risk; it requires conservation management and technical validation."),
     }[cls]
     if p90 >= 2 * max(slope, 0.5) and slope_class(p90) != cls:
-        base += f" Hay sectores con más pendiente (el 10 % del lote supera el {p90:.1f} %)."
+        base += tr(f" Hay sectores con más pendiente (el 10 % del lote supera el {p90:.1f} %).", f" Some sectors are steeper (10 % of the field exceeds {p90:.1f} %).")
     return base
 
 
@@ -142,19 +153,19 @@ class TerrainProvider:
         self, lat: float, lon: float, radius_m: float, ring: list[tuple[float, float]] | None = None
     ) -> tuple[TerrainSummary, list[str]]:
         if not -60 <= lat <= 60:
-            raise InvalidInputError("SRTM cubre de 60° S a 60° N.")
+            raise InvalidInputError(tr("SRTM cubre de 60° S a 60° N.", "SRTM covers 60° S to 60° N."))
         key = self._key(lat, lon, radius_m, ring)
         cached = self._read_cached(key)
         if cached:
             return cached, []
         tile = tile_name(lat, lon)
-        area = "polígono del lote" if ring else f"círculo de {radius_m:.0f} m de radio alrededor del punto"
+        area = tr("polígono del lote", "the field's polygon") if ring else tr(f"círculo de {radius_m:.0f} m de radio alrededor del punto", f"circle of {radius_m:.0f} m radius around the point")
         warnings: list[str] = []
         reason = None
         if self.session_factory is None:
-            reason = "sin credenciales de Earthdata (FIELDSHIFT_EARTHDATA_USERNAME y _PASSWORD)"
+            reason = tr("sin credenciales de Earthdata (FIELDSHIFT_EARTHDATA_USERNAME y _PASSWORD)", "no credentials for Earthdata (FIELDSHIFT_EARTHDATA_USERNAME and _PASSWORD)")
         elif self.cooldown and self.cooldown.active(self.now()):
-            reason = f"Earthdata falló hace menos de {self.cooldown.seconds / 60:.0f} min; se vuelve a probar después"
+            reason = tr(f"Earthdata falló hace menos de {self.cooldown.seconds / 60:.0f} min; se vuelve a probar después", f"Earthdata failed less than {self.cooldown.seconds / 60:.0f} min ago; it will be retried later")
         else:
             try:
                 blob, status = self._download_tile(tile, lat, lon)
@@ -162,7 +173,7 @@ class TerrainProvider:
                 if self.cooldown:
                     self.cooldown.reset()
                 if stats.clipped:
-                    warnings.append("La zona toca el borde de la baldosa de SRTM: se analizó solo la parte dentro de ella.")
+                    warnings.append(tr("La zona toca el borde de la baldosa de SRTM: se analizó solo la parte dentro de ella.", "The area touches the edge of the SRTM tile: only the part inside it was analyzed."))
                 summary = TerrainSummary(
                     product=self.product, tile=tile, latitude=lat, longitude=lon, area=area,
                     elevation_mean_m=stats.elevation_mean_m, elevation_min_m=stats.elevation_min_m,
@@ -170,7 +181,7 @@ class TerrainProvider:
                     slope_p90_pct=stats.slope_p90_pct, slope_max_pct=stats.slope_max_pct,
                     slope_class=slope_class(stats.slope_mean_pct), resolution_m=stats.resolution_m,
                     origin=status, origin_label=status.origin_label,
-                    interpretation=interpret(stats.slope_mean_pct, stats.slope_p90_pct), limitations=LIMITATIONS,
+                    interpretation=interpret(stats.slope_mean_pct, stats.slope_p90_pct), limitations=limitations(),
                 )
                 self._write_cache(key, summary)
                 return summary, warnings
@@ -186,10 +197,11 @@ class TerrainProvider:
 
         site = self._sample(lat, lon)
         if site is None:
-            raise NoDataError(f"No hay datos de relieve: SRTM no disponible ({reason}) y no hay muestra cerca.")
+            raise NoDataError(tr(f"No hay datos de relieve: SRTM no disponible ({reason}) y no hay muestra cerca.", f"There is no terrain data: SRTM unavailable ({reason}) and no sample nearby."))
         warnings += [
-            f"SRTM no disponible ({reason}).",
-            f"Se usa un relieve de MUESTRA SIMULADA del sitio '{site['site_id']}': no es una medición de tu lote.",
+            tr(f"SRTM no disponible ({reason}).", f"SRTM unavailable ({reason})."),
+            tr(f"Se usa un relieve de MUESTRA SIMULADA del sitio '{site['site_id']}': no es una medición de tu lote.",
+               f"Using SIMULATED SAMPLE terrain from site '{site['site_id']}': it is not a measurement of your field."),
         ]
         summary = TerrainSummary(
             product=self.product, tile=tile, latitude=lat, longitude=lon, area=area,
@@ -198,7 +210,7 @@ class TerrainProvider:
             slope_p90_pct=site["slope_p90_pct"], slope_max_pct=site["slope_max_pct"],
             slope_class=slope_class(site["slope_mean_pct"]), resolution_m=30.9,
             origin=DataStatus.SAMPLE, origin_label=DataStatus.SAMPLE.origin_label,
-            interpretation=interpret(site["slope_mean_pct"], site["slope_p90_pct"]), limitations=LIMITATIONS,
+            interpretation=interpret(site["slope_mean_pct"], site["slope_p90_pct"]), limitations=limitations(),
         )
         return summary, warnings
 

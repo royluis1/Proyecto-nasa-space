@@ -5,7 +5,7 @@ from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel, Field
 
-from app.models.constants import DISCLAIMER
+from app.models.constants import disclaimer
 from app.models.enums import DataStatus, RiskKind, Severity
 
 T = TypeVar("T")
@@ -18,7 +18,7 @@ class ResponseMeta(BaseModel):
     )
     as_of: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     warnings: list[str] = []
-    disclaimer: str = DISCLAIMER
+    disclaimer: str = Field(default_factory=disclaimer)
 
 
 class ApiResponse(BaseModel, Generic[T]):

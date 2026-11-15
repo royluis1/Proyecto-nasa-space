@@ -6,6 +6,7 @@ Son pruebas de sensibilidad sobre el clima de referencia (NASA POWER), no proyec
 from dataclasses import dataclass
 
 from app.schemas.rotation import RotationScore, ScenarioInput
+from app.i18n import current_lang
 
 
 @dataclass(frozen=True)
@@ -19,27 +20,62 @@ def _p(group: str, help_: str, **kw) -> Preset:
     return Preset(ScenarioInput(**kw), group, help_)
 
 
-PRESETS: list[Preset] = [
-    _p("clima", "El clima promedio de los últimos 10 años, como está.", id="base", name="Año normal"),
-    _p("clima", "Repite el año más seco de los últimos 10.", id="anio-seco", name="Año seco", dry_year=True),
-    _p("eventos", "Llueve un 35 % más de octubre a marzo, en tormentas: más erosión y encharcamiento en suelo desnudo.",
-       id="lluvias-intensas", name="Año con lluvias intensas", heavy_rain=True),
-    _p("eventos", "Veranos con más días de más de 35 °C y más evaporación de diciembre a febrero.",
-       id="olas-calor", name="Año con olas de calor", heat_wave=True),
-    _p("lluvia", "Llueve un 10 % menos todo el año.", id="lluvia-10", name="Lluvia -10 %", rain_delta_pct=-10),
-    _p("lluvia", "Llueve un 20 % menos todo el año.", id="lluvia-20", name="Lluvia -20 %", rain_delta_pct=-20),
-    _p("lluvia", "Llueve un 30 % menos todo el año.", id="lluvia-30", name="Lluvia -30 %", rain_delta_pct=-30),
-    _p("temperatura", "Todo el año 1 °C más: los cultivos piden más agua y hay más días de calor extremo.",
-       id="temp-1", name="+1 °C", temp_delta_c=1),
-    _p("temperatura", "Todo el año 2 °C más.", id="temp-2", name="+2 °C", temp_delta_c=2),
-    _p("riego", "Secano: sin riego, aunque el lote lo tenga.", id="sin-riego", name="Sin riego", irrigation_level="sin_riego"),
-    _p("riego", "Riego con la mitad de la lámina: cubre parte del déficit.", id="riego-limitado", name="Con riego limitado",
-       irrigation_level="limitado"),
-    _p("riego", "Riego pleno: cubre el 80 % del déficit de los cultivos.", id="riego-disponible", name="Con riego disponible",
-       irrigation_level="disponible"),
-]
+def _presets(t) -> list[Preset]:
+    """Los escenarios predefinidos; t(es, en) elige el idioma de los textos (los ids no cambian)."""
+    return [
+        _p("clima", t("El clima promedio de los últimos 10 años, como está.", "The average weather of the last 10 years, as it is."),
+           id="base", name=t("Año normal", "Normal year")),
+        _p("clima", t("Repite el año más seco de los últimos 10.", "Repeats the driest year of the last 10."),
+           id="anio-seco", name=t("Año seco", "Dry year"), dry_year=True),
+        _p("eventos", t("Llueve un 35 % más de octubre a marzo, en tormentas: más erosión y encharcamiento en suelo desnudo.",
+                        "35 % more rain from October to March, in storms: more erosion and waterlogging on bare soil."),
+           id="lluvias-intensas", name=t("Año con lluvias intensas", "Year with heavy rain"), heavy_rain=True),
+        _p("eventos", t("Veranos con más días de más de 35 °C y más evaporación de diciembre a febrero.",
+                        "Summers with more days above 35 °C and more evaporation from December to February."),
+           id="olas-calor", name=t("Año con olas de calor", "Year with heat waves"), heat_wave=True),
+        _p("lluvia", t("Llueve un 10 % menos todo el año.", "10 % less rain all year."), id="lluvia-10", name=t("Lluvia -10 %", "Rain -10 %"), rain_delta_pct=-10),
+        _p("lluvia", t("Llueve un 20 % menos todo el año.", "20 % less rain all year."), id="lluvia-20", name=t("Lluvia -20 %", "Rain -20 %"), rain_delta_pct=-20),
+        _p("lluvia", t("Llueve un 30 % menos todo el año.", "30 % less rain all year."), id="lluvia-30", name=t("Lluvia -30 %", "Rain -30 %"), rain_delta_pct=-30),
+        _p("temperatura", t("Todo el año 1 °C más: los cultivos piden más agua y hay más días de calor extremo.",
+                            "1 °C warmer all year: crops need more water and there are more days of extreme heat."),
+           id="temp-1", name="+1 °C", temp_delta_c=1),
+        _p("temperatura", t("Todo el año 2 °C más.", "2 °C warmer all year."), id="temp-2", name="+2 °C", temp_delta_c=2),
+        _p("riego", t("Secano: sin riego, aunque el lote lo tenga.", "Rainfed: no irrigation, even if the field has it."),
+           id="sin-riego", name=t("Sin riego", "No irrigation"), irrigation_level="sin_riego"),
+        _p("riego", t("Riego con la mitad de la lámina: cubre parte del déficit.", "Irrigation at half depth: covers part of the deficit."),
+           id="riego-limitado", name=t("Con riego limitado", "Limited irrigation"), irrigation_level="limitado"),
+        _p("riego", t("Riego pleno: cubre el 80 % del déficit de los cultivos.", "Full irrigation: covers 80 % of the crops' deficit."),
+           id="riego-disponible", name=t("Con riego disponible", "Irrigation available"), irrigation_level="disponible"),
+    ]
 
-PRESETS_BY_ID = {p.scenario.id: p for p in PRESETS}
+
+_PRESETS_BY_LANG = {"es": _presets(lambda es, en: es), "en": _presets(lambda es, en: en)}
+
+
+class _LangList:
+    """Lista que se lee en el idioma del pedido (se usa como una lista común)."""
+
+    def __init__(self, by_lang: dict) -> None:
+        self._by_lang = by_lang
+
+    def _cur(self):
+        return self._by_lang[current_lang()]
+
+    def __iter__(self):
+        return iter(self._cur())
+
+    def __len__(self) -> int:
+        return len(self._cur())
+
+    def __getitem__(self, i):
+        return self._cur()[i]
+
+    def __contains__(self, x) -> bool:
+        return x in self._cur()
+
+
+PRESETS = _LangList(_PRESETS_BY_LANG)
+PRESETS_BY_ID = _LangList({k: {p.scenario.id: p for p in v} for k, v in _PRESETS_BY_LANG.items()})
 
 
 @dataclass

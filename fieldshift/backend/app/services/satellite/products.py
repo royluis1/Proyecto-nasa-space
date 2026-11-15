@@ -5,9 +5,11 @@ producto; verificarlos con la primera respuesta real (`GET /product/{id}` de App
 El parser reconoce la columna por el final del nombre, así que tolera prefijos distintos.
 """
 
+import dataclasses
 from dataclasses import dataclass, field
 from datetime import date
 
+from app.i18n import current_lang
 from app.models.enums import DataLabel
 
 
@@ -251,3 +253,124 @@ PRODUCTS.update({
         ],
     ),
 })
+
+
+# --- Traducción al inglés de los textos de cada producto (los ids y capas no cambian) ---
+_SMAP_COMMON_LIMITS_EN = [
+    "A ~9 km pixel averages many fields, roads and woodland: it is not your field's moisture.",
+    "Absolute moisture (m³/m³) depends on the pixel's soil; that is why anomalies and percentiles are used.",
+    "Data is available since March 31, 2015.",
+]
+_MODIS_LIMITS_EN = [
+    "16-day maximum-value composite: it does not see fast changes (planting, harvest) with day-level precision.",
+    "Clouds, snow or smoke invalidate pixels; they are discarded with the reliability layer.",
+    "NDVI saturates with high biomass (> 0.8) and does not tell crops from weeds.",
+    "It does not measure soil organic matter or carbon.",
+]
+_ECO_COMMON_LIMITS_EN = [
+    "ECOSTRESS rides on the Space Station: it passes at different times of day and not every day; clouds leave gaps.",
+    "70 m pixel: it describes the point's surroundings, not the whole field.",
+    "Data is available since July 2018.",
+]
+_PRODUCTS_EN_TEXTS: dict[str, dict] = {
+    "SPL4SMGP_rootzone": dict(
+        name="SMAP L4 root-zone soil moisture (0-100 cm)",
+        provider="NASA SMAP, NSIDC DAAC (via AppEEARS)",
+        temporal_resolution="every 3 hours; aggregated to a daily mean",
+        depth="0 to 100 cm",
+        limitations=[
+            "It is a MODELED product: a land model (GEOS-5 Catchment) assimilates SMAP observations.",
+            "While the instrument is not observing, the value comes from the model alone.",
+            *_SMAP_COMMON_LIMITS_EN,
+        ],
+    ),
+    "SPL4SMGP_surface": dict(
+        name="SMAP L4 surface soil moisture (0-5 cm)",
+        provider="NASA SMAP, NSIDC DAAC (via AppEEARS)",
+        temporal_resolution="every 3 hours; aggregated to a daily mean",
+        depth="0 to 5 cm",
+        limitations=["MODELED product.", "Surface layer: it changes a lot with every rain.", *_SMAP_COMMON_LIMITS_EN],
+    ),
+    "SPL3SMP_E": dict(
+        name="SMAP L3 enhanced, surface soil moisture (morning pass)",
+        provider="NASA SMAP, NSIDC DAAC (via AppEEARS)",
+        temporal_resolution="daily, with gaps (the satellite passes every 2 to 3 days)",
+        depth="top ~5 cm",
+        limitations=[
+            "It measures only the top ~5 cm: it does not represent the water available to roots.",
+            "Days without a pass: the series has gaps.",
+            *_SMAP_COMMON_LIMITS_EN,
+        ],
+    ),
+    "HLSL30_VI": dict(
+        name="Landsat (HLS L30) NDVI 30 m",
+        units="index (-1 to 1)",
+        provider="NASA HLS (harmonized Landsat 8/9), LP DAAC (via AppEEARS)",
+        temporal_resolution="every 8 to 16 days (Landsat 8 and 9), with gaps from clouds",
+        limitations=[
+            "Clouds and their shadows can lower the NDVI of some dates: medians per period are used.",
+            "Each sector is one 30 m pixel inside the field: it shows differences between sectors, not a continuous map.",
+            "It measures greenness, not yield or organic matter.",
+        ],
+    ),
+    "ECO_L2T_LSTE": dict(
+        name="ECOSTRESS land surface temperature (LST) 70 m",
+        provider="NASA ECOSTRESS, LP DAAC (via AppEEARS)",
+        temporal_resolution="instantaneous, every 1 to 5 days at different times",
+        limitations=[
+            "It is the temperature of the soil or leaves, not the air: in the sun it can exceed air temperature by 10 to 20 °C.",
+            *_ECO_COMMON_LIMITS_EN,
+        ],
+    ),
+    "ECO_L4T_ESI": dict(
+        name="ECOSTRESS evaporative stress index (ESI) 70 m",
+        units="ratio (0 to 1)",
+        provider="NASA ECOSTRESS (PT-JPL model), LP DAAC (via AppEEARS)",
+        temporal_resolution="instantaneous, every 1 to 5 days",
+        limitations=[
+            "It is a MODELED index: actual / potential evapotranspiration. Near 1 = no stress; near 0 = severe stress.",
+            *_ECO_COMMON_LIMITS_EN,
+        ],
+    ),
+}
+for _key in ("MOD13Q1", "MYD13Q1", "MOD13A1"):
+    _p = PRODUCTS[_key]
+    _sensor = "Terra" if _key.startswith("MOD") else "Aqua"
+    _res = "250" if _key.endswith("Q1") else "500"
+    _PRODUCTS_EN_TEXTS[_key] = dict(
+        name=f"MODIS {_sensor} NDVI 16-day {_res} m",
+        units="dimensionless (-0.2 to 1)",
+        provider=f"NASA/USGS LP DAAC, MODIS {_sensor} (via AppEEARS)",
+        temporal_resolution="16-day composite (23 per year)",
+        limitations=[
+            f"A {_res} m pixel: on fields under ~{25 if _res == '250' else 100} ha it mixes neighbors and edges.",
+            *_MODIS_LIMITS_EN,
+        ],
+    )
+
+_PRODUCTS_BY_LANG: dict[str, dict[str, Product]] = {
+    "es": dict(PRODUCTS),
+    "en": {k: dataclasses.replace(v, **_PRODUCTS_EN_TEXTS.get(k, {})) for k, v in PRODUCTS.items()},
+}
+
+
+class _LangProducts(dict):
+    """Catálogo de productos en el idioma del pedido. Se usa como un dict común (solo lectura)."""
+
+    def _cur(self) -> dict[str, Product]:
+        return _PRODUCTS_BY_LANG[current_lang()]
+
+    def __getitem__(self, key: str) -> Product:
+        return self._cur()[key]
+
+    def get(self, key, default=None):
+        return self._cur().get(key, default)
+
+    def values(self):
+        return self._cur().values()
+
+    def items(self):
+        return self._cur().items()
+
+
+PRODUCTS = _LangProducts({k: None for k in PRODUCTS})

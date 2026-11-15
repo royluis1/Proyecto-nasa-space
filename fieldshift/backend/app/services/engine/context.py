@@ -9,6 +9,7 @@ from app.schemas.field import FieldOut
 from app.schemas.rotation import ScenarioInput
 from app.services.engine import parameters as P
 from app.utils.exceptions import InvalidInputError
+from app.i18n import tr
 
 _NORMAL = NormalDist()
 
@@ -51,15 +52,15 @@ class ClimateContext:
 
 def _month_values(values: list[float | None], name: str) -> tuple[float, ...]:
     if len(values) != 12 or any(v is None for v in values):
-        raise InvalidInputError(f"Falta la climatología mensual de {name}: no se puede calcular el puntaje.")
+        raise InvalidInputError(tr(f"Falta la climatología mensual de {name}: no se puede calcular el puntaje.", f"The monthly climatology of {name} is missing: the score cannot be calculated."))
     return tuple(float(v) for v in values)
 
 
 def climate_from_summary(summary: ClimateSummary) -> ClimateContext:
     clim = sorted(summary.monthly_climatology, key=lambda c: c.month)
-    precip = _month_values([c.precip_mm for c in clim], "lluvia")
+    precip = _month_values([c.precip_mm for c in clim], tr("lluvia", "rain"))
     et0 = _month_values([c.et0_mm for c in clim], "ET0")
-    tmin = _month_values([c.tmin_mean for c in clim], "temperatura mínima")
+    tmin = _month_values([c.tmin_mean for c in clim], tr("temperatura mínima", "minimum temperature"))
     heat = tuple((v or 0.0) / 100 for v in summary.heat.frequency_pct_by_month)
     index = sum(precip) / sum(et0) if sum(et0) > 0 else 0.0
 

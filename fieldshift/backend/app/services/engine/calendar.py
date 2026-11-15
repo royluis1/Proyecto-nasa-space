@@ -10,8 +10,20 @@ from dataclasses import dataclass
 from app.models.enums import CropCycle
 from app.schemas.crop import Crop
 from app.schemas.rotation import Rotation, RotationStep
+from app.i18n import is_en, tr
 
-MONTH_NAMES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+_MONTHS_ES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+_MONTHS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+
+class _MonthNames:
+    """Abreviatura del mes en el idioma del pedido: MONTH_NAMES[0] -> "ene" / "Jan"."""
+
+    def __getitem__(self, i: int) -> str:
+        return (_MONTHS_EN if is_en() else _MONTHS_ES)[i]
+
+
+MONTH_NAMES = _MonthNames()
 
 
 class RotationCalendarError(ValueError):
@@ -66,7 +78,7 @@ def build_calendar(rotation: Rotation, crops: dict[str, Crop]) -> Calendar:
     for step in ordered:
         crop = crops.get(step.crop_id)
         if crop is None:
-            raise RotationCalendarError(f"Cultivo desconocido en la rotación: '{step.crop_id}'.")
+            raise RotationCalendarError(tr(f"Cultivo desconocido en la rotación: '{step.crop_id}'.", f"Unknown crop in the rotation: '{step.crop_id}'."))
         start = (step.year - 1) * 12 + step.start_month - 1
         placed.append((step, crop, tuple((start + k) % n for k in range(step_length(step)))))
 
@@ -91,7 +103,8 @@ def build_calendar(rotation: Rotation, crops: dict[str, Crop]) -> Calendar:
                 continue
         names = ", ".join(placed[i][1].name for i, _ in who)
         raise RotationCalendarError(
-            f"Cultivos superpuestos en '{rotation.name}' ({names}) en {MONTH_NAMES[m % 12]} del año {m // 12 + 1}."
+            tr(f"Cultivos superpuestos en '{rotation.name}' ({names}) en {MONTH_NAMES[m % 12]} del año {m // 12 + 1}.",
+               f"Overlapping crops in '{rotation.name}' ({names}) in {MONTH_NAMES[m % 12]} of year {m // 12 + 1}.")
         )
 
     steps = tuple(
@@ -108,18 +121,20 @@ def calendar_warnings(calendar: Calendar) -> list[str]:
         crop, step = p.crop, p.step
         if step.start_month not in crop.sowing_months:
             out.append(
-                f"{crop.name}: siembra en {MONTH_NAMES[step.start_month - 1]}, fuera de su época habitual ({crop.sowing_window})."
+                tr(f"{crop.name}: siembra en {MONTH_NAMES[step.start_month - 1]}, fuera de su época habitual ({crop.sowing_window}).", f"{crop.name}: planted in {MONTH_NAMES[step.start_month - 1]}, outside its usual season ({crop.sowing_window}).")
             )
         if crop.cycle != CropCycle.PERENNE:
             length = step_length(step)
             if not crop.cycle_months.min <= length <= crop.cycle_months.max:
                 out.append(
-                    f"{crop.name}: ocupa {length} meses; su ciclo habitual es de "
-                    f"{crop.cycle_months.min:g} a {crop.cycle_months.max:g} meses."
+                    tr(f"{crop.name}: ocupa {length} meses; su ciclo habitual es de "
+                       f"{crop.cycle_months.min:g} a {crop.cycle_months.max:g} meses.",
+                       f"{crop.name}: takes {length} months; its usual cycle is "
+                       f"{crop.cycle_months.min:g} to {crop.cycle_months.max:g} months.")
                 )
     return out
 
 
 def describe_step(p: PlacedStep) -> str:
     s, e = p.step.start_month, p.step.end_month
-    return f"{p.crop.name} ({MONTH_NAMES[s - 1]}–{MONTH_NAMES[e - 1]}, año {p.step.year})"
+    return tr(f"{p.crop.name} ({MONTH_NAMES[s - 1]}–{MONTH_NAMES[e - 1]}, año {p.step.year})", f"{p.crop.name} ({MONTH_NAMES[s - 1]}–{MONTH_NAMES[e - 1]}, year {p.step.year})")

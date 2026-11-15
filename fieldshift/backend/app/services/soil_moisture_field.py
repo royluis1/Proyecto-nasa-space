@@ -13,6 +13,7 @@ from app.schemas.regions import FieldSoilMoisture, MoisturePoint, SoilMoisturePr
 from app.schemas.satellite import SoilMoistureRequest
 from app.services.satellite.products import PRODUCTS
 from app.utils.exceptions import InvalidInputError, NoDataError
+from app.i18n import tr
 
 PRODUCT_KEYS = ["SPL3SMP_E", "SPL4SMGP_rootzone"]
 DRY_PCT, WET_PCT = -15.0, 15.0  # lectura en palabras: más seco / normal / más húmedo (supuesto)
@@ -20,12 +21,12 @@ DRY_PCT, WET_PCT = -15.0, 15.0  # lectura en palabras: más seco / normal / más
 
 def reading(anomaly: float | None) -> str:
     if anomaly is None:
-        return "Sin suficientes datos para comparar con lo normal."
+        return tr("Sin suficientes datos para comparar con lo normal.", "Not enough data to compare with normal.")
     if anomaly <= DRY_PCT:
-        return f"Más seco que lo normal para la época ({anomaly:+.0f} %)."
+        return tr(f"Más seco que lo normal para la época ({anomaly:+.0f} %).", f"Drier than normal for the season ({anomaly:+.0f} %).")
     if anomaly >= WET_PCT:
-        return f"Más húmedo que lo normal para la época ({anomaly:+.0f} %)."
-    return f"Parecido a lo normal para la época ({anomaly:+.0f} %)."
+        return tr(f"Más húmedo que lo normal para la época ({anomaly:+.0f} %).", f"Wetter than normal for the season ({anomaly:+.0f} %).")
+    return tr(f"Parecido a lo normal para la época ({anomaly:+.0f} %).", f"Similar to normal for the season ({anomaly:+.0f} %).")
 
 
 def field_soil_moisture(satellite, field_id: str, recent_days: int = 60) -> FieldSoilMoisture:
@@ -59,5 +60,5 @@ def field_soil_moisture(satellite, field_id: str, recent_days: int = 60) -> Fiel
             origin_label=s.trace.status_label, retrieved_at=s.trace.retrieved_at, limitations=meta.limitations,
         ))
     if not products:
-        raise NoDataError("No hay datos de humedad del suelo satelital para este lote.", {"motivos": warnings})
+        raise NoDataError(tr("No hay datos de humedad del suelo satelital para este lote.", "There is no satellite soil-moisture data for this field."), {"motivos": warnings})
     return FieldSoilMoisture(field_id=field_id, products=products, warnings=list(dict.fromkeys(warnings)))

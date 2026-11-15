@@ -16,6 +16,7 @@ from app.services.engine import parameters as P
 from app.services.engine.calendar import MONTH_NAMES, Calendar, build_calendar
 from app.services.engine.context import ClimateContext, SoilContext
 from app.services.engine.water import water_balance
+from app.i18n import join_words, tr
 
 # Umbrales (supuestos de diseño)
 HEAT_HIGH, HEAT_MEDIUM = 0.35, 0.12  # índice = frecuencia de calor relativa x sensibilidad x etapa
@@ -40,7 +41,7 @@ def _bump(level: Level | None) -> Level | None:
 
 def _months_text(months: list[TimelineMonth]) -> str:
     names = [MONTH_NAMES[m.month - 1] for m in months]
-    return names[0] if len(names) == 1 else ", ".join(names[:-1]) + " y " + names[-1]
+    return join_words(names)
 
 
 @dataclass
@@ -162,9 +163,11 @@ def build_timeline(
                 kind="datos",
                 severity=Level.BAJO if better else Level.MEDIO,
                 text=(
-                    f"MODIS NDVI: en los últimos años el lote estuvo ~{observed:.0f} meses por año con poca vegetación. "
-                    f"Con esta rotación serían ~{planned:.0f} meses sin cultivo vivo"
-                    + (": menos tiempo de suelo expuesto." if better else ": conviene sumar cobertura.")
+                    tr(f"MODIS NDVI: en los últimos años el lote estuvo ~{observed:.0f} meses por año con poca vegetación. "
+                       f"Con esta rotación serían ~{planned:.0f} meses sin cultivo vivo",
+                       f"MODIS NDVI: in recent years the field spent ~{observed:.0f} months per year with little vegetation. "
+                       f"With this rotation it would be ~{planned:.0f} months without a living crop")
+                    + (tr(": menos tiempo de suelo expuesto.", ": less time with exposed soil.") if better else tr(": conviene sumar cobertura.", ": adding cover is advisable."))
                 ),
                 campaigns=[c.index for c in campaigns],
             )
@@ -195,18 +198,20 @@ def _advice(
             bare = sum(1 for x in run if x.bare_soil)
             reason = []
             if windy:
-                reason.append("en la época de viento")
+                reason.append(tr("en la época de viento", "in the windy season"))
             if heavy and any(x.month in P.HEAVY_RAIN_MONTHS for x in run):
-                reason.append("con tormentas fuertes")
+                reason.append(tr("con tormentas fuertes", "with strong storms"))
             out.append(
                 TimelineAdvice(
                     kind="cobertura",
                     severity=Level.ALTO if windy or bare >= 4 else Level.MEDIO,
                     text=(
-                        f"De {run[0].label} a {run[-1].label} el lote queda {len(run)} meses sin cultivo vivo"
-                        + (f" ({bare} con suelo desnudo)" if bare else "")
-                        + (" " + " y ".join(reason) if reason else "")
-                        + ". Considerá un cultivo de cobertura (por ejemplo centeno o vicia) o dejar el rastrojo en pie."
+                        tr(f"De {run[0].label} a {run[-1].label} el lote queda {len(run)} meses sin cultivo vivo",
+                           f"From {run[0].label} to {run[-1].label} the field has {len(run)} months without a living crop")
+                        + (tr(f" ({bare} con suelo desnudo)", f" ({bare} with bare soil)") if bare else "")
+                        + (" " + tr(" y ", " and ").join(reason) if reason else "")
+                        + tr(". Considerá un cultivo de cobertura (por ejemplo centeno o vicia) o dejar el rastrojo en pie.",
+                             ". Consider a cover crop (for example rye or vetch) or leaving the residue standing.")
                     ),
                     campaigns=[run[0].campaign],
                 )
@@ -226,8 +231,10 @@ def _advice(
                         kind="calor",
                         severity=Level.ALTO,
                         text=(
-                            f"{crop}: riesgo alto de golpe de calor en {_months_text(hot)}. Elegí una fecha de siembra que "
-                            "corra la floración fuera de los meses más calurosos o una variedad más tolerante."
+                            tr(f"{crop}: riesgo alto de golpe de calor en {_months_text(hot)}. Elegí una fecha de siembra que "
+                               "corra la floración fuera de los meses más calurosos o una variedad más tolerante.",
+                               f"{crop}: high heat-stress risk in {_months_text(hot)}. Choose a planting date that "
+                               "moves flowering out of the hottest months, or a more tolerant variety.")
                         ),
                         campaigns=[camp.index],
                     )
@@ -235,17 +242,17 @@ def _advice(
             dry = [m for m in months if m.water_risk == Level.ALTO]
             if dry:
                 tip = (
-                    "Priorizá el riego en esos meses."
+                    tr("Priorizá el riego en esos meses.", "Prioritize irrigation in those months.")
                     if irrigated and share >= 1
-                    else "Con riego limitado, guardá el agua para esos meses."
+                    else tr("Con riego limitado, guardá el agua para esos meses.", "With limited irrigation, save the water for those months.")
                     if irrigated
-                    else "Revisá el agua útil del perfil antes de sembrar y ajustá densidad y fecha de siembra."
+                    else tr("Revisá el agua útil del perfil antes de sembrar y ajustá densidad y fecha de siembra.", "Check the profile's available water before planting and adjust density and planting date.")
                 )
                 out.append(
                     TimelineAdvice(
                         kind="agua",
                         severity=Level.ALTO,
-                        text=f"{crop}: riesgo alto de falta de agua en {_months_text(dry)}. {tip}",
+                        text=tr(f"{crop}: riesgo alto de falta de agua en {_months_text(dry)}. {tip}", f"{crop}: high water-shortage risk in {_months_text(dry)}. {tip}"),
                         campaigns=[camp.index],
                     )
                 )
@@ -255,9 +262,12 @@ def _advice(
                 kind="siembra",
                 severity=Level.MEDIO,
                 text=(
-                    f"SMAP: la humedad del suelo está {abs(soil_moisture.anomaly_pct):.0f} % por debajo de lo normal para la época. "
-                    "Antes de la primera siembra, medí la humedad del perfil (barreno o sonda); el riesgo hídrico de los primeros "
-                    "meses ya está aumentado por esto."
+                    tr(f"SMAP: la humedad del suelo está {abs(soil_moisture.anomaly_pct):.0f} % por debajo de lo normal para la época. "
+                       "Antes de la primera siembra, medí la humedad del perfil (barreno o sonda); el riesgo hídrico de los primeros "
+                       "meses ya está aumentado por esto.",
+                       f"SMAP: soil moisture is {abs(soil_moisture.anomaly_pct):.0f} % below normal for the season. "
+                       "Before the first planting, measure profile moisture (auger or probe); the water risk of the first "
+                       "months is already raised by this.")
                 ),
                 campaigns=[1],
             )
@@ -286,27 +296,30 @@ def _data_notes(
     vegetation: VegetationInput | None,
 ) -> tuple[list[str], list[str]]:
     used = [
-        f"NASA POWER ({climate.origin.origin_label}, {climate.period}): lluvia, ET0 y días con más de 35 °C de cada mes"
-        + (f", con el escenario '{climate.scenario.name}'." if climate.scenario else ".")
+        tr(f"NASA POWER ({climate.origin.origin_label}, {climate.period}): lluvia, ET0 y días con más de 35 °C de cada mes",
+           f"NASA POWER ({climate.origin.origin_label}, {climate.period}): rain, ET0 and days above 35 °C each month")
+        + (tr(f", con el escenario '{climate.scenario.name}'.", f", with the scenario '{climate.scenario.name}'.") if climate.scenario else ".")
     ]
     if soil_moisture is not None:
-        origin = soil_moisture.origin.origin_label if soil_moisture.origin else "sin etiqueta"
+        origin = soil_moisture.origin.origin_label if soil_moisture.origin else tr("sin etiqueta", "unlabeled")
         used.append(
-            f"SMAP {soil_moisture.product.removeprefix('SMAP_')} ({origin}): humedad {soil_moisture.anomaly_pct:+.0f} % frente a lo normal; "
-            "ajusta el riesgo hídrico del arranque de la primera campaña."
+            tr(f"SMAP {soil_moisture.product.removeprefix('SMAP_')} ({origin}): humedad {soil_moisture.anomaly_pct:+.0f} % frente a lo normal; "
+               "ajusta el riesgo hídrico del arranque de la primera campaña.",
+               f"SMAP {soil_moisture.product.removeprefix('SMAP_')} ({origin}): moisture {soil_moisture.anomaly_pct:+.0f} % vs. normal; "
+               "it adjusts the water risk at the start of the first season.")
         )
     else:
-        used.append("SMAP: no disponible; el riesgo hídrico sale solo del balance con NASA POWER.")
+        used.append(tr("SMAP: no disponible; el riesgo hídrico sale solo del balance con NASA POWER.", "SMAP: not available; water risk comes only from the NASA POWER balance."))
     if vegetation is not None:
-        origin = vegetation.origin.origin_label if vegetation.origin else "sin etiqueta"
-        used.append(f"MODIS NDVI {vegetation.product} ({origin}): meses con poca vegetación observados en el lote.")
+        origin = vegetation.origin.origin_label if vegetation.origin else tr("sin etiqueta", "unlabeled")
+        used.append(tr(f"MODIS NDVI {vegetation.product} ({origin}): meses con poca vegetación observados en el lote.", f"MODIS NDVI {vegetation.product} ({origin}): months with little vegetation observed in the field."))
     else:
-        used.append("NDVI: no disponible; no se compara con lo observado en el lote.")
+        used.append(tr("NDVI: no disponible; no se compara con lo observado en el lote.", "NDVI: not available; no comparison with what was observed in the field."))
     assumptions = [
-        "Campañas de julio a junio. Las fechas de siembra y cosecha son las típicas de cada cultivo.",
-        "Riesgo de calor: frecuencia de días con Tmax > 35 °C por la sensibilidad del cultivo, mayor en pleno desarrollo.",
-        "Riesgo hídrico: demanda no cubierta del balance mensual (Kc x ET0, lluvia efectiva y agua del perfil).",
-        "El rastrojo protege el suelo unos meses según el cultivo anterior; después se considera suelo desnudo.",
-        "Las campañas repiten el mismo clima promedio: no es un pronóstico año por año.",
+        tr("Campañas de julio a junio. Las fechas de siembra y cosecha son las típicas de cada cultivo.", "Seasons from July to June. Planting and harvest dates are typical for each crop."),
+        tr("Riesgo de calor: frecuencia de días con Tmax > 35 °C por la sensibilidad del cultivo, mayor en pleno desarrollo.", "Heat risk: frequency of days with Tmax > 35 °C times the crop's sensitivity, higher in full growth."),
+        tr("Riesgo hídrico: demanda no cubierta del balance mensual (Kc x ET0, lluvia efectiva y agua del perfil).", "Water risk: uncovered demand from the monthly balance (Kc x ET0, effective rain and profile water)."),
+        tr("El rastrojo protege el suelo unos meses según el cultivo anterior; después se considera suelo desnudo.", "Residue protects the soil for a few months depending on the previous crop; after that it counts as bare soil."),
+        tr("Las campañas repiten el mismo clima promedio: no es un pronóstico año por año.", "The seasons repeat the same average weather: it is not a year-by-year forecast."),
     ]
     return used, assumptions

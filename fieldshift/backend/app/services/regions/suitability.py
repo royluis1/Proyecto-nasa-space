@@ -10,6 +10,9 @@ from app.models.enums import Confidence, Level
 from app.schemas.crop import Crop
 from app.schemas.regions import CropSuitability, ZoneClimate
 from app.services.regions.zoning import LABELS, classify
+from app.i18n import tr
+
+LEVEL_EN = {"bajo": "low", "medio": "medium", "alto": "high"}
 
 ORDER = [Level.BAJO, Level.MEDIO, Level.ALTO]
 
@@ -26,12 +29,18 @@ FROST_DAYS = 10  # días/año con Tmin <= 2 °C desde los que pesa la poca toler
 SUMMER = {12, 1, 2}
 WINTER = {6, 7, 8}
 
-DEPENDS_ON = [
-    "Suelo: textura y profundidad definen cuánta agua guarda el perfil (no lo captura la zona).",
-    "Riego: con riego la limitación por agua cambia por completo.",
-    "Fecha de siembra y ciclo de la variedad o el híbrido: corren el cultivo de los meses de calor o de helada.",
-    "Barbecho previo y cobertura: cuánta agua hay en el perfil al sembrar.",
-]
+def depends_on() -> list[str]:
+    """Lo que la zona no captura, en el idioma del pedido."""
+    return [
+        tr("Suelo: textura y profundidad definen cuánta agua guarda el perfil (no lo captura la zona).",
+           "Soil: texture and depth define how much water the profile holds (the zone does not capture it)."),
+        tr("Riego: con riego la limitación por agua cambia por completo.",
+           "Irrigation: with irrigation the water limitation changes completely."),
+        tr("Fecha de siembra y ciclo de la variedad o el híbrido: corren el cultivo de los meses de calor o de helada.",
+           "Planting date and the variety's or hybrid's cycle: they shift the crop away from the heat or frost months."),
+        tr("Barbecho previo y cobertura: cuánta agua hay en el perfil al sembrar.",
+           "Previous fallow and cover: how much water is in the profile at planting."),
+    ]
 
 
 def _down(level: Level, steps: int = 1) -> Level:
@@ -57,19 +66,21 @@ def suitability(crop: Crop, climate: ZoneClimate, confidence: Confidence) -> Cro
     # 1. agua
     water = WATER_MATRIX[crop.water_requirement][zone]
     reasons.append(
-        f"Requerimiento hídrico {crop.water_requirement.value} en una zona {LABELS[zone].lower()} "
-        f"(lluvia {climate.precip_mm:.0f} mm/año, déficit de {climate.deficit_mm:.0f} mm/año)."
+        tr(f"Requerimiento hídrico {crop.water_requirement.value} en una zona {LABELS[zone].lower()} "
+           f"(lluvia {climate.precip_mm:.0f} mm/año, déficit de {climate.deficit_mm:.0f} mm/año).",
+           f"{LEVEL_EN[crop.water_requirement.value].capitalize()} water requirement in a {LABELS[zone].lower()} zone "
+           f"(rain {climate.precip_mm:.0f} mm/yr, deficit of {climate.deficit_mm:.0f} mm/yr).")
     )
     if crop.drought_tolerance == Level.ALTO and water != Level.ALTO:
         capped = crop.water_requirement == Level.ALTO and zone in DRY_ZONES
         new = Level.MEDIO if capped else _up(water)
         if new != water:
-            reasons.append("Tolera bien la sequía: mejora un nivel.")
+            reasons.append(tr("Tolera bien la sequía: mejora un nivel.", "It tolerates drought well: it moves up one level."))
             water = new
     if crop.water_requirement == Level.ALTO and zone in DRY_ZONES:
-        reasons.append("Un cultivo de alta demanda de agua no puede tener aptitud alta en secano en una zona árida o semiárida.")
+        reasons.append(tr("Un cultivo de alta demanda de agua no puede tener aptitud alta en secano en una zona árida o semiárida.", "A high-water-demand crop cannot have high suitability in rainfed farming in an arid or semi-arid zone."))
     if climate.precip_cv_pct and climate.precip_cv_pct >= 25:
-        risks.append(f"La lluvia cambia mucho entre años ({climate.precip_cv_pct:.0f} %): hay años bastante más secos que el promedio.")
+        risks.append(tr(f"La lluvia cambia mucho entre años ({climate.precip_cv_pct:.0f} %): hay años bastante más secos que el promedio.", f"Rain varies a lot between years ({climate.precip_cv_pct:.0f} %): some years are quite a bit drier than average."))
 
     # 2. calor (solo si el cultivo está en el lote en verano)
     heat = Level.ALTO
@@ -81,23 +92,23 @@ def suitability(crop: Crop, climate: ZoneClimate, confidence: Confidence) -> Cro
         elif crop.heat_tolerance == Level.MEDIO and climate.hot_days > HEAT_LOW_DAYS:
             heat = Level.MEDIO
         if heat != Level.ALTO:
-            reasons.append(f"Tolerancia al calor {crop.heat_tolerance.value} con {climate.hot_days:.0f} días/año de más de 35 °C en verano.")
+            reasons.append(tr(f"Tolerancia al calor {crop.heat_tolerance.value} con {climate.hot_days:.0f} días/año de más de 35 °C en verano.", f"{LEVEL_EN[crop.heat_tolerance.value].capitalize()} heat tolerance with {climate.hot_days:.0f} days/yr above 35 °C in summer."))
         elif climate.hot_days > HEAT_DOWN_DAYS:
-            risks.append(f"{climate.hot_days:.0f} días/año de más de 35 °C: cuidar que la floración no coincida con los picos de calor.")
+            risks.append(tr(f"{climate.hot_days:.0f} días/año de más de 35 °C: cuidar que la floración no coincida con los picos de calor.", f"{climate.hot_days:.0f} days/yr above 35 °C: make sure flowering does not coincide with the heat peaks."))
 
     # 3. heladas
     frost = Level.ALTO
     if crop.frost_tolerance == Level.BAJO and climate.frost_days > FROST_DAYS:
         if months & WINTER:
             frost = Level.MEDIO
-            reasons.append(f"Poco tolerante a heladas y está en el lote en invierno ({climate.frost_days:.0f} días/año con mínimas de 2 °C o menos).")
+            reasons.append(tr(f"Poco tolerante a heladas y está en el lote en invierno ({climate.frost_days:.0f} días/año con mínimas de 2 °C o menos).", f"Not very frost-tolerant and it is in the field in winter ({climate.frost_days:.0f} days/yr with lows of 2 °C or less)."))
         else:
-            risks.append("Poco tolerante a heladas: riesgo de heladas tempranas o tardías según la fecha de siembra.")
+            risks.append(tr("Poco tolerante a heladas: riesgo de heladas tempranas o tardías según la fecha de siembra.", "Not very frost-tolerant: risk of early or late frosts depending on the planting date."))
 
     level = min((water, heat, frost), key=ORDER.index)
     return CropSuitability(
         crop_id=crop.id, crop_name=crop.name, level=level, reasons=reasons, risks=risks,
-        depends_on=DEPENDS_ON, confidence=confidence,
+        depends_on=depends_on(), confidence=confidence,
     )
 
 
