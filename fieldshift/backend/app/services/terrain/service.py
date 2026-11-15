@@ -75,6 +75,7 @@ class TerrainProvider:
         product: str = "SRTMGL1",
         cooldown: Cooldown | None = None,
         now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
+        strict: bool = False,
     ) -> None:
         self.cache_dir = cache_dir
         self.sample_file = sample_file
@@ -82,6 +83,7 @@ class TerrainProvider:
         self.product = product
         self.cooldown = cooldown
         self.now = now
+        self.strict = strict  # modo estricto: no usar el relieve de MUESTRA SIMULADA
 
     # --- caché ---
     def _summary_path(self, key: str) -> Path:
@@ -195,8 +197,11 @@ class TerrainProvider:
                 if self.cooldown:
                     self.cooldown.fail(self.now())
 
-        site = self._sample(lat, lon)
+        site = None if self.strict else self._sample(lat, lon)
         if site is None:
+            if self.strict:
+                raise NoDataError(tr(f"Servicio de la NASA no disponible: SRTM no disponible ({reason}). Modo estricto: no se usan datos de muestra simulados.",
+                                     f"NASA service unavailable: SRTM unavailable ({reason}). Strict mode: no simulated sample data is used."))
             raise NoDataError(tr(f"No hay datos de relieve: SRTM no disponible ({reason}) y no hay muestra cerca.", f"There is no terrain data: SRTM unavailable ({reason}) and no sample nearby."))
         warnings += [
             tr(f"SRTM no disponible ({reason}).", f"SRTM unavailable ({reason})."),

@@ -49,6 +49,7 @@ def get_power_service() -> PowerService:
         samples=SampleProvider(s.nasa_samples_dir / s.power_sample_file),
         cooldown=_power_cooldown(s.power_cooldown_s),
         files=_power_files(tuple(s.power_fallback_files), s.nasa_samples_dir),
+        strict=s.strict_nasa,
     )
 
 
@@ -81,7 +82,7 @@ def get_satellite_provider() -> SatelliteProvider:
         "ECO_L2T_LSTE": s.nasa_samples_dir / "ecostress_sample_san_luis.csv",
         "ECO_L4T_ESI": s.nasa_samples_dir / "ecostress_sample_san_luis.csv",
     }
-    return SatelliteProvider(s.cache_dir / "appeears", samples, factory)
+    return SatelliteProvider(s.cache_dir / "appeears", samples, factory, strict=s.strict_nasa)
 
 
 def get_satellite_service(
@@ -102,7 +103,8 @@ def get_terrain_provider() -> TerrainProvider:
             return EarthdataSession(creds, timeout_s=max(60.0, s.request_timeout_s))
 
     return TerrainProvider(
-        s.cache_dir / "srtm", s.nasa_samples_dir / s.srtm_sample_file, factory, s.srtm_product, Cooldown(s.power_cooldown_s)
+        s.cache_dir / "srtm", s.nasa_samples_dir / s.srtm_sample_file, factory, s.srtm_product, Cooldown(s.power_cooldown_s),
+        strict=s.strict_nasa,
     )
 
 

@@ -68,11 +68,13 @@ class SatelliteProvider:
         samples: dict[str, Path],
         client_factory: Callable[[], object] | None = None,
         now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
+        strict: bool = False,
     ) -> None:
         self.cache_dir = cache_dir
         self.samples = samples  # clave de producto -> CSV de muestra
         self.client_factory = client_factory
         self.now = now
+        self.strict = strict  # modo estricto: no usar muestras SIMULADAS de satélite
 
     # --- caché en disco ---
     def _csv_path(self, key: str) -> Path:
@@ -128,7 +130,7 @@ class SatelliteProvider:
         else:
             warnings.append(tr("Sin credenciales de AppEEARS: no se consultaron datos en vivo.", "No AppEEARS credentials: no live data was queried."))
 
-        sample = self._sample(product, lat, lon, start, end)
+        sample = None if self.strict else self._sample(product, lat, lon, start, end)
         if sample is not None:
             sample.task_id = task_id
             sample.warnings = [*warnings, *sample.warnings]
@@ -272,7 +274,7 @@ class SatelliteProvider:
         else:
             warnings.append(tr("Sin credenciales de AppEEARS: no se consultaron datos en vivo.", "No AppEEARS credentials: no live data was queried."))
 
-        path = self.samples.get(product.key)
+        path = None if self.strict else self.samples.get(product.key)
         if path is not None and path.exists():
             try:
                 series = self._parse_points(path.read_text(encoding="utf-8"), product, points, start, end)

@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     app_version: str = "0.1.0"
 
+    # Modo estricto (regla del mentor): sin datos de la NASA no se inventan números. Activado, no se usan muestras
+    # SIMULADAS como último recurso (clima, satélite y relieve): si la API falla y no hay caché/archivo real, se
+    # devuelve un error claro. La caché de respuestas reales y los CSV reales de POWER sí siguen funcionando.
+    strict_nasa: bool = True
+
     power_base_url: str = "https://power.larc.nasa.gov/api/temporal/daily/point"
     power_community: str = "AG"
 

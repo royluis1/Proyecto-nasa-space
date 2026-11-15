@@ -75,8 +75,12 @@ curl -X POST http://127.0.0.1:8000/climate-summary \
 1. **DATO CACHEADO**: caché vigente en `data/cache/` (los pedidos históricos no vencen; los recientes, a las 24 h).
 2. **DATO NASA EN VIVO**: consulta a POWER (timeout 30 s, 3 reintentos con backoff ante 429, 5xx o timeout).
 3. **DATO CACHEADO** vencido, con advertencia, si POWER no responde.
-4. **DATO DE MUESTRA**: datos **simulados** de `data/samples/power_sample_san_luis.csv`, solo si el punto está a menos de 1° de un campo de ejemplo.
+4. **DATO DE MUESTRA**: datos **simulados** de `data/samples/power_sample_san_luis.csv`, solo si el punto está a menos de 1° de un campo de ejemplo. **No se usa en modo estricto** (ver abajo).
 5. Si no hay nada: error 503 `NO_DATA_AVAILABLE`.
+
+#### Modo estricto (`FIELDSHIFT_STRICT_NASA`, por defecto `true`)
+
+Regla de honestidad: sin datos de la NASA no se inventan números. Con el modo estricto activado, el paso 4 (muestra **simulada**) se omite en clima (POWER), satélite (SMAP/MODIS/HLS/ECOSTRESS) y relieve (SRTM): si la API falla y no hay caché ni archivo real, se devuelve `503 NO_DATA_AVAILABLE` con el mensaje «Servicio de la NASA no disponible». La caché de respuestas reales y los CSV reales de POWER **siguen funcionando**. El frontend muestra el error o «sin dato», nunca un valor inventado (no cae a datos demo ante `NO_DATA_AVAILABLE`). Ponelo en `false` solo para demos sin conexión o en los tests que dependen de las muestras.
 
 **Qué devuelve:** serie diaria (con ET₀), resumen mensual, climatología mensual, resumen estacional, resumen anual (con clasificación seco/normal/húmedo y estrés térmico), extremos con fecha, tendencias (Sen + Mann-Kendall), días calurosos, lluvia acumulada, variabilidad (CV), déficit hídrico climático, reporte de faltantes, fuente, fecha de consulta y limitaciones.
 

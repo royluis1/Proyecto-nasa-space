@@ -79,6 +79,7 @@ class PowerService:
         now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
         cooldown: Cooldown | None = None,
         files: PowerFileProvider | None = None,
+        strict: bool = False,
     ) -> None:
         self.fetcher = fetcher
         self.cache = cache
@@ -86,6 +87,7 @@ class PowerService:
         self.now = now
         self.cooldown = cooldown
         self.files = files
+        self.strict = strict  # modo estricto: no usar la muestra SIMULADA como último recurso
 
     def get_daily(
         self, lat: float, lon: float, start: date, end: date, params: list[str], community: str = "AG"
@@ -140,7 +142,7 @@ class PowerService:
                 warnings=warnings,
             )
 
-        sample = self.samples.get(lat, lon, start, end, params)
+        sample = None if self.strict else self.samples.get(lat, lon, start, end, params)
         if sample:
             warnings = [
                 f"NASA POWER no respondió ({reason}).",
@@ -162,10 +164,10 @@ class PowerService:
                 warnings=warnings,
             )
 
-        raise NoDataError(
-            "No hay datos climáticos: NASA POWER no respondió y no hay caché ni muestra para esta ubicación.",
-            {"motivo": reason},
-        )
+        detail = "NASA POWER no respondió y no hay caché ni archivo real para esta ubicación."
+        if self.strict:
+            detail += " Modo estricto: no se usan datos de muestra simulados."
+        raise NoDataError(f"Servicio de la NASA no disponible: {detail}", {"motivo": reason, "strict": self.strict})
 
     @staticmethod
     def _from_raw(raw: dict, params: list[str], status: DataStatus, at: datetime, warnings: list[str]) -> ClimateData:
