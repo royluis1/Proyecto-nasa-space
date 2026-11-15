@@ -8,7 +8,7 @@ import type { RotationEvaluation, ScoreComponentKey } from "@/types/api";
 
 /** Un color por componente; además cada tramo lleva su letra (A, S, R, I, E) y el aporte en puntos. */
 const COLORS: Record<ScoreComponentKey, string> = { A: CHART.agua, S: CHART.tierra, R: "#6b7c93", I: "#b8862b", E: CHART.cultivo };
-const tip = { contentStyle: { background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, color: "hsl(var(--foreground))" } };
+const tip = { contentStyle: { background: "oklch(var(--card))", border: "1px solid oklch(var(--border))", borderRadius: 8, color: "oklch(var(--foreground))" } };
 
 export const rotationLabel = (ev: RotationEvaluation) => `${ev.score.rank}. ${STRATEGY_LABELS[ev.rotation.strategy]}`;
 
@@ -32,7 +32,7 @@ export function ContributionChart({ evaluations, weights }: { evaluations: Rotat
         <Tooltip {...tip} formatter={(v: unknown, n: unknown) => [`${num(Number(v), 1)} puntos`, COMPONENTS[String(n) as ScoreComponentKey]?.name ?? String(n)]} />
         <Legend itemSorter={(item) => COMPONENT_ORDER.indexOf(String(item.value) as ScoreComponentKey)} formatter={(v: string) => `${v} · ${COMPONENTS[v as ScoreComponentKey]?.short ?? v}`} />
         {COMPONENT_ORDER.map((k) => (
-          <Bar key={k} isAnimationActive={false} dataKey={k} name={k} stackId="total" fill={COLORS[k]} stroke="hsl(var(--background))" strokeWidth={1}>
+          <Bar key={k} isAnimationActive={false} dataKey={k} name={k} stackId="total" fill={COLORS[k]} stroke="oklch(var(--background))" strokeWidth={1}>
             <LabelList dataKey={k} position="center" fill="#fff" fontSize={11} fontWeight={700} formatter={(v: unknown) => (Number(v) >= 6 ? `${k} ${num(Number(v))}` : "")} />
           </Bar>
         ))}

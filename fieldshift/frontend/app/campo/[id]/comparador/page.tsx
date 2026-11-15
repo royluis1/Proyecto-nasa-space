@@ -83,7 +83,7 @@ export default function ComparadorPage() {
                 <CardHeader><CardTitle as="h2">Para mirarlas juntas</CardTitle></CardHeader>
                 <CardContent className="space-y-6">
                   <RadarCompare evaluations={evaluations} />
-                  <Table>
+                  <Table scrollLabel="Puntajes de todas las rotaciones: desplazá para ver todo">
                     <TableCaption>Puntaje de cada rotación en los cinco componentes y total.</TableCaption>
                     <TableHeader>
                       <TableRow>

@@ -36,7 +36,7 @@ export function RadarCompare({ evaluations, pick = "auto" }: { evaluations: Rota
         <PolarGrid stroke="currentColor" strokeOpacity={0.25} />
         <PolarAngleAxis dataKey="eje" tick={{ fill: "currentColor", fontSize: 12 }} />
         <PolarRadiusAxis domain={[0, 100]} tick={{ fill: "currentColor", fontSize: 10 }} />
-        <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, color: "hsl(var(--foreground))" }} />
+        <Tooltip contentStyle={{ background: "oklch(var(--card))", border: "1px solid oklch(var(--border))", borderRadius: 8, color: "oklch(var(--foreground))" }} />
         {names.map((n, i) => (
           <Radar isAnimationActive={false} key={n} name={n} dataKey={n} stroke={SERIES[i % SERIES.length].color} strokeDasharray={SERIES[i % SERIES.length].dash} strokeWidth={3} fill={SERIES[i % SERIES.length].color} fillOpacity={0.08} />
         ))}

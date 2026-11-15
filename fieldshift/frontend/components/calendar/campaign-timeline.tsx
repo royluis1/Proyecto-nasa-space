@@ -8,9 +8,9 @@ import { COVER_LABELS, campaignSummary, cropSpans, describeMonth, stageText } fr
 import { cn } from "@/lib/utils";
 import type { Crop, Level, TimelineCampaign, TimelineMonth } from "@/types/api";
 
-const FALLOW_STYLE = { backgroundImage: "repeating-linear-gradient(45deg, transparent 0 6px, hsl(var(--border)) 6px 8px)" };
-const BARE_STYLE = { backgroundImage: "repeating-linear-gradient(-45deg, transparent 0 4px, hsl(var(--destructive) / 0.35) 4px 6px)" };
-const RESIDUE_STYLE = { backgroundImage: "radial-gradient(hsl(var(--foreground) / 0.25) 1px, transparent 1.5px)", backgroundSize: "6px 6px" };
+const FALLOW_STYLE = { backgroundImage: "repeating-linear-gradient(45deg, transparent 0 6px, oklch(var(--border)) 6px 8px)" };
+const BARE_STYLE = { backgroundImage: "repeating-linear-gradient(-45deg, transparent 0 4px, oklch(var(--destructive) / 0.35) 4px 6px)" };
+const RESIDUE_STYLE = { backgroundImage: "radial-gradient(oklch(var(--foreground) / 0.25) 1px, transparent 1.5px)", backgroundSize: "6px 6px" };
 
 const STAGE_ICON: Record<TimelineMonth["stage"], LucideIcon> = { siembra: Sprout, desarrollo: Leaf, cosecha: Wheat, barbecho: CircleSlash };
 

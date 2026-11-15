@@ -76,7 +76,7 @@ export function DashboardControls({ ui, onUi, scenarioId, onScenario, irrigation
             return (
               <li key={e.rotation.id}>
                 <label className={`flex min-h-11 items-start gap-3 rounded-md border p-2 ${disabled ? "opacity-50" : "cursor-pointer hover:bg-accent"}`}>
-                  <input type="checkbox" className="mt-1 size-5 accent-[hsl(var(--primary))]" checked={checked} disabled={disabled} onChange={() => toggle(e.rotation.id)} />
+                  <input type="checkbox" className="mt-1 size-5 accent-[oklch(var(--primary))]" checked={checked} disabled={disabled} onChange={() => toggle(e.rotation.id)} />
                   <span className="text-sm"><strong>{e.score.rank}. {STRATEGY_LABELS[e.rotation.strategy]}</strong><span className="block text-muted-foreground">{rotationTitle(e.rotation)}</span></span>
                 </label>
               </li>

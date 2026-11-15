@@ -7,7 +7,7 @@ import type { RotationEvaluation } from "@/types/api";
 import { PatternDefs, SERIES_STYLE, Swatch } from "./chart-patterns";
 import { rotationLabel } from "./contribution-chart";
 
-const tip = { contentStyle: { background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, color: "hsl(var(--foreground))" } };
+const tip = { contentStyle: { background: "oklch(var(--card))", border: "1px solid oklch(var(--border))", borderRadius: 8, color: "oklch(var(--foreground))" } };
 
 /** Barras agrupadas: para cada componente, una barra por rotación elegida (hasta 4), cada una con su trama. */
 export function ComponentBars({ evaluations }: { evaluations: RotationEvaluation[] }) {

@@ -9,7 +9,7 @@ import { CHART, ChartFrame } from "./chart-frame";
 
 const grid = <CartesianGrid stroke="currentColor" strokeOpacity={0.15} vertical={false} />;
 const tick = { fill: "currentColor", fontSize: 12 };
-const tip = { contentStyle: { background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, color: "hsl(var(--foreground))" } };
+const tip = { contentStyle: { background: "oklch(var(--card))", border: "1px solid oklch(var(--border))", borderRadius: 8, color: "oklch(var(--foreground))" } };
 const fmt = (d = 0) => (v: unknown) => (typeof v === "number" ? num(v, d) : String(v ?? "—"));
 
 /** Lluvia mensual (barras) frente a la evapotranspiración de referencia (línea con puntos). */

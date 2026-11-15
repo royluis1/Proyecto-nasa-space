@@ -12,7 +12,7 @@ export const GROUP_INFO: Record<CropGroup, { label: string; icon: LucideIcon; cl
   cobertura: { label: "Cobertura", icon: Layers, cls: "bg-emerald-100 text-emerald-950 dark:bg-emerald-900/50 dark:text-emerald-50" },
 };
 
-const FALLOW_STYLE = { backgroundImage: "repeating-linear-gradient(45deg, transparent 0 6px, hsl(var(--border)) 6px 8px)" };
+const FALLOW_STYLE = { backgroundImage: "repeating-linear-gradient(45deg, transparent 0 6px, oklch(var(--border)) 6px 8px)" };
 
 interface Props {
   rotation: Pick<Rotation, "id" | "name" | "duration_years" | "steps">;

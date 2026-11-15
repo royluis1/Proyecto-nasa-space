@@ -1,19 +1,20 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen } from "lucide-react";
+import { ArrowRight, BarChart3, BookOpen, CloudSun, Droplets, Leaf, MapPin, Mountain, Satellite, SlidersHorizontal, type LucideIcon } from "lucide-react";
+import { HeroAccount } from "@/components/home/hero-account";
 import { Button } from "@/components/ui/button";
-import { StartLink } from "@/components/layout/profile-chip";
+import { Card, CardContent } from "@/components/ui/card";
 import { APPROACHES } from "@/lib/sources";
 import { cn } from "@/lib/utils";
 
-const steps = [
-  { icon: "📍", title: "Marcá tu campo", text: "Elegilo en el mapa, dibujá el lote o cargá las coordenadas." },
-  { icon: "🎯", title: "Contanos qué te importa", text: "Tu suelo, si tenés riego, y qué priorizás: agua, suelo, ingreso o riesgo." },
-  { icon: "📊", title: "Compará rotaciones", text: "Te mostramos varias opciones con puntaje, riesgos y el porqué de cada una." },
+const steps: { icon: LucideIcon; title: string; text: string; tone: string }[] = [
+  { icon: MapPin, title: "Ubicá tu campo", text: "Buscá tu ciudad o pueblo, o marcá el lote en el mapa.", tone: "bg-secondary text-primary" },
+  { icon: SlidersHorizontal, title: "Contanos qué te importa", text: "Tu suelo, si tenés riego, y qué priorizás: agua, suelo, ingreso o riesgo.", tone: "bg-accent/50 text-accent-foreground" },
+  { icon: BarChart3, title: "Compará rotaciones", text: "Varias opciones con puntaje, riesgos y el porqué de cada una.", tone: "bg-sky-soft text-sky" },
 ];
 
 type Tone = "good" | "warn" | "bad";
 const TONE_BG: Record<Tone, string> = { good: "bg-good", warn: "bg-warn", bad: "bg-bad" };
-const TONE_RING: Record<Tone, string> = { good: "hsl(var(--good))", warn: "hsl(var(--warn))", bad: "hsl(var(--bad))" };
+const TONE_RING: Record<Tone, string> = { good: "oklch(var(--good))", warn: "oklch(var(--warn))", bad: "oklch(var(--bad))" };
 
 interface Example {
   title: string;
@@ -59,11 +60,11 @@ const examples: Example[] = [
   },
 ];
 
-const data = [
-  { icon: "🌧️", title: "Clima", source: "NASA POWER", text: "Lluvia, temperatura y evaporación de los últimos 10 años en tu zona." },
-  { icon: "💧", title: "Humedad del suelo", source: "NASA SMAP", text: "Cuánta agua hay en las raíces comparado con lo normal, y qué tan seguido hay sequía." },
-  { icon: "🛰️", title: "Lo verde del campo", source: "MODIS NDVI", text: "Cuánto verde hubo en cada campaña: cobertura, barbechos y tendencia." },
-  { icon: "⛰️", title: "Relieve", source: "NASA SRTM", text: "Altura y pendiente del lote, para medir el riesgo de que el agua se lleve el suelo." },
+const data: { icon: LucideIcon; title: string; source: string; text: string; tone: string }[] = [
+  { icon: CloudSun, title: "Clima", source: "NASA POWER", text: "Lluvia, temperatura y evaporación de los últimos 10 años en tu zona.", tone: "bg-sky-soft text-sky" },
+  { icon: Droplets, title: "Humedad del suelo", source: "NASA SMAP", text: "Cuánta agua hay en las raíces comparado con lo normal, y qué tan seguido hay sequía.", tone: "bg-sky-soft text-sky" },
+  { icon: Leaf, title: "Lo verde del campo", source: "MODIS y Landsat", text: "Cuánto verde hubo en cada campaña: cobertura, barbechos y tendencia.", tone: "bg-secondary text-primary" },
+  { icon: Mountain, title: "Relieve", source: "NASA SRTM", text: "Altura y pendiente del lote, para medir el riesgo de que el agua se lleve el suelo.", tone: "bg-warning-soft text-warning" },
 ];
 
 const labels: { icon: string; text: string; tone: string }[] = [
@@ -77,7 +78,7 @@ function ScoreRing({ value, tone }: { value: number; tone: Tone }) {
   return (
     <div
       className="grid size-16 shrink-0 place-items-center rounded-full"
-      style={{ background: `conic-gradient(${TONE_RING[tone]} ${value}%, hsl(var(--border)) 0)` }}
+      style={{ background: `conic-gradient(${TONE_RING[tone]} ${value}%, oklch(var(--border)) 0)` }}
       role="img"
       aria-label={`Puntaje ${value} de 100`}
     >
@@ -88,7 +89,7 @@ function ScoreRing({ value, tone }: { value: number; tone: Tone }) {
 
 function Illustration() {
   return (
-    <svg viewBox="0 0 400 300" role="img" aria-label="Satélite mirando un campo sembrado" className="h-auto w-full rounded-[1.25rem] bg-gradient-to-b from-agua-100 to-cultivo-100 dark:from-[#10283a] dark:to-[#1b4a36]">
+    <svg viewBox="0 0 400 300" role="img" aria-label="Satélite mirando un campo sembrado" className="aspect-[16/10] h-auto w-full bg-gradient-to-b from-agua-100 to-cultivo-100 dark:from-[#10283a] dark:to-[#1b4a36]" preserveAspectRatio="xMidYMid slice">
       <circle cx="320" cy="55" r="26" fill="#f2c94c" />
       <g transform="translate(95 60) rotate(-20)">
         <rect x="-16" y="-9" width="32" height="18" rx="3" fill="#cfd8dc" />
@@ -113,38 +114,59 @@ export default function HomePage() {
   return (
     <div className="space-y-14">
       {/* Portada */}
-      <section className="bg-hero grid items-center gap-8 rounded-3xl px-5 py-6 sm:px-7 lg:grid-cols-[1.2fr_1fr]">
-        <div>
-          <p className="mb-4 inline-block rounded-full bg-secondary px-3 py-1.5 text-sm font-bold text-primary">🌾 Para productores de San Luis</p>
-          <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
-            ¿Qué sembrar este año? <span className="text-primary">Mirá qué dicen los satélites.</span>
-          </h1>
-          <p className="my-5 max-w-2xl text-xl text-muted-foreground">
-            Compará rotaciones para tu lote con datos de la NASA y de tu propio campo. Todo explicado en palabras simples.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Button size="lg" asChild className="min-h-14 px-6 text-lg font-extrabold">
-              <StartLink>📍 Empezar: huerta o campo</StartLink>
-            </Button>
-            <Button size="lg" variant="outline" asChild className="min-h-14 border-2 border-primary px-6 text-lg font-extrabold text-primary">
-              <Link href="/campo/campo-centro/comparador">👀 Ver un ejemplo</Link>
-            </Button>
+      <section className="bg-hero rounded-3xl">
+        <div className="grid grid-cols-1 gap-10 px-5 py-10 sm:px-8 md:py-14 lg:grid-cols-2 lg:items-center lg:gap-14">
+          <div className="animate-rise space-y-6 lg:order-2">
+            <span className="inline-flex items-center gap-2 rounded-full bg-card px-3 py-1.5 text-xs font-semibold text-primary shadow-soft">
+              <MapPin aria-hidden className="size-3.5" /> San Luis, Argentina
+            </span>
+            <h1 className="text-4xl font-bold leading-[1.1] sm:text-5xl">
+              ¿Qué sembrar este año? <span className="text-primary-glow">Mirá qué dicen los satélites.</span>
+            </h1>
+            <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
+              FieldShift compara rotaciones para tu lote con datos de la NASA, tu suelo y lo que te importa. Todo explicado en palabras simples.
+            </p>
+            <div className="relative overflow-hidden rounded-3xl shadow-lift">
+              <Illustration />
+              <div className="absolute inset-x-3 bottom-3 flex flex-wrap gap-2">
+                {[
+                  { icon: Satellite, label: "Datos de la NASA" },
+                  { icon: CloudSun, label: "Pronóstico local" },
+                ].map(({ icon: Icon, label }) => (
+                  <span key={label} className="inline-flex items-center gap-1.5 rounded-full bg-card/90 px-3 py-1.5 text-xs font-semibold text-foreground backdrop-blur">
+                    <Icon aria-hidden className="size-3.5 text-sky" /> {label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="lg:order-1">
+            <HeroAccount />
           </div>
         </div>
-        <Illustration />
       </section>
 
       {/* Cómo funciona */}
       <section aria-labelledby="como">
-        <h2 id="como" className="text-3xl font-bold tracking-tight">Así de fácil</h2>
-        <p className="mb-5 text-muted-foreground">En 3 pasos tenés tu comparación.</p>
-        <ol className="grid gap-4 md:grid-cols-3">
-          {steps.map((s, i) => (
-            <li key={s.title} className="relative rounded-[1.25rem] border bg-card p-6">
-              <span aria-hidden className="absolute right-4 top-4 grid size-9 place-items-center rounded-full bg-primary font-extrabold text-primary-foreground">{i + 1}</span>
-              <span aria-hidden className="text-5xl leading-none">{s.icon}</span>
-              <h3 className="mb-1 mt-3 text-xl font-bold"><span className="sr-only">Paso {i + 1}: </span>{s.title}</h3>
-              <p className="text-muted-foreground">{s.text}</p>
+        <div className="mb-8 max-w-xl space-y-3">
+          <p className="text-sm font-semibold uppercase tracking-widest text-primary-glow">Así de fácil</p>
+          <h2 id="como" className="text-3xl font-bold sm:text-4xl">En 3 pasos tenés tu comparación</h2>
+        </div>
+        <ol className="grid gap-5 md:grid-cols-3">
+          {steps.map(({ icon: Icon, title, text, tone }, i) => (
+            <li key={title}>
+              <Card className="h-full transition-shadow hover:shadow-lift">
+                <CardContent className="space-y-4 p-7">
+                  <div className="flex items-center justify-between">
+                    <span className={cn("grid size-12 place-items-center rounded-2xl", tone)}>
+                      <Icon aria-hidden className="size-6" />
+                    </span>
+                    <span aria-hidden className="font-display text-sm font-semibold text-muted-foreground">0{i + 1}</span>
+                  </div>
+                  <h3 className="text-xl font-semibold"><span className="sr-only">Paso {i + 1}: </span>{title}</h3>
+                  <p className="leading-relaxed text-muted-foreground">{text}</p>
+                </CardContent>
+              </Card>
             </li>
           ))}
         </ol>
@@ -152,11 +174,11 @@ export default function HomePage() {
 
       {/* Tres enfoques */}
       <section aria-labelledby="enfoques">
-        <h2 id="enfoques" className="text-3xl font-bold tracking-tight">Tres enfoques</h2>
+        <h2 id="enfoques" className="text-3xl font-bold sm:text-4xl">Tres enfoques</h2>
         <p className="mb-5 text-muted-foreground">Para huertas y para campos: elegís tu perfil y FieldShift te muestra lo que te sirve.</p>
         <div className="grid gap-4 md:grid-cols-3">
           {APPROACHES.map((a) => (
-            <article key={a.id} className="rounded-[1.25rem] border bg-card p-6">
+            <article key={a.id} className="rounded-xl border bg-card p-6 shadow-soft transition-shadow hover:shadow-lift">
               <span aria-hidden className="text-4xl">{a.icon}</span>
               <h3 className="mb-1 mt-2 text-xl font-bold">{a.title}</h3>
               <p className="text-muted-foreground">{a.text}</p>
@@ -165,11 +187,11 @@ export default function HomePage() {
           ))}
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <div className="rounded-[1.25rem] border bg-secondary p-5">
+          <div className="rounded-xl border bg-secondary p-5">
             <p className="text-lg font-bold"><span aria-hidden>🥬 </span>Huerta</p>
             <p className="text-muted-foreground">Cuánto regar, cuándo hiela, lluvia pasada y futura, y alertas. Sin puntajes ni rotaciones: lo justo para la huerta.</p>
           </div>
-          <div className="rounded-[1.25rem] border bg-secondary p-5">
+          <div className="rounded-xl border bg-secondary p-5">
             <p className="text-lg font-bold"><span aria-hidden>🚜 </span>Agricultor</p>
             <p className="text-muted-foreground">Rotaciones con puntaje, escenarios, calendario por campañas, relieve, alertas y reporte para el técnico.</p>
           </div>
@@ -179,13 +201,13 @@ export default function HomePage() {
       {/* Ejemplo visual */}
       <section aria-labelledby="ejemplo">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 id="ejemplo" className="text-3xl font-bold tracking-tight">Así se ve el resultado</h2>
+          <h2 id="ejemplo" className="text-3xl font-bold sm:text-4xl">Así se ve el resultado</h2>
           <span className="rounded-full border border-warn bg-warn/15 px-3 py-1 text-sm font-bold">Ejemplo con datos simulados</span>
         </div>
         <p className="mb-5 text-muted-foreground">Más barra verde, mejor. Rojo = ojo con eso.</p>
         <div className="grid gap-4 lg:grid-cols-3">
           {examples.map((e) => (
-            <article key={e.title} className={cn("rounded-[1.25rem] border-2 bg-card p-5", e.best ? "border-good bg-secondary" : "border-border")}>
+            <article key={e.title} className={cn("rounded-xl border-2 bg-card p-5 shadow-soft", e.best ? "border-good bg-secondary" : "border-border")}>
               <div className="flex items-start justify-between gap-3">
                 <div>
                   {e.best && <span className="mb-1.5 inline-block rounded-full bg-primary px-2.5 py-0.5 text-xs font-extrabold text-primary-foreground">⭐ La mejor para vos</span>}
@@ -216,19 +238,19 @@ export default function HomePage() {
 
       {/* Datos */}
       <section aria-labelledby="datos">
-        <h2 id="datos" className="text-3xl font-bold tracking-tight">¿De dónde sale cada dato?</h2>
+        <h2 id="datos" className="text-3xl font-bold sm:text-4xl">¿De dónde sale cada dato?</h2>
         <p className="mb-5 text-muted-foreground">Todo viene de la NASA y te decimos su origen.</p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {data.map((d) => (
-            <article key={d.title} className="rounded-[1.25rem] border bg-card p-6">
-              <span aria-hidden className="text-4xl">{d.icon}</span>
-              <h3 className="mb-0.5 mt-2 text-xl font-bold">{d.title}</h3>
-              <p className="text-sm font-bold text-agua-700 dark:text-info">{d.source}</p>
+            <article key={d.title} className="rounded-xl border bg-card p-6 shadow-soft transition-shadow hover:shadow-lift">
+              <span className={cn("grid size-11 place-items-center rounded-xl", d.tone)}><d.icon aria-hidden className="size-5" /></span>
+              <h3 className="mb-0.5 mt-3 text-xl font-bold">{d.title}</h3>
+              <p className="text-sm font-bold text-sky">{d.source}</p>
               <p className="mt-1.5 text-muted-foreground">{d.text}</p>
             </article>
           ))}
         </div>
-        <div className="mt-4 rounded-[1.25rem] border bg-card p-5">
+        <div className="mt-4 rounded-xl border bg-card p-5 shadow-soft">
           <p className="mb-3"><b>Cada número tiene una etiqueta</b> para que no confundas una medición con una suposición:</p>
           <ul className="flex flex-wrap gap-2.5">
             {labels.map((l) => (
@@ -240,7 +262,7 @@ export default function HomePage() {
       </section>
 
       {/* Metodología */}
-      <section className="flex flex-wrap items-center justify-between gap-4 rounded-[1.25rem] border bg-secondary p-6">
+      <section className="flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-secondary p-6">
         <div>
           <h2 className="text-2xl font-bold">¿Querés saber cómo se calcula?</h2>
           <p className="text-muted-foreground">Fuentes, fórmulas y lo que falta validar con un agrónomo.</p>

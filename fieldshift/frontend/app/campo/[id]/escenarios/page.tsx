@@ -203,7 +203,7 @@ function ResilienceCard({ matrix, names, actualId }: { matrix: ScenarioCells[]; 
             <CartesianGrid stroke="currentColor" strokeOpacity={0.15} vertical={false} />
             <XAxis dataKey="escenario" tick={{ fill: "currentColor", fontSize: 11, angle: -25, textAnchor: "end" }} interval={0} height={90} />
             <YAxis tick={{ fill: "currentColor", fontSize: 12 }} width={36} domain={[0, 100]} />
-            <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, color: "hsl(var(--foreground))" }} />
+            <Tooltip contentStyle={{ background: "oklch(var(--card))", border: "1px solid oklch(var(--border))", borderRadius: 8, color: "oklch(var(--foreground))" }} />
             <Legend />
             {keys.map((k, i) => (
               <Line isAnimationActive={false} key={k} dataKey={k} stroke={[CHART.cultivo, CHART.tierra][i % 2]} strokeDasharray={i ? "8 4" : undefined} strokeWidth={3} dot={{ r: 5 }} />

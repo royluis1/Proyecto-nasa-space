@@ -35,10 +35,11 @@ const config: Config = {
         bad: c("critical"),
         info: c("sky"),
         chart: { 1: c("chart-1"), 2: c("chart-2"), 3: c("chart-3"), 4: c("chart-4"), 5: c("chart-5") },
-        // Paleta del dominio: verde (cultivo), tierra (suelo), azul (agua)
-        cultivo: { 50: "#f0f7f1", 100: "#dcecdf", 500: "#3f8a52", 600: "#2f6f40", 700: "#255833", 900: "#16351f" },
-        tierra: { 50: "#faf6f0", 100: "#f1e7d8", 300: "#d6b98f", 500: "#a87a44", 600: "#8a6234", 700: "#6b4b28", 900: "#3b2a17" },
-        agua: { 50: "#eef6fb", 100: "#d6e9f5", 500: "#2f7fb5", 600: "#236796", 700: "#1d5279", 900: "#11314a" },
+        // Paleta del dominio: verde (cultivo), tierra (suelo), azul (agua).
+        // Calculada desde los mismos tonos oklch del diseño (verde 155, tierra 70, cielo 245) para que combine.
+        cultivo: { 50: "#edfbf1", 100: "#d5f5de", 300: "#95d6ab", 500: "#389560", 600: "#2a7449", 700: "#1e5a38", 900: "#0f2e1b" },
+        tierra: { 50: "#fff5ea", 100: "#fde7cf", 300: "#e6bb8a", 500: "#a9742e", 600: "#845922", 700: "#674517", 900: "#34220b" },
+        agua: { 50: "#ecf9ff", 100: "#d3efff", 300: "#92cbfb", 500: "#3786c3", 600: "#296898", 700: "#1d5178", 900: "#0e293d" },
       },
       borderRadius: {
         sm: "calc(var(--radius) - 4px)",

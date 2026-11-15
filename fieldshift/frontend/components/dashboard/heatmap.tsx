@@ -9,7 +9,7 @@ function Cell({ value, strong = false }: { value: number | null; strong?: boolea
     <td
       className={cn("border border-background px-2 py-2.5 text-center align-middle", strong && "font-bold")}
       // cuanto más oscuro el verde, mejor el puntaje; el número y la palabra dicen lo mismo
-      style={{ backgroundColor: `hsl(var(--primary) / ${(0.06 + (v / 100) * 0.5).toFixed(2)})` }}
+      style={{ backgroundColor: `oklch(var(--primary) / ${(0.06 + (v / 100) * 0.5).toFixed(2)})` }}
     >
       <span className="block text-lg font-semibold tabular-nums leading-tight">{num(value)}</span>
       <span className="block text-xs">{band(v)}</span>
