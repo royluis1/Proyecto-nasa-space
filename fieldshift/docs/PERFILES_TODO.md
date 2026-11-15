@@ -12,7 +12,9 @@ pronóstico Open-Meteo). Agricultor = hectáreas (todo el stack, sin cambios).
 6. ✅ Formulario propio de huerta (`components/field/field-form.tsx`, rama `isHuerta`): m² (se guarda como ha), tipo de tierra, tipo de riego, cultivo anterior; sin establecimiento, laboratorio ni pendiente. Estimación cualitativa de nutrientes (cultivo anterior + compost), rotulada "estimado: validá con análisis de suelo".
 
 ## Pendiente
-7. ⏳ Navegación y control de acceso por perfil (`app/campo/[id]/page.tsx` → `PROFILES[perfil].home(id)`; pantallas de agricultor redirigen a "Mi huerta" si huerta; verificar `field-nav.tsx` y `field-tools-menu.tsx`).
+(ninguna de las 7 tareas)
+
+7. ✅ Navegación por perfil: `app/campo/[id]/page.tsx` redirige a `PROFILES[perfil].home(id)`; `ProfileRouteGuard` en el layout lleva a "Mi huerta" si un perfil huerta abre una pantalla de agricultor (perfil, comparador, dashboard, calendario, escenarios, diagnóstico, reporte, rotación). Saqué "diagnóstico" del menú de huerta (usaba SMAP/MODIS/relieve).
 
 ## Supuestos / deuda
 - El "tipo de riego" de huerta se guarda solo como `irrigated` (bool): el backend no tiene campo para el método (goteo/regadera/aspersión). El detalle queda en la UI. Pendiente: agregar `irrigation_method` al esquema si se quiere persistir.
