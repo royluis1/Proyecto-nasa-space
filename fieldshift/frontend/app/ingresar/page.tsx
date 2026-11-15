@@ -48,7 +48,7 @@ export default function IngresarPage() {
         <h2 id="fuentes" className="text-2xl font-bold">Qué datos usa cada perfil</h2>
         <div className="grid gap-6 lg:grid-cols-2">
           {(Object.keys(PROFILES) as Profile[]).map((p) => (
-            <div key={p} className="space-y-2">
+            <div key={p} className="min-w-0 space-y-2">
               <h3 className="text-lg font-semibold"><span aria-hidden>{PROFILES[p].icon} </span>{PROFILES[p].label}</h3>
               <SourceMap profile={p} />
             </div>

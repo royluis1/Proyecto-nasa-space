@@ -11,10 +11,23 @@ import { GLOSSARY, GLOSSARY_KEYS } from "@/lib/glossary";
 import { COMPONENTS, COMPONENT_ORDER, AGGREGATION_NOTE } from "@/lib/format";
 import { GROUPS, PRIORITY_META, type GroupKey } from "@/lib/priorities";
 import { SourceMap } from "@/components/sources/source-map";
+import { SoilRolesGuide } from "@/components/agronomy/soil-roles";
 import { APPROACHES } from "@/lib/sources";
 import type { DataLabel } from "@/types/api";
 
 export const metadata: Metadata = { title: "Metodología y fuentes" };
+
+const HARMONIZE: { name: string; native: string; how: string }[] = [
+  { name: "NASA POWER (clima)", native: "~50 km · diario", how: "Se suma o promedia por mes y por campaña (julio a junio). La ET₀ se calcula por día con FAO-56 y se suma por mes." },
+  { name: "NASA SMAP L4 (zona de raíces)", native: "9 km · cada 3 horas", how: "Promedio por mes y comparación con lo normal del mismo mes (anomalía)." },
+  { name: "NASA SMAP L3 (superficie)", native: "9 km · diario", how: "Se muestra la última observación disponible, como contexto regional." },
+  { name: "NASA MODIS NDVI", native: "250 m · cada 16 días", how: "Píxel del lote, resumido por mes y por campaña: cobertura, barbechos y biomasa." },
+  { name: "Landsat/Sentinel (HLS)", native: "30 m · cada pocos días", how: "Una grilla de 3 × 3 sectores dentro del lote para comparar zonas del mismo campo." },
+  { name: "NASA ECOSTRESS", native: "70 m · irregular", how: "Píxel del lote en verano: temperatura de la superficie y estrés hídrico." },
+  { name: "NASA SRTM (relieve)", native: "30 m · año 2000", how: "Todos los píxeles dentro del lote, suavizados: pendiente media y de las zonas más inclinadas." },
+  { name: "SoilGrids (suelo estimado)", native: "250 m", how: "Punto del lote: textura y materia orgánica, solo si no cargaste tu análisis." },
+];
+
 
 const DOCS = "https://github.com/royluis1/Proyecto-nasa-space/blob/main/fieldshift/docs";
 
@@ -165,6 +178,34 @@ export default function MetodologiaPage() {
         ))}
       </section>
 
+      <section aria-labelledby="armonizar" className="space-y-3">
+        <h2 id="armonizar" className="text-2xl font-semibold">Cómo juntamos datos de distinta escala</h2>
+        <p className="text-lg">
+          Cada fuente mide a una escala distinta: de 30 m a 50 km, y de cada 3 horas a una sola vez. Para compararlas, todas se llevan a la misma
+          unidad: <strong>el lote</strong> en el espacio y <strong>el mes y la campaña</strong> en el tiempo. Así se combinan en el puntaje de cada rotación.
+        </p>
+        <div className="relative overflow-x-auto rounded-lg border" tabIndex={0} role="region" aria-label="Tabla de armonización de datos: desplazá para ver todo">
+          <table className="w-full min-w-[40rem] text-sm">
+            <caption className="sr-only">Escala original de cada fuente y cómo se lleva al lote y al mes</caption>
+            <thead className="bg-muted text-left"><tr><th scope="col" className="p-3">Fuente</th><th scope="col" className="p-3">Escala original</th><th scope="col" className="p-3">Cómo se lleva al lote y al mes</th></tr></thead>
+            <tbody>
+              {HARMONIZE.map((h) => (
+                <tr key={h.name} className="border-t"><th scope="row" className="p-3 text-left font-medium">{h.name}</th><td className="whitespace-nowrap p-3">{h.native}</td><td className="p-3">{h.how}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Llevar un dato de 9 km o 50 km al lote no lo hace más preciso: por eso cada pantalla muestra la escala original y aclara cuándo un dato es de la zona y no de tu lote.
+        </p>
+      </section>
+
+      <section aria-labelledby="papeles" className="space-y-3">
+        <h2 id="papeles" className="text-2xl font-semibold">Qué aporta cada tipo de cultivo al suelo</h2>
+        <p className="text-lg">Las rotaciones combinan cultivos con papeles distintos. Estos cuatro son los que más pesan en la salud del suelo a largo plazo:</p>
+        <SoilRolesGuide />
+      </section>
+
       <section aria-labelledby="enfoques" className="space-y-3">
         <h2 id="enfoques" className="text-2xl font-semibold">Tres enfoques</h2>
         <div className="grid gap-4 md:grid-cols-3">
@@ -185,8 +226,8 @@ export default function MetodologiaPage() {
           fuente, la fecha de consulta y el tipo (modelado). El pronóstico es de Open-Meteo, que no es de la NASA: se aclara en pantalla.
         </p>
         <div className="grid gap-6 lg:grid-cols-2">
-          <div className="space-y-2"><h3 className="font-semibold">🥬 Huerta</h3><SourceMap profile="huerta" /></div>
-          <div className="space-y-2"><h3 className="font-semibold">🚜 Agricultor</h3><SourceMap profile="agricultor" /></div>
+          <div className="min-w-0 space-y-2"><h3 className="font-semibold">🥬 Huerta</h3><SourceMap profile="huerta" /></div>
+          <div className="min-w-0 space-y-2"><h3 className="font-semibold">🚜 Agricultor</h3><SourceMap profile="agricultor" /></div>
         </div>
       </section>
 

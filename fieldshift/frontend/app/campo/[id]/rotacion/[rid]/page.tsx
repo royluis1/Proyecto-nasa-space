@@ -7,6 +7,7 @@ import { useCampo } from "@/components/campo/campo-provider";
 import { PageHeader } from "@/components/page-header";
 import { ConfidenceBadge, LabelBadge, RiskLevelBadge, SeverityBadge, flagIcon } from "@/components/provenance/badges";
 import { ScoreBars } from "@/components/score/score-bars";
+import { SoilRoles } from "@/components/agronomy/soil-roles";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -81,6 +82,8 @@ function Detail({ ev, fieldId }: { ev: RotationEvaluation; fieldId: string }) {
           {r.description && <p className="text-base text-muted-foreground">{r.description}</p>}
         </CardContent>
       </Card>
+
+      <SoilRoles cropIds={r.steps.map((st) => st.crop_id)} />
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
@@ -163,7 +166,7 @@ function Detail({ ev, fieldId }: { ev: RotationEvaluation; fieldId: string }) {
                 <CardDescription>{COMPONENTS[k].help}</CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
+                <Table scrollLabel={`Motivos del puntaje de ${COMPONENTS[k].name}: desplazá para ver todo`}>
                   <TableHeader>
                     <TableRow><TableHead>Factor</TableHead><TableHead>Efecto</TableHead><TableHead>Detalle</TableHead><TableHead>Tipo de dato</TableHead></TableRow>
                   </TableHeader>
