@@ -2,60 +2,110 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Sistema de diseño.
+ *
+ * Los colores se guardan como componentes oklch sueltos ("L C H", sin el oklch() alrededor) para que
+ * Tailwind pueda aplicarles transparencia: bg-primary/10 se convierte en oklch(var(--primary) / 0.1).
+ * Donde hace falta un color completo (degradados, sombras) se escribe oklch(var(--token)).
+ *
+ * Modo claro: paleta del diseño (verde campo, lima, cielo).
+ * Modo oscuro: la misma familia verde en oscuro, con todos los tokens, para que las dos versiones sean coherentes.
+ */
+
 @layer base {
   :root {
-    --background: 40 33% 98%;
-    --foreground: 150 25% 12%;
-    --card: 0 0% 100%;
-    --card-foreground: 150 25% 12%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 150 25% 12%;
-    --primary: 140 49% 29%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 36 40% 91%;
-    --secondary-foreground: 30 40% 20%;
-    --muted: 40 25% 94%;
-    --muted-foreground: 30 12% 36%;
-    --accent: 203 60% 93%;
-    --accent-foreground: 203 60% 22%;
-    --destructive: 14 70% 38%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 35 20% 85%;
-    --input: 35 20% 80%;
-    --ring: 203 62% 40%;
-    --radius: 1rem;
-    /* Semáforo para barras y aros (gráficos, no texto) */
-    --good: 134 50% 38%;
-    --warn: 38 92% 42%;
-    --bad: 7 72% 50%;
-    --info: 203 62% 40%;
+    --radius: 0.875rem;
+
+    --background: 0.985 0.004 145;
+    --foreground: 0.22 0.03 160;
+    --card: 1 0 0;
+    --card-foreground: 0.22 0.03 160;
+    --popover: 1 0 0;
+    --popover-foreground: 0.22 0.03 160;
+    --primary: 0.4 0.085 158;
+    --primary-foreground: 0.985 0.01 145;
+    --primary-glow: 0.5 0.11 152;
+    --secondary: 0.955 0.02 150;
+    --secondary-foreground: 0.32 0.07 158;
+    --muted: 0.96 0.008 150;
+    --muted-foreground: 0.47 0.025 160;
+    --accent: 0.9 0.11 135;
+    --accent-foreground: 0.28 0.07 155;
+    --destructive: 0.52 0.19 28;
+    --destructive-foreground: 0.985 0.01 145;
+    --border: 0.92 0.012 150;
+    --input: 0.86 0.018 150;
+    --ring: 0.5 0.11 152;
+
+    /* Semáforo (barras, aros y avisos) */
+    --success: 0.48 0.13 150;
+    --success-soft: 0.95 0.04 150;
+    --warning: 0.52 0.13 70;
+    --warning-soft: 0.96 0.05 85;
+    --critical: 0.52 0.19 28;
+    --critical-soft: 0.96 0.03 25;
+    --sky: 0.52 0.13 245;
+    --sky-soft: 0.95 0.03 240;
+
+    /* Mapas */
+    --map: 0.93 0.05 140;
+    --map-hover: 0.86 0.1 138;
+    --map-stroke: 1 0 0;
+
+    /* Nombres que ya usaban los gráficos */
+    --good: var(--success);
+    --warn: var(--warning);
+    --bad: var(--critical);
+    --info: var(--sky);
+
+    --chart-1: 0.4 0.085 158;
+    --chart-2: 0.52 0.13 245;
+    --chart-3: 0.68 0.13 135;
+    --chart-4: 0.52 0.13 70;
+    --chart-5: 0.52 0.19 28;
   }
 
-  /* Modo oscuro: verde profundo (paleta del diseño de la portada) */
   .dark {
-    --background: 147 24% 7%;
-    --foreground: 100 27% 96%;
-    --card: 141 24% 11%;
-    --card-foreground: 100 27% 96%;
-    --popover: 141 24% 11%;
-    --popover-foreground: 100 27% 96%;
-    --primary: 134 57% 60%;
-    --primary-foreground: 140 60% 8%;
-    --secondary: 142 25% 15%;
-    --secondary-foreground: 100 27% 96%;
-    --muted: 142 25% 15%;
-    --muted-foreground: 134 13% 74%;
-    --accent: 142 25% 17%;
-    --accent-foreground: 100 27% 96%;
-    --destructive: 7 83% 66%;
-    --destructive-foreground: 140 60% 8%;
-    --border: 141 24% 22%;
-    --input: 141 24% 26%;
-    --ring: 209 100% 71%;
-    --good: 134 57% 60%;
-    --warn: 45 86% 62%;
-    --bad: 7 83% 66%;
-    --info: 209 100% 71%;
+    --background: 0.17 0.018 160;
+    --foreground: 0.96 0.012 140;
+    --card: 0.215 0.022 160;
+    --card-foreground: 0.96 0.012 140;
+    --popover: 0.215 0.022 160;
+    --popover-foreground: 0.96 0.012 140;
+    --primary: 0.78 0.15 150;
+    --primary-foreground: 0.18 0.04 160;
+    --primary-glow: 0.85 0.14 145;
+    --secondary: 0.28 0.03 158;
+    --secondary-foreground: 0.96 0.012 140;
+    --muted: 0.28 0.03 158;
+    --muted-foreground: 0.78 0.022 150;
+    --accent: 0.32 0.05 150;
+    --accent-foreground: 0.96 0.012 140;
+    --destructive: 0.72 0.16 25;
+    --destructive-foreground: 0.18 0.04 160;
+    --border: 0.34 0.025 155;
+    --input: 0.42 0.03 155;
+    --ring: 0.82 0.13 150;
+
+    --success: 0.78 0.15 150;
+    --success-soft: 0.3 0.05 150;
+    --warning: 0.84 0.14 85;
+    --warning-soft: 0.32 0.05 80;
+    --critical: 0.72 0.16 25;
+    --critical-soft: 0.3 0.07 25;
+    --sky: 0.78 0.11 240;
+    --sky-soft: 0.3 0.05 240;
+
+    --map: 0.35 0.06 140;
+    --map-hover: 0.47 0.1 138;
+    --map-stroke: 0.17 0.018 160;
+
+    --chart-1: 0.78 0.15 150;
+    --chart-2: 0.78 0.11 240;
+    --chart-3: 0.84 0.12 135;
+    --chart-4: 0.84 0.14 85;
+    --chart-5: 0.72 0.16 25;
   }
 
   * {
@@ -68,11 +118,27 @@
     line-height: 1.6;
   }
 
+  /* Los títulos usan la tipografía de display, un poco más apretada */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   :focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
 
   @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
     * {
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
@@ -80,15 +146,43 @@
   }
 }
 
+@layer utilities {
+  /* Fondo degradado suave de la portada y las cabeceras */
+  .bg-hero {
+    background-image:
+      radial-gradient(ellipse 80% 60% at 85% 0%, color-mix(in oklab, oklch(var(--accent)) 45%, transparent), transparent 70%),
+      radial-gradient(ellipse 60% 50% at 0% 100%, color-mix(in oklab, oklch(var(--sky)) 12%, transparent), transparent 70%);
+  }
+
+  .bg-gradient-primary {
+    background-image: linear-gradient(135deg, oklch(var(--primary)), oklch(var(--primary-glow)));
+  }
+
+  .animate-rise {
+    animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Leaflet: que el mapa respete el modo oscuro en los controles */
 .dark .leaflet-container {
-  background: #0e1712;
+  background: oklch(var(--background));
 }
 .dark .leaflet-control-zoom a,
 .dark .leaflet-bar a {
-  background: hsl(150 18% 14%);
-  color: hsl(40 20% 94%);
-  border-color: hsl(150 10% 26%);
+  background: oklch(var(--card));
+  color: oklch(var(--card-foreground));
+  border-color: oklch(var(--border));
 }
 
 /* Los enlaces de la atribución del mapa se distinguen por el subrayado, no solo por el color */
@@ -108,9 +202,9 @@
 
 /* Créditos del mapa legibles en modo oscuro */
 .dark .leaflet-container .leaflet-control-attribution {
-  background: rgba(14, 23, 18, 0.85);
-  color: #e6efe4;
+  background: color-mix(in oklab, oklch(var(--background)) 88%, transparent);
+  color: oklch(var(--foreground));
 }
 .dark .leaflet-container .leaflet-control-attribution a {
-  color: #9fd0ff;
+  color: oklch(var(--sky));
 }

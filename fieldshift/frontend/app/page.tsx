@@ -113,7 +113,7 @@ export default function HomePage() {
   return (
     <div className="space-y-14">
       {/* Portada */}
-      <section className="grid items-center gap-8 pt-2 lg:grid-cols-[1.2fr_1fr]">
+      <section className="bg-hero grid items-center gap-8 rounded-3xl px-5 py-6 sm:px-7 lg:grid-cols-[1.2fr_1fr]">
         <div>
           <p className="mb-4 inline-block rounded-full bg-secondary px-3 py-1.5 text-sm font-bold text-primary">🌾 Para productores de San Luis</p>
           <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">

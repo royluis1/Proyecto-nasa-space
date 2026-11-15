@@ -1,5 +1,10 @@
 import type { Metadata, Viewport } from "next";
+import { Manrope, Sora } from "next/font/google";
 import "./globals.css";
+
+// Tipografías del diseño. Next las descarga en el build y las sirve desde el mismo dominio.
+const sans = Manrope({ subsets: ["latin"], display: "swap", variable: "--font-sans" });
+const display = Sora({ subsets: ["latin"], display: "swap", weight: ["600", "700"], variable: "--font-display" });
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { BackendBanner } from "@/components/layout/backend-banner";
 import { DisclaimerBar } from "@/components/layout/disclaimer-bar";
@@ -15,12 +20,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: [{ media: "(prefers-color-scheme: light)", color: "#f8f6f1" }, { media: "(prefers-color-scheme: dark)", color: "#0e1712" }],
+  themeColor: [{ media: "(prefers-color-scheme: light)", color: "#fbfbf8" }, { media: "(prefers-color-scheme: dark)", color: "#0f1a14" }],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es-AR" suppressHydrationWarning>
+    <html lang="es-AR" suppressHydrationWarning className={`${sans.variable} ${display.variable}`}>
       <body className="min-h-screen font-sans">
         <ThemeProvider>
           <AuthProvider>
