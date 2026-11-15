@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { useCampo } from "@/components/campo/campo-provider";
 import { AsyncBlock } from "@/components/async-block";
 import {
-  AnnualRainChart, CampaignsChart, HeatChart, MonthlyClimateChart, NdviClimatologyChart, SoilMoistureAnomalyChart, SoilMoistureClimatologyChart,
+  AnnualRainChart, CampaignsChart, DroughtHistoryChart, HeatChart, MonthlyClimateChart, NdviClimatologyChart, SoilMoistureAnomalyChart, SoilMoistureClimatologyChart,
 } from "@/components/charts/diagnostic-charts";
 import { TodaySatellite } from "@/components/map/today-satellite";
 import { HeatStressCard } from "@/components/satellite/heat-stress-card";
@@ -47,6 +47,7 @@ function ClimateSection({ r }: { r: ApiResult<ClimateSummary> }) {
         <Stat label="Días con más de 35 °C" value={`${num(c.heat.mean_days_per_year)} por año`} />
         <Stat label="Tendencia de la lluvia" value={trend.slope_per_decade == null ? "—" : `${signed(trend.slope_per_decade)} mm/década`} hint={trend.slope_per_decade != null && !trend.significant ? "No significativa" : undefined} />
       </div>
+      <DroughtHistoryChart climate={c} />
       <Disclosure label="Ver gráficos y detalle del clima" contentClassName="space-y-6">
       <SourceLine
         source={{

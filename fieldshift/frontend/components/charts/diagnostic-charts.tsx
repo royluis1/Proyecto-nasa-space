@@ -3,6 +3,7 @@
 import {
   Area, Bar, BarChart, CartesianGrid, ComposedChart, LabelList, Legend, Line, LineChart, ReferenceLine, Tooltip, XAxis, YAxis,
 } from "recharts";
+import { droughtHistory, droughtSentence } from "@/lib/drought";
 import { MONTHS, num } from "@/lib/format";
 import type { ClimateSummary, SoilMoistureSummary, VegetationSummary } from "@/types/api";
 import { CHART, ChartFrame } from "./chart-frame";
@@ -56,6 +57,50 @@ export function AnnualRainChart({ climate }: { climate: ClimateSummary }) {
         </Bar>
       </BarChart>
     </ChartFrame>
+  );
+}
+
+/**
+ * Historial de sequía: el agua que faltó cada año (déficit) con NASA POWER, el promedio y una tendencia orientativa.
+ * Es el "historial para decidir": qué tan seguido y qué tan fuerte faltó agua en la zona.
+ */
+export function DroughtHistoryChart({ climate }: { climate: ClimateSummary }) {
+  const h = droughtHistory(climate.annual);
+  if (h.years.length === 0) return <p className="text-muted-foreground">{droughtSentence(h, (v) => num(v))}</p>;
+  const driest = new Set(h.driest);
+  const data = h.years.map((y) => ({
+    año: String(y.year),
+    deficit: y.deficit,
+    tendencia: h.trend[y.year] ?? null,
+    marca: driest.has(y.year) ? "▲ seco" : "",
+  }));
+  return (
+    <div className="space-y-2">
+      <p>{droughtSentence(h, (v) => num(v))}</p>
+      <ChartFrame
+        title="Agua que faltó cada año"
+        caption="Suma de los meses en que la atmósfera pidió más agua de la que llovió (NASA POWER, ET₀ FAO-56). Más alto = año más seco para los cultivos. La línea es una tendencia orientativa: con unos 10 años no alcanza para afirmar un cambio."
+        table={{
+          headers: ["Año", "Déficit (mm)", "Lluvia (mm)", "ET₀ (mm)"],
+          rows: h.years.map((y) => [String(y.year), num(y.deficit), y.rain == null ? "—" : num(y.rain), y.et0 == null ? "—" : num(y.et0)]),
+        }}
+      >
+        <ComposedChart data={data} margin={{ top: 22, right: 12, bottom: 0, left: 0 }}>
+          {grid}
+          <XAxis dataKey="año" tick={tick} />
+          <YAxis tick={tick} width={48} unit=" mm" />
+          <Tooltip {...tip} formatter={fmt(0)} />
+          <Legend />
+          {h.mean != null && <ReferenceLine y={h.mean} stroke="currentColor" strokeDasharray="4 4" label={{ value: "promedio", position: "insideTopRight", fill: "currentColor", fontSize: 12 }} />}
+          <Bar isAnimationActive={false} dataKey="deficit" name="Agua que faltó (barras)" fill={CHART.tierra} radius={[3, 3, 0, 0]}>
+            <LabelList dataKey="marca" position="top" fill="currentColor" fontSize={12} />
+          </Bar>
+          {h.slopePerDecade != null && (
+            <Line isAnimationActive={false} dataKey="tendencia" name="Tendencia orientativa (línea)" stroke={CHART.agua} strokeWidth={2.5} dot={false} />
+          )}
+        </ComposedChart>
+      </ChartFrame>
+    </div>
   );
 }
 
