@@ -21,6 +21,7 @@ from app.models.enums import DataStatus, Level, SoilTexture
 from app.schemas.regions import SoilEstimate
 from app.services.power.service import Cooldown
 from app.utils.exceptions import UpstreamError
+from app.i18n import tr
 
 logger = logging.getLogger("fieldshift.soil")
 
@@ -105,9 +106,9 @@ def http_fetcher(timeout_s: float = 20.0, transport=None) -> Fetcher:
             with httpx.Client(timeout=timeout_s, transport=transport) as c:
                 r = c.get(URL, params=params)
         except httpx.HTTPError as exc:
-            raise UpstreamError(f"SoilGrids no respondió ({exc.__class__.__name__}).") from None
+            raise UpstreamError(tr(f"SoilGrids no respondió ({exc.__class__.__name__}).", f"SoilGrids did not respond ({exc.__class__.__name__}).")) from None
         if r.status_code >= 400:
-            raise UpstreamError(f"SoilGrids respondió {r.status_code}.")
+            raise UpstreamError(tr(f"SoilGrids respondió {r.status_code}.", f"SoilGrids responded {r.status_code}."))
         return r.json()
 
     return fetch
@@ -126,10 +127,16 @@ def build_estimate(values: dict, origin: DataStatus, source: str, retrieved_at: 
 
 
 #: Aviso cuando SoilGrids no tiene suelo en el punto (agua, zona urbana o roca).
-NO_SOIL = "SoilGrids no tiene datos de suelo en este punto (agua, zona urbana o roca): se deja vacío."
+def no_soil() -> str:
+    return tr("SoilGrids no tiene datos de suelo en este punto (agua, zona urbana o roca): se deja vacío.",
+              "SoilGrids has no soil data at this point (water, urban area or rock): left empty.")
 
-NOTE = ("Suelo ESTIMADO con un mapa global de 250 m: puede no coincidir con tu lote. Si tenés análisis de laboratorio o "
-        "conocés tu suelo, cargalo: siempre tiene prioridad.")
+
+def note() -> str:
+    return tr("Suelo ESTIMADO con un mapa global de 250 m: puede no coincidir con tu lote. Si tenés análisis de laboratorio o "
+              "conocés tu suelo, cargalo: siempre tiene prioridad.",
+              "ESTIMATED soil from a 250 m global map: it may not match your field. If you have a lab analysis or know your "
+              "soil, enter it: it always takes priority.")
 
 
 class SoilProvider:
@@ -149,15 +156,15 @@ class SoilProvider:
         try:
             cached = json.loads(path.read_text(encoding="utf-8"))
             if cached.get("empty"):  # ya se sabe que acá no hay suelo: no se vuelve a preguntar (SoilGrids tarda)
-                return None, [NO_SOIL]
-            return build_estimate(cached["values"], DataStatus.CACHED, SOURCE, datetime.fromisoformat(cached["at"]), NOTE), []
+                return None, [no_soil()]
+            return build_estimate(cached["values"], DataStatus.CACHED, SOURCE, datetime.fromisoformat(cached["at"]), note()), []
         except (OSError, json.JSONDecodeError, KeyError):
             pass
         reason = None
         if self.fetcher is None:
-            reason = "SoilGrids no está configurado"
+            reason = tr("SoilGrids no está configurado", "SoilGrids is not configured")
         elif self.cooldown and self.cooldown.active(self.now()):
-            reason = "SoilGrids falló hace poco; se vuelve a probar después"
+            reason = tr("SoilGrids falló hace poco; se vuelve a probar después", "SoilGrids failed recently; it will be retried later")
         else:
             try:
                 values = parse_soilgrids(self.fetcher(lat, lon))
@@ -170,8 +177,8 @@ class SoilProvider:
                 except OSError as exc:
                     logger.warning("No se pudo guardar el suelo en caché: %s", exc)
                 if empty:
-                    return None, [NO_SOIL]
-                return build_estimate(values, DataStatus.LIVE, SOURCE, self.now(), NOTE), []
+                    return None, [no_soil()]
+                return build_estimate(values, DataStatus.LIVE, SOURCE, self.now(), note()), []
             except UpstreamError as exc:
                 reason = exc.message
                 if self.cooldown:
@@ -179,10 +186,13 @@ class SoilProvider:
 
         site = self._sample(lat, lon)
         if site:
-            est = build_estimate(site, DataStatus.SAMPLE, "MUESTRA SIMULADA (formato de SoilGrids)", None,
-                                 "DATO DE MUESTRA: no es una estimación real de tu lote. " + NOTE)
-            return est, [f"Suelo: {reason}.", f"Se usa un suelo de MUESTRA SIMULADA del sitio '{site['site_id']}'."]
-        return None, [f"Suelo: {reason}. No se estimó el suelo: cargalo vos o pedí un análisis."]
+            est = build_estimate(site, DataStatus.SAMPLE, tr("MUESTRA SIMULADA (formato de SoilGrids)", "SIMULATED SAMPLE (SoilGrids format)"), None,
+                                 tr("DATO DE MUESTRA: no es una estimación real de tu lote. ", "SAMPLE DATA: it is not a real estimate of your field. ") + note())
+            return est, [
+                tr(f"Suelo: {reason}.", f"Soil: {reason}."),
+                tr(f"Se usa un suelo de MUESTRA SIMULADA del sitio '{site['site_id']}'.", f"Using SIMULATED SAMPLE soil from site '{site['site_id']}'."),
+            ]
+        return None, [tr(f"Suelo: {reason}. No se estimó el suelo: cargalo vos o pedí un análisis.", f"Soil: {reason}. Soil was not estimated: enter it yourself or request an analysis.")]
 
     def _sample(self, lat: float, lon: float) -> dict | None:
         if not self.sample_file or not self.sample_file.exists():

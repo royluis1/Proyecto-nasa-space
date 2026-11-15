@@ -27,22 +27,33 @@ from app.schemas.climate import (
 from app.services import climate_analysis as ca
 from app.services.et0 import compute_et0
 from app.services.power.service import ClimateData
+from app.i18n import tr
 
-LIMITATIONS = [
-    "NASA POWER describe el entorno regional (~50 km), no el lote: no reemplaza un pluviómetro ni una estación propia.",
-    "La meteorología de POWER es un reanálisis (MERRA-2 / GEOS): son datos modelados con asimilación de observaciones.",
-    "Los datos de los últimos días o meses provienen de productos preliminares y pueden corregirse.",
-    "La ET0 es una estimación FAO-56 con datos regionales; el déficit es climático (ET0 - lluvia), no del cultivo.",
-    "Años secos, húmedos y con estrés térmico se definen relativos al período pedido (|z| >= 1), no a una normal oficial.",
-    "El umbral de día caluroso (Tmax > 35 °C) es un supuesto a validar con un agrónomo local.",
-]
 
-LABELS = {
-    "serie_diaria": "modelado (reanálisis NASA POWER)",
-    "resumenes_y_tendencias": "estimado (calculado a partir de la serie)",
-    "et0_y_deficit": "estimado (FAO-56)",
-    "clasificacion_de_años": "supuesto (criterio z-score sobre el período)",
-}
+def limitations() -> list[str]:
+    return [
+        tr("NASA POWER describe el entorno regional (~50 km), no el lote: no reemplaza un pluviómetro ni una estación propia.",
+           "NASA POWER describes the regional environment (~50 km), not the field: it does not replace a rain gauge or your own station."),
+        tr("La meteorología de POWER es un reanálisis (MERRA-2 / GEOS): son datos modelados con asimilación de observaciones.",
+           "POWER meteorology is a reanalysis (MERRA-2 / GEOS): modeled data with observation assimilation."),
+        tr("Los datos de los últimos días o meses provienen de productos preliminares y pueden corregirse.",
+           "Data from the last few days or months comes from preliminary products and may be corrected."),
+        tr("La ET0 es una estimación FAO-56 con datos regionales; el déficit es climático (ET0 - lluvia), no del cultivo.",
+           "ET0 is a FAO-56 estimate with regional data; the deficit is climatic (ET0 - rain), not of the crop."),
+        tr("Años secos, húmedos y con estrés térmico se definen relativos al período pedido (|z| >= 1), no a una normal oficial.",
+           "Dry, wet and heat-stress years are defined relative to the requested period (|z| >= 1), not to an official normal."),
+        tr("El umbral de día caluroso (Tmax > 35 °C) es un supuesto a validar con un agrónomo local.",
+           "The hot-day threshold (Tmax > 35 °C) is an assumption to validate with a local agronomist."),
+    ]
+
+
+def labels() -> dict[str, str]:
+    return {
+        "serie_diaria": tr("modelado (reanálisis NASA POWER)", "modeled (NASA POWER reanalysis)"),
+        "resumenes_y_tendencias": tr("estimado (calculado a partir de la serie)", "estimated (computed from the series)"),
+        "et0_y_deficit": tr("estimado (FAO-56)", "estimated (FAO-56)"),
+        "clasificacion_de_años": tr("supuesto (criterio z-score sobre el período)", "assumed (z-score criterion over the period)"),
+    }
 
 
 def _f(x) -> float | None:
@@ -109,12 +120,12 @@ def build_summary(
             p: ParameterInfo(units=data.units.get(p, ""), longname=data.longnames.get(p, p), missing_days=data.missing.get(p, 0))
             for p in data.df.columns
         },
-        labels=LABELS,
+        labels=labels(),
         stats={
             "T2M": VariableStats(mean=_f(df["T2M"].mean()), min=_extreme(df["T2M"], "min"), max=_extreme(df["T2M"], "max"), units="°C"),
             "T2M_MAX": VariableStats(mean=_f(df["T2M_MAX"].mean()), min=_extreme(df["T2M_MAX"], "min"), max=_extreme(df["T2M_MAX"], "max"), units="°C"),
             "T2M_MIN": VariableStats(mean=_f(df["T2M_MIN"].mean()), min=_extreme(df["T2M_MIN"], "min"), max=_extreme(df["T2M_MIN"], "max"), units="°C"),
-            "PRECTOTCORR": VariableStats(mean=_f(df["PRECTOTCORR"].mean()), min=_extreme(df["PRECTOTCORR"], "min"), max=_extreme(df["PRECTOTCORR"], "max"), units="mm/día"),
+            "PRECTOTCORR": VariableStats(mean=_f(df["PRECTOTCORR"].mean()), min=_extreme(df["PRECTOTCORR"], "min"), max=_extreme(df["PRECTOTCORR"], "max"), units=tr("mm/día", "mm/day")),
         },
         precipitation=PrecipitationSummary(
             total_mm=_f(df["PRECTOTCORR"].sum(min_count=1)),
@@ -130,8 +141,8 @@ def build_summary(
             heat_stress_years=[int(y) for y in annual.index[annual["heat_stress"].astype(bool)]],
         ),
         trends=Trends(
-            precipitation=TrendResult(units="mm/año por década", **vars(p_trend)),
-            temperature=TrendResult(units="°C por década", **vars(t_trend)),
+            precipitation=TrendResult(units=tr("mm/año por década", "mm/yr per decade"), **vars(p_trend)),
+            temperature=TrendResult(units=tr("°C por década", "°C per decade"), **vars(t_trend)),
         ),
         variability=Variability(
             annual_precip_cv_pct=ca.coefficient_of_variation(complete["precip_mm"]),
@@ -142,7 +153,8 @@ def build_summary(
             mean_annual_precip_mm=_f(complete["precip_mm"].mean()),
             mean_annual_deficit_mm=_f(complete["deficit_mm"].mean()),
             months_with_deficit_pct=_f(deficit_months),
-            method="ET0 FAO-56 Penman-Monteith (Hargreaves si faltan datos) menos lluvia, por mes",
+            method=tr("ET0 FAO-56 Penman-Monteith (Hargreaves si faltan datos) menos lluvia, por mes",
+                      "ET0 FAO-56 Penman-Monteith (Hargreaves if data is missing) minus rain, by month"),
             pm_days_pct=_f((method == "PM").sum() / et0_days * 100) if et0_days else None,
         ),
         annual=[
@@ -179,7 +191,7 @@ def build_summary(
             invalid_months=int((~monthly["valid"]).sum()),
             incomplete_years=[int(y) for y in annual.index[~annual["complete"]]],
         ),
-        limitations=LIMITATIONS,
+        limitations=limitations(),
     )
 
 
@@ -189,11 +201,17 @@ def missing_warnings(summary: ClimateSummary) -> list[str]:
     for p, n in summary.missing.missing_by_parameter.items():
         if n:
             pct = n / summary.missing.total_days * 100 if summary.missing.total_days else 0
-            out.append(f"{p}: {n} días sin dato ({pct:.1f} %).")
+            out.append(tr(f"{p}: {n} días sin dato ({pct:.1f} %).", f"{p}: {n} days with no data ({pct:.1f} %)."))
     if summary.missing.invalid_months:
-        out.append(f"{summary.missing.invalid_months} meses con más de {ca.MAX_MISSING_MONTH_PCT:.0f} % de días sin lluvia registrada: no se usan.")
+        out.append(tr(
+            f"{summary.missing.invalid_months} meses con más de {ca.MAX_MISSING_MONTH_PCT:.0f} % de días sin lluvia registrada: no se usan.",
+            f"{summary.missing.invalid_months} months with more than {ca.MAX_MISSING_MONTH_PCT:.0f} % of days with no recorded rain: not used."))
     if summary.missing.incomplete_years:
-        out.append(f"Años incompletos (excluidos de tendencias y clasificación): {summary.missing.incomplete_years}.")
+        out.append(tr(
+            f"Años incompletos (excluidos de tendencias y clasificación): {summary.missing.incomplete_years}.",
+            f"Incomplete years (excluded from trends and classification): {summary.missing.incomplete_years}."))
     if summary.trends.precipitation.slope_per_decade is None:
-        out.append(f"Se necesitan al menos {ca.MIN_YEARS_TREND} años completos para calcular tendencias.")
+        out.append(tr(
+            f"Se necesitan al menos {ca.MIN_YEARS_TREND} años completos para calcular tendencias.",
+            f"At least {ca.MIN_YEARS_TREND} complete years are needed to compute trends."))
     return out
