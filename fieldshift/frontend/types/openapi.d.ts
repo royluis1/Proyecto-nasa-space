@@ -2041,7 +2041,12 @@ export interface components {
             /** Heat Stress Years */
             heat_stress_years: number[];
         };
-        /** HuertaPanel */
+        /**
+         * HuertaPanel
+         * @description Panel de huerta: escala de pocos m². Solo NASA POWER + pronóstico (Open-Meteo).
+         *
+         *     No lleva SMAP (9 km) ni MODIS/NDVI (250 m): esa resolución no puede describir una huerta.
+         */
         HuertaPanel: {
             /** Field Id */
             field_id: string | null;
@@ -2056,7 +2061,6 @@ export interface components {
             heat: components["schemas"]["HeatInfo"];
             past_rain: components["schemas"]["RainSummary"] | null;
             forecast: components["schemas"]["Forecast"] | null;
-            vegetation: components["schemas"]["VegetationInfo"] | null;
             /** Alerts */
             alerts: components["schemas"]["Alert"][];
             /** Tips */
@@ -3709,16 +3713,6 @@ export interface components {
             max: components["schemas"]["Extreme"];
             /** Units */
             units: string;
-        };
-        /** VegetationInfo */
-        VegetationInfo: {
-            /** Mean Ndvi */
-            mean_ndvi: number | null;
-            /** Cover Pct */
-            cover_pct: number | null;
-            /** Text */
-            text: string;
-            source: components["schemas"]["SourceInfo"];
         };
         /**
          * VegetationInput

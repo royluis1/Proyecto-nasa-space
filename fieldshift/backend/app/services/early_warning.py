@@ -3,8 +3,9 @@
 Combina:
 - NASA POWER (modelado): clima de los últimos 10 años (heladas, calor, ET0 para el riego) y lluvia reciente.
 - Open-Meteo (pronóstico, NO es NASA): lluvia y temperaturas de los próximos días.
-- NASA SMAP (si está): humedad del suelo frente a lo normal.
-- MODIS NDVI: verdor de la zona (solo en el panel de huerta).
+- NASA SMAP (si está): humedad del suelo frente a lo normal (SOLO en el perfil agricultor; 9 km).
+
+El panel de huerta (pocos m²) usa SOLO NASA POWER y el pronóstico: su escala no admite SMAP (9 km) ni MODIS (250 m).
 
 Los umbrales son supuestos de diseño, simples y explicables; se muestran en la documentación.
 """
@@ -29,9 +30,8 @@ from app.schemas.forecast import (
     Profile,
     RainSummary,
     SourceInfo,
-    VegetationInfo,
 )
-from app.schemas.satellite import SoilMoistureRequest, VegetationRequest
+from app.schemas.satellite import SoilMoistureRequest
 from app.services.climate_summary import build_summary
 from app.services.engine.service import climate_period
 from app.services.forecast.open_meteo import ForecastService
@@ -421,36 +421,15 @@ class EarlyWarningService:
 
         past, w = self.past_rain(lat, lon, hist.df)
         warnings += w
-        anomaly, smap_src, w = self._smap(field.id if field else None, lat, lon)
-        warnings += w
 
-        vegetation = None
-        if self.satellite is not None:
-            try:
-                vreq = VegetationRequest(field_id=field.id) if field else VegetationRequest(latitude=lat, longitude=lon)
-                v, vw = self.satellite.vegetation(vreq)
-                level = (tr("poca vegetación", "little vegetation") if (v.mean_ndvi or 0) < 0.3
-                         else tr("vegetación moderada", "moderate vegetation") if (v.mean_ndvi or 0) < 0.5
-                         else tr("mucha vegetación", "a lot of vegetation"))
-                cover = round(v.cover_fraction_mean * 100, 0) if v.cover_fraction_mean is not None else None
-                vegetation = VegetationInfo(
-                    mean_ndvi=v.mean_ndvi, cover_pct=cover,
-                    text=tr(f"La zona alrededor tiene {level} (NDVI medio {v.mean_ndvi:.2f}). Es un píxel de 250 m: describe el "
-                            "entorno, no tu huerta.",
-                            f"The surrounding area has {level} (mean NDVI {v.mean_ndvi:.2f}). It is a 250 m pixel: it describes the "
-                            "surroundings, not your garden.") if v.mean_ndvi is not None else tr("Sin datos de verdor para la zona.", "No greenness data for the area."),
-                    source=trace_source("NASA MODIS (NDVI)", v.trace),
-                )
-                warnings += [f"NDVI: {x}" for x in vw]
-            except (NoDataError, InvalidInputError) as exc:
-                warnings.append(tr(f"NDVI no disponible: {exc.message}", f"NDVI unavailable: {exc.message}"))
-
+        # Escala huerta (pocos m²): solo NASA POWER y el pronóstico (Open-Meteo). Nada de SMAP (9 km) ni MODIS (250 m):
+        # su resolución no puede hablar de una huerta. Ver docs/PERFILES.md.
         tips = huerta_tips(frost, heat, irrigation, month, lat)
-        sources = [src] + ([fc.source] if fc else []) + ([smap_src] if smap_src else []) + ([vegetation.source] if vegetation else [])
+        sources = [src] + ([fc.source] if fc else [])
         return HuertaPanel(
             field_id=field.id if field else None, name=field.name if field else None, latitude=lat, longitude=lon,
-            frost=frost, irrigation=irrigation, heat=heat, past_rain=past, forecast=fc, vegetation=vegetation,
-            alerts=build_alerts("huerta", fc, past, anomaly), tips=tips, sources=sources, warnings=list(dict.fromkeys(warnings)),
+            frost=frost, irrigation=irrigation, heat=heat, past_rain=past, forecast=fc,
+            alerts=build_alerts("huerta", fc, past, None), tips=tips, sources=sources, warnings=list(dict.fromkeys(warnings)),
         )
 
 

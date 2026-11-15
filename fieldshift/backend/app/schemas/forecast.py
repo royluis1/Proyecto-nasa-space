@@ -112,14 +112,12 @@ class HeatInfo(BaseModel):
     source: SourceInfo
 
 
-class VegetationInfo(BaseModel):
-    mean_ndvi: float | None
-    cover_pct: float | None
-    text: str
-    source: SourceInfo
-
-
 class HuertaPanel(BaseModel):
+    """Panel de huerta: escala de pocos m². Solo NASA POWER + pronóstico (Open-Meteo).
+
+    No lleva SMAP (9 km) ni MODIS/NDVI (250 m): esa resolución no puede describir una huerta.
+    """
+
     field_id: str | None
     name: str | None
     latitude: float
@@ -129,7 +127,6 @@ class HuertaPanel(BaseModel):
     heat: HeatInfo
     past_rain: RainSummary | None
     forecast: Forecast | None
-    vegetation: VegetationInfo | None
     alerts: list[Alert]
     tips: list[str]
     sources: list[SourceInfo]

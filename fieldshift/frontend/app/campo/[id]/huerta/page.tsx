@@ -5,7 +5,6 @@ import { AlertList } from "@/components/alerts/alert-list";
 import { ForecastTable } from "@/components/alerts/forecast-table";
 import { useCampo } from "@/components/campo/campo-provider";
 import { TodaySatellite } from "@/components/map/today-satellite";
-import { HeatStressCard } from "@/components/satellite/heat-stress-card";
 import { PageHeader } from "@/components/page-header";
 import { PageNotes } from "@/components/layout/page-notes";
 import { WeatherAnimation } from "@/components/map/weather-animation-loader";
@@ -94,17 +93,13 @@ function Panel({ r }: { r: ApiResult<HuertaPanel> }) {
         <WeatherAnimation lat={h.latitude} lon={h.longitude} />
       </Disclosure>
 
-      <Disclosure variant="card" label={tr("Ver más sobre mi zona: verdor, calor e imagen satelital", "More about my area: greenness, heat and satellite image")} contentClassName="space-y-6">
-        {h.vegetation && (
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">{tr("Verdor de la zona", "Greenness in the area")}</h3>
-            <p>{h.vegetation.text}</p>
-            <SourceLine source={h.vegetation.source} demo={r.demo} />
-          </div>
-        )}
-        {field && <HeatStressCard fieldId={field.id} compact />}
-        {field && <TodaySatellite field={field} title={tr("Tu zona hoy, vista desde el espacio", "Your area today, seen from space")} />}
-      </Disclosure>
+      {/* Escala huerta: solo imagen de contexto (GIBS). Sin NDVI (MODIS, 250 m) ni calor (ECOSTRESS, 70 m): su resolución no habla de una huerta. */}
+      {field && (
+        <Disclosure variant="card" label={tr("Ver una imagen satelital de mi zona (contexto)", "See a satellite image of my area (context)")} contentClassName="space-y-6">
+          <TodaySatellite field={field} title={tr("Tu zona hoy, vista desde el espacio", "Your area today, seen from space")} />
+          <p className="text-sm text-muted-foreground">{tr("Imagen de contexto de la zona (NASA GIBS). No mide tu huerta: es una referencia visual.", "Context image of the area (NASA GIBS). It does not measure your garden: it is a visual reference.")}</p>
+        </Disclosure>
+      )}
 
       <PageNotes>
         <WarningsList warnings={friendlyWarnings(r.meta.warnings)} />

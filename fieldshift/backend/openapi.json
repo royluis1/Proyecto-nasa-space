@@ -6327,16 +6327,6 @@
        }
       ]
      },
-     "vegetation": {
-      "anyOf": [
-       {
-        "$ref": "#/components/schemas/VegetationInfo"
-       },
-       {
-        "type": "null"
-       }
-      ]
-     },
      "alerts": {
       "items": {
        "$ref": "#/components/schemas/Alert"
@@ -6377,13 +6367,13 @@
      "heat",
      "past_rain",
      "forecast",
-     "vegetation",
      "alerts",
      "tips",
      "sources",
      "warnings"
     ],
-    "title": "HuertaPanel"
+    "title": "HuertaPanel",
+    "description": "Panel de huerta: escala de pocos m². Solo NASA POWER + pronóstico (Open-Meteo).\n\nNo lleva SMAP (9 km) ni MODIS/NDVI (250 m): esa resolución no puede describir una huerta."
    },
    "Impact": {
     "properties": {
@@ -10724,47 +10714,6 @@
      "units"
     ],
     "title": "VariableStats"
-   },
-   "VegetationInfo": {
-    "properties": {
-     "mean_ndvi": {
-      "anyOf": [
-       {
-        "type": "number"
-       },
-       {
-        "type": "null"
-       }
-      ],
-      "title": "Mean Ndvi"
-     },
-     "cover_pct": {
-      "anyOf": [
-       {
-        "type": "number"
-       },
-       {
-        "type": "null"
-       }
-      ],
-      "title": "Cover Pct"
-     },
-     "text": {
-      "type": "string",
-      "title": "Text"
-     },
-     "source": {
-      "$ref": "#/components/schemas/SourceInfo"
-     }
-    },
-    "type": "object",
-    "required": [
-     "mean_ndvi",
-     "cover_pct",
-     "text",
-     "source"
-    ],
-    "title": "VegetationInfo"
    },
    "VegetationInput": {
     "properties": {

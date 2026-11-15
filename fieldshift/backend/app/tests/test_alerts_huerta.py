@@ -201,9 +201,13 @@ def test_panel_de_huerta_con_power_del_csv_y_pronostico(ews):
     assert "1 mm = 1 litro" in p.irrigation.basis
     assert p.forecast and p.forecast.source.is_nasa is False
     assert p.alerts[0].kind == "helada" and "manta" in p.alerts[0].message
-    assert p.vegetation and "250 m" in p.vegetation.text
+    # Escala huerta: nada de SMAP (9 km) ni MODIS (250 m); ninguna alerta de suelo seco satelital.
+    assert not hasattr(p, "vegetation")
+    assert all(a.kind != "suelo_seco" for a in p.alerts)
     assert p.tips and any("campo1.csv" in w for w in p.warnings)
-    assert {s.name for s in p.sources} >= {"NASA POWER", "NASA SMAP", "NASA MODIS (NDVI)"}
+    src_names = {s.name for s in p.sources}
+    assert "NASA POWER" in src_names
+    assert not any(n in src_names for n in ("NASA SMAP", "NASA MODIS (NDVI)"))
 
 
 def test_alertas_del_agricultor_y_lluvia_pasada(ews):
