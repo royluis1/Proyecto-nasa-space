@@ -1,6 +1,7 @@
 "use client";
 
 import { PROFILES, readProfile } from "@/lib/profile";
+import { useProfile } from "@/hooks/use-profile";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -330,8 +331,13 @@ interface Props {
 export function FieldForm({ mode, initial = null, onSaved }: Props) {
   const router = useRouter();
   const uid = useId();
-  const crops = useAsync<Crop[]>(async (signal) => (await api.crops("campo", { signal })).data, []);
+  // Perfil huerta: formulario simple (m², tipo de tierra, tipo de riego, cultivo anterior). No rompe el de agricultor.
+  const isHuerta = useProfile() === "huerta";
+  const crops = useAsync<Crop[]>(async (signal) => (await api.crops(isHuerta ? "huerta" : "campo", { signal })).data, [isHuerta]);
   const [s, setS] = useState<FormState>(() => toFormState(initial));
+  // Solo huerta: tipo de riego (se guarda como "tengo riego") y compost, para la estimación cualitativa de nutrientes.
+  const [irrigationType, setIrrigationType] = useState<string>(initial?.irrigated ? "goteo" : "");
+  const [compost, setCompost] = useState(false);
   // true mientras la superficie sea la calculada con el lote dibujado (si se escribe otra, deja de serlo)
   const [areaFromDrawing, setAreaFromDrawing] = useState(false);
   // Archivo del análisis de laboratorio: queda a mano en esta página (todavía no se sube al servidor).
@@ -350,6 +356,11 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
   const [soil, setSoil] = useState<SoilLookup>({ status: "idle" });
 
   const cropOptions = useMemo(() => [...(crops.data ?? [])].filter((c) => !c.is_cover_crop).sort((a, b) => a.name.localeCompare(b.name, appLocale())), [crops.data]);
+  // Huerta: estimación cualitativa de nutrientes según el cultivo anterior (leguminosa deja N) y el compost.
+  const prevCrop = (crops.data ?? []).find((c) => c.id === s.previous[0]);
+  const nitrogenEst = prevCrop?.fixes_nitrogen ? tr("medio a alto (el cultivo anterior era leguminosa)", "medium to high (the previous crop was a legume)")
+    : s.previous[0] ? tr("bajo a medio", "low to medium") : tr("sin dato (cargá el cultivo anterior)", "no data (add the previous crop)");
+  const omEst = compost ? tr("algo mayor por el compost", "somewhat higher thanks to the compost") : tr("según tu suelo (sin aporte)", "as per your soil (no amendment)");
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => {
     setSavedAt(null);
     setS((p) => ({ ...p, [k]: v }));
@@ -529,9 +540,11 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
                 aria-describedby={describedBy(id("name"), s.autoName && s.name === s.autoName ? "x" : undefined, errors.name)} autoComplete="off" placeholder={tr("Ej.: Lote Norte", "E.g.: North Plot")}
               />
             </Field>
-            <Field id={id("farm")} label={tr("Establecimiento (opcional)", "Farm (optional)")}>
-              <Input id={id("farm")} value={s.farm_name} onChange={(e) => set("farm_name", e.target.value)} autoComplete="off" placeholder={tr("Ej.: La Esperanza", "E.g.: La Esperanza")} />
-            </Field>
+            {!isHuerta && (
+              <Field id={id("farm")} label={tr("Establecimiento (opcional)", "Farm (optional)")}>
+                <Input id={id("farm")} value={s.farm_name} onChange={(e) => set("farm_name", e.target.value)} autoComplete="off" placeholder={tr("Ej.: La Esperanza", "E.g.: La Esperanza")} />
+              </Field>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -539,10 +552,11 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
       {/* 2. Análisis de suelo */}
       <Card>
         <CardHeader>
-          <CardTitle as={h} className="flex items-center gap-2"><FlaskConical aria-hidden className="size-5 text-primary" /> {tr("2. Análisis de suelo", "2. Soil test")}</CardTitle>
-          <CardDescription>{tr("Se completa solo con el suelo estimado del punto. Si tenés un análisis de laboratorio, marcalo y cargá tus valores: siempre ganan los tuyos.", "It fills in automatically with the point's estimated soil. If you have a lab test, check it and enter your values: yours always win.")}</CardDescription>
+          <CardTitle as={h} className="flex items-center gap-2"><FlaskConical aria-hidden className="size-5 text-primary" /> {isHuerta ? tr("2. Tu tierra", "2. Your soil") : tr("2. Análisis de suelo", "2. Soil test")}</CardTitle>
+          <CardDescription>{isHuerta ? tr("Elegí el tipo de tierra de tu cantero. El resto es orientativo y se estima.", "Choose your bed's soil type. The rest is indicative and estimated.") : tr("Se completa solo con el suelo estimado del punto. Si tenés un análisis de laboratorio, marcalo y cargá tus valores: siempre ganan los tuyos.", "It fills in automatically with the point's estimated soil. If you have a lab test, check it and enter your values: yours always win.")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {!isHuerta && (
           <div className="space-y-3 rounded-xl border p-4">
             <div className="flex items-center justify-between gap-4">
               <div>
@@ -586,6 +600,7 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
               </div>
             )}
           </div>
+          )}
           <SoilEstimateBox lookup={soil} hasPoint={Boolean(s.point)} lab={s.lab_analysis} />
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
@@ -600,6 +615,7 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
                 ))}
               </Select>
             </Field>
+            {!isHuerta && (<>
             <Field
               id={id("om")} label={tr("Materia orgánica", "Organic matter")}
               badge={s.soilAuto.organic_matter ? <EstimatedTag /> : undefined}
@@ -628,7 +644,27 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
                 <option value="alto">{tr("Excesivo: el agua se va rápido", "Excessive: water drains fast")}</option>
               </Select>
             </Field>
+            </>)}
           </div>
+          {isHuerta && (
+            <div className="space-y-3 rounded-xl border p-4">
+              <label className="flex items-center justify-between gap-4">
+                <span>
+                  <span className="font-medium">{tr("Le pongo compost o abono orgánico", "I add compost or organic matter")}</span>
+                  <span className="block text-sm text-muted-foreground">{tr("Mejora la materia orgánica y los nutrientes del cantero.", "It improves the bed's organic matter and nutrients.")}</span>
+                </span>
+                <Switch checked={compost} onCheckedChange={setCompost} />
+              </label>
+              <div className="border-t pt-3 text-sm">
+                <p className="font-medium">{tr("Nutrientes estimados del cantero", "Estimated bed nutrients")}</p>
+                <p className="text-muted-foreground">
+                  {tr("Nitrógeno", "Nitrogen")}: <strong className="text-foreground">{nitrogenEst}</strong>
+                  {" · "}{tr("Materia orgánica", "Organic matter")}: <strong className="text-foreground">{omEst}</strong>
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{tr("Estimado a partir del cultivo anterior y el compost: validá con un análisis de suelo. No lo mide ningún satélite.", "Estimated from the previous crop and compost: validate with a soil test. No satellite measures it.")}</p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -640,8 +676,17 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field id={id("area")} label={tr("Superficie (hectáreas)", "Area (hectares)")} error={errors.area_ha} hint={areaFromDrawing ? tr("Calculada con el lote que dibujaste: corregila si hace falta.", "Calculated from the plot you drew: correct it if needed.") : tr("Por ejemplo: 250. Si dibujás el lote en el mapa, se calcula sola.", "For example: 250. If you draw the plot on the map, it is calculated automatically.")}>
-              <Input id={id("area")} inputMode="decimal" value={s.area_ha} onChange={(e) => { setAreaFromDrawing(false); set("area_ha", e.target.value); }} aria-invalid={Boolean(errors.area_ha)} aria-describedby={describedBy(id("area"), "x", errors.area_ha)} />
+            <Field id={id("area")} label={isHuerta ? tr("Superficie (m²)", "Area (m²)") : tr("Superficie (hectáreas)", "Area (hectares)")} error={errors.area_ha} hint={isHuerta ? tr("Por ejemplo: 50. El tamaño de tu huerta en metros cuadrados.", "For example: 50. Your garden size in square meters.") : areaFromDrawing ? tr("Calculada con el lote que dibujaste: corregila si hace falta.", "Calculated from the plot you drew: correct it if needed.") : tr("Por ejemplo: 250. Si dibujás el lote en el mapa, se calcula sola.", "For example: 250. If you draw the plot on the map, it is calculated automatically.")}>
+              <Input id={id("area")} inputMode="decimal"
+                value={isHuerta ? (s.area_ha.trim() && Number.isFinite(Number(s.area_ha.replace(",", "."))) ? String(Math.round(Number(s.area_ha.replace(",", ".")) * 10000)) : "") : s.area_ha}
+                onChange={(e) => {
+                  setAreaFromDrawing(false);
+                  if (isHuerta) {
+                    const m2 = Number(e.target.value.replace(",", "."));
+                    set("area_ha", e.target.value.trim() === "" || !Number.isFinite(m2) ? "" : String(m2 / 10000));
+                  } else set("area_ha", e.target.value);
+                }}
+                aria-invalid={Boolean(errors.area_ha)} aria-describedby={describedBy(id("area"), "x", errors.area_ha)} />
             </Field>
             <Field id={id("crop")} label={tr("Cultivo actual", "Current crop")} hint={crops.error ? tr("No se pudo cargar la lista de cultivos.", "The crop list could not be loaded.") : tr("El de esta campaña o el último que sembraste.", "This season's crop or the last one you planted.")}>
               {crops.loading && !crops.data ? (
@@ -657,6 +702,20 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
             </Field>
           </div>
 
+          {isHuerta ? (
+            <Field id={id("prev")} label={tr("Cultivo anterior", "Previous crop")} hint={tr("Lo que tenías antes en ese cantero: sirve para estimar los nutrientes.", "What you had before in that bed: it helps estimate nutrients.")}>
+              {crops.loading && !crops.data ? (
+                <Skeleton className="h-11 w-full" />
+              ) : (
+                <Select id={id("prev")} value={s.previous[0] ?? ""} onChange={(e) => set("previous", e.target.value ? [e.target.value] : [])}>
+                  <option value="">{tr("No lo sé / cantero nuevo", "I don't know / new bed")}</option>
+                  {cropOptions.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </Select>
+              )}
+            </Field>
+          ) : (
           <fieldset className="space-y-3">
             <legend className="text-base font-medium">{tr("Rotación histórica", "Crop history")}</legend>
             <p className="text-sm text-muted-foreground">
@@ -683,6 +742,7 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
               <Plus aria-hidden /> {tr("Agregar campaña anterior", "Add previous season")}
             </Button>
           </fieldset>
+          )}
         </CardContent>
       </Card>
 
@@ -693,6 +753,18 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
           <CardDescription>{tr("Todo es opcional. Si no sabés un dato, dejalo en blanco.", "Everything is optional. If you don't know something, leave it blank.")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {isHuerta ? (
+            <Field id={id("riego")} label={tr("Tipo de riego", "Irrigation type")} hint={tr("Cómo regás la huerta.", "How you water the garden.")}>
+              <Select id={id("riego")} value={irrigationType} onChange={(e) => { setIrrigationType(e.target.value); set("irrigated", e.target.value !== "" && e.target.value !== "secano"); }}>
+                <option value="">{tr("No lo sé", "I don't know")}</option>
+                <option value="secano">{tr("Sin riego (solo lluvia)", "No irrigation (rain only)")}</option>
+                <option value="regadera">{tr("Regadera o manguera", "Watering can or hose")}</option>
+                <option value="goteo">{tr("Goteo", "Drip")}</option>
+                <option value="aspersion">{tr("Aspersión", "Sprinkler")}</option>
+              </Select>
+            </Field>
+          ) : (
+          <>
           <div className="flex items-center justify-between gap-4 rounded-xl border p-4">
             <div>
               <Label htmlFor={id("irr")}>{tr("Tengo riego disponible", "I have irrigation available")}</Label>
@@ -713,6 +785,8 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
               </Select>
             </Field>
           </div>
+          </>
+          )}
         </CardContent>
       </Card>
 
