@@ -17,9 +17,12 @@ solo faltan los pasos de abajo.
 
 ### 2. Crear las tablas
 - En el proyecto: **SQL Editor** → **New query**.
-- Pegá **todo** el contenido de `fieldshift/supabase/schema.sql` y tocá **Run**.
-- Crea las tablas `perfiles`, `lotes` y `lote_historial`, con seguridad por fila (cada
-  usuario ve solo lo suyo). Se puede correr más de una vez sin romper nada.
+- Abrí el archivo `fieldshift/supabase/schema.sql`, copiá **su contenido** (no la ruta) y pegalo
+  en el editor. Tocá **Run**. Ojo con pegar caracteres de más: si queda una letra suelta al final,
+  Postgres tira un error de sintaxis.
+- Crea las tablas `lotes` y `lote_historial`, con seguridad por fila (cada usuario ve solo lo suyo).
+  Se puede correr más de una vez sin romper nada. El login no necesita nada de acá: ya viene con
+  Supabase, y el nombre del usuario se guarda en su cuenta (`user_metadata`).
 
 ### 3. Copiar las dos claves públicas
 - **Settings → API** (o **Project Settings → API keys**).
