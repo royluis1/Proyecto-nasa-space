@@ -1,6 +1,6 @@
 # Calendario, escenarios y reporte: guía de uso
 
-> FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
+> AgroOrbit es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
 
 Tres pantallas del campo trabajan juntas. **Escenarios** muestra qué rotación aguanta mejor. **Calendario** muestra mes a mes qué implica esa rotación. **Reporte** junta todo en un plan para revisar con el técnico.
 

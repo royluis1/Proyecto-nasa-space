@@ -2,7 +2,7 @@
 
 ## Dentro de la aplicación: no decide ningún modelo de IA
 
-FieldShift **no usa modelos de IA para calcular ni recomendar**. Todo el resultado sale de reglas y estadística que se pueden
+AgroOrbit **no usa modelos de IA para calcular ni recomendar**. Todo el resultado sale de reglas y estadística que se pueden
 revisar paso a paso:
 
 - **Puntaje de rotaciones:** reglas explícitas que suman y restan puntos por motivos concretos (por ejemplo, "monocultivo: −10"
@@ -32,8 +32,17 @@ Los requisitos, las prioridades del producto, los criterios de honestidad de dat
 vinieron del equipo. Los datos de la NASA se descargaron de sus servicios oficiales; ningún dato fue generado por IA, y las
 muestras simuladas están rotuladas como tales.
 
+### Diseño visual con Lovable
+
+El diseño de la interfaz (colores, tipografías, portada, logo) se armó con **Lovable**, una herramienta de diseño con IA, y
+después se pasó a esta app. Lo que se tomó de Lovable es solo el aspecto: sus números de ejemplo (humedad, NDVI, lluvias y
+puntajes escritos a mano) **no se usan**; los datos salen de la NASA y del motor de AgroOrbit.
+
+La **foto aérea de la portada** viene de ese proyecto de diseño y es **ilustrativa**: no es una foto de un campo de San Luis
+ni un dato.
+
 ## Qué sigue necesitando juicio humano
 
 - Validar el catálogo de cultivos (tolerancias, raíces, ingreso relativo) con INTA y agrónomos de la zona.
-- Decidir la siembra: FieldShift ordena opciones, no reemplaza al ingeniero agrónomo ni al análisis de suelo.
+- Decidir la siembra: AgroOrbit ordena opciones, no reemplaza al ingeniero agrónomo ni al análisis de suelo.
 - Interpretar los datos regionales (9 km, 50 km) a la luz de lo que el productor sabe de su lote.

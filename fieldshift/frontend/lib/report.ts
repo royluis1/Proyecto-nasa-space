@@ -74,7 +74,7 @@ export function buildReportModel(i: ReportInput): ReportModel {
   climate.push(["Vegetación (MODIS NDVI)", veg ? `${num(veg.bare_soil_fraction * 100)} % del tiempo con poca vegetación${veg.period ? ` (${veg.period})` : ""}` : "no disponible"]);
 
   return {
-    title: `FieldShift · Plan de rotación: ${field.name}`,
+    title: `AgroOrbit · Plan de rotación: ${field.name}`,
     generated: fmtDate(i.generatedAt),
     generatedIso: i.generatedAt.toISOString(),
     origin: i.origin,
@@ -329,7 +329,7 @@ export async function reportPdf(m: ReportModel): Promise<JsPdf> {
     doc.setPage(p);
     doc.setFontSize(8);
     doc.setTextColor(120, 120, 120);
-    doc.text(pdfSafe(`FieldShift · ${m.generated} · Herramienta de apoyo: no reemplaza a un ingeniero agrónomo`), M, H - 8);
+    doc.text(pdfSafe(`AgroOrbit · ${m.generated} · Herramienta de apoyo: no reemplaza a un ingeniero agrónomo`), M, H - 8);
     doc.text(`${p} / ${pages}`, W - M, H - 8, { align: "right" });
   }
   return doc;

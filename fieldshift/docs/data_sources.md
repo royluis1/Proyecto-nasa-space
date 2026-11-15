@@ -2,7 +2,7 @@
 
 > Pendiente de completar: endpoints exactos, licencias y citas formales. Lo marcado con ⚠️ no está verificado.
 
-| Fuente | Producto | Resolución | Uso en FieldShift | Etiqueta | Estado |
+| Fuente | Producto | Resolución | Uso en AgroOrbit | Etiqueta | Estado |
 |---|---|---|---|---|---|
 | NASA POWER | API diaria por punto (`https://power.larc.nasa.gov/api/temporal/daily/point`), comunidad AG: T2M, T2M_MAX, T2M_MIN, PRECTOTCORR, RH2M, WS2M, ALLSKY_SFC_SW_DWN, PS. Disponible desde 1981 hasta casi tiempo real; máximo 20 parámetros por pedido | Meteorología ~0.5° x 0.625° (MERRA-2 / GEOS FP-IT); solar ~1° (CERES) | Clima regional, ET₀, déficit, escenarios, monitor | modelado (reanálisis) | **Integrado**, con caché y fallback |
 | MODIS | **MOD13Q1 v6.1** (NDVI, compuesto 16 días); MYD13Q1 y MOD13A1 como alternativas | 250 m (500 m en A1) | Vigor, cobertura, barbechos, tendencia de biomasa, campañas | observado | **Integrado** (AppEEARS, CSV/GeoTIFF, muestra) |
@@ -14,7 +14,7 @@
 
 ### Zonas, suelo y humedad satelital
 
-| Fuente | Producto | Resolución | Licencia | Uso en FieldShift | Etiqueta | Estado |
+| Fuente | Producto | Resolución | Licencia | Uso en AgroOrbit | Etiqueta | Estado |
 |---|---|---|---|---|---|---|
 | **IGN** (Instituto Geográfico Nacional) | Capa `ign:provincia` del servicio WFS wms.ign.gob.ar | Oficial (simplificada a ~1 km para el mapa) | Reutilización y redistribución libres según el Art. 2 de la Ley 27.275 (lo declara el propio servicio) | Límites provinciales del mapa | observado | **En uso** (`data/samples/provincias_argentina.geojson`, descargada el 14/11/2026; al sur de 60° S se recorta solo para la vista) |
 | **Natural Earth** | Admin 1 – States, Provinces, 1:10m | 1:10.000.000 (bordes aproximados) | Dominio público | Respaldo si no se puede bajar el IGN (`build_provinces.py` sin `--source`) | observado | Respaldo |

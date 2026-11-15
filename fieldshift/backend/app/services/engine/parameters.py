@@ -150,8 +150,8 @@ SOURCES = {
     ),
     "catalogo-fieldshift": DataSource(
         id="catalogo-fieldshift",
-        name="Catálogo de cultivos de FieldShift",
-        provider="FieldShift (app/data/crops.json)",
+        name="Catálogo de cultivos de AgroOrbit",
+        provider="AgroOrbit (app/data/crops.json)",
         spatial_resolution="San Luis, Argentina",
         temporal_resolution="no aplica",
         license="Editable por el equipo",
@@ -284,7 +284,7 @@ ASSUMPTIONS = [
     Assumption(
         id="atributos-cultivo",
         text="Atributos cualitativos del catálogo (tolerancias, aportes, ingreso, mercado).",
-        source="Catálogo de FieldShift, a validar con INTA",
+        source="Catálogo de AgroOrbit, a validar con INTA",
         used_in=["A", "S", "R", "I", "E"],
     ),
     Assumption(

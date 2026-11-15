@@ -1,4 +1,4 @@
-/** Qué fuente de datos se usa para qué, según el perfil, y en qué estado está cada una en FieldShift. */
+/** Qué fuente de datos se usa para qué, según el perfil, y en qué estado está cada una en AgroOrbit. */
 import type { Profile } from "./profile";
 
 export type SourceStatus = "integrado" | "proximamente";
@@ -33,7 +33,7 @@ export const SOURCE_MAP: Record<Profile, SourceUse[]> = {
   ],
 };
 
-/** Los tres enfoques de FieldShift y dónde está cada uno en la app. */
+/** Los tres enfoques de AgroOrbit y dónde está cada uno en la app. */
 export const APPROACHES = [
   {
     id: "riesgo",

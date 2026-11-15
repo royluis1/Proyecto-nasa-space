@@ -72,7 +72,7 @@ def _to_csv(report: Report, origin_label: str) -> str:
     rotations = {r.id: r for r in report.rotations}
     buf = io.StringIO()
     w = csv.writer(buf)
-    w.writerow(["# FieldShift: reporte para revisar con un ingeniero agrónomo"])
+    w.writerow(["# AgroOrbit: reporte para revisar con un ingeniero agrónomo"])
     w.writerow(["# " + DISCLAIMER])
     w.writerow(["# Generado", report.generated_at.isoformat()])
     w.writerow(["# Origen del clima", origin_label])

@@ -113,7 +113,7 @@ export async function addHistorial(registro: NuevoHistorial): Promise<HistorialR
 }
 
 /**
- * El lote de la cuenta que corresponde a un campo de FieldShift (se guarda su id en datos.field_id).
+ * El lote de la cuenta que corresponde a un campo de AgroOrbit (se guarda su id en datos.field_id).
  * Devuelve null si todavía no se guardó.
  */
 export async function findLoteByFieldId(fieldId: string): Promise<LoteRow | null> {

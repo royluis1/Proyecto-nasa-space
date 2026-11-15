@@ -8,7 +8,7 @@ describe("exportación del reporte", async () => {
   it("el CSV lleva BOM, advertencia, origen y una fila por rotación", () => {
     const csv = buildCsv("Campo Este", "DATOS DE EJEMPLO", data, data.evaluations);
     expect(csv.charCodeAt(0)).toBe(0xfeff);
-    expect(csv).toContain("# FieldShift es una herramienta de apoyo a decisiones");
+    expect(csv).toContain("# AgroOrbit es una herramienta de apoyo a decisiones");
     expect(csv).toContain("# Origen de los datos: DATOS DE EJEMPLO");
     const rows = csv.trim().split("\n").filter((l) => l.trim() && !/^\uFEFF?"?#/.test(l));
     expect(rows[0]).toContain("puesto,rotacion_id");

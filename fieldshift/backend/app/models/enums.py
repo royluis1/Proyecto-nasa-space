@@ -37,7 +37,7 @@ _ORIGIN_LABELS = {
 
 
 class PowerParameter(StrEnum):
-    """Parámetros diarios de NASA POWER admitidos por FieldShift."""
+    """Parámetros diarios de NASA POWER admitidos por AgroOrbit."""
 
     T2M = "T2M"  # temperatura media a 2 m
     T2M_MAX = "T2M_MAX"

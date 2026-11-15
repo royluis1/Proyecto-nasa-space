@@ -122,7 +122,7 @@ describe("cliente de la API", () => {
 });
 
 describe("mensajes de error para el productor", () => {
-  it("sin red", () => expect(describeError(new ApiError("No se pudo conectar con el servidor de FieldShift.", 0, "NETWORK"))).toMatch(/Revisá tu conexión/));
+  it("sin red", () => expect(describeError(new ApiError("No se pudo conectar con el servidor de AgroOrbit.", 0, "NETWORK"))).toMatch(/Revisá tu conexión/));
   it("validación", () =>
     expect(describeError(new ApiError("inválido", 422, "VALIDATION_ERROR", [{ campo: "body.area_ha", mensaje: "Debe ser mayor que 0" }]))).toBe("Revisá los datos: body.area_ha: Debe ser mayor que 0"));
   it("error común", () => expect(describeError(new Error("hola"))).toBe("hola"));

@@ -1,8 +1,8 @@
-# FieldShift · Backend (FastAPI)
+# AgroOrbit · Backend (FastAPI)
 
-API de FieldShift para el NASA Space Apps Challenge 2026 (*Field Shift: Adapting Farms with NASA Data*).
+API de AgroOrbit para el NASA Space Apps Challenge 2026 (*Field Shift: Adapting Farms with NASA Data*).
 
-> FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
+> AgroOrbit es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
 
 ## Estado de esta versión
 

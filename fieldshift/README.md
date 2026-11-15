@@ -1,9 +1,9 @@
-# FieldShift
+# AgroOrbit
 
 Herramienta de apoyo a decisiones para adaptar la rotación de cultivos con datos NASA.
 NASA Space Apps Challenge 2026 · desafío **Field Shift: Adapting Farms with NASA Data** · foco inicial: San Luis, Argentina.
 
-> FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
+> AgroOrbit es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
 
 ## Qué hace
 

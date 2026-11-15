@@ -62,7 +62,7 @@ function Detail({ ev, fieldId }: { ev: RotationEvaluation; fieldId: string }) {
         <Badge variant="outline">{STRATEGY_LABELS[r.strategy]}</Badge>
         <RiskLevelBadge level={score.risk_level} />
         <ConfidenceBadge level={ev.confidence} />
-        <Badge variant="outline">{r.origin === "declarada" ? "Rotación declarada" : "Generada por FieldShift"}</Badge>
+        <Badge variant="outline">{r.origin === "declarada" ? "Rotación declarada" : "Generada por AgroOrbit"}</Badge>
       </div>
 
       <Card className="border-primary/40 bg-primary/5">

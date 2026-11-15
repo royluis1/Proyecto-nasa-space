@@ -1,6 +1,6 @@
 # Humedad de suelo (SMAP) e índice de vegetación (MODIS NDVI)
 
-> FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
+> AgroOrbit es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
 
 Código: `backend/app/services/satellite/`. Endpoints: `POST /soil-moisture` y `POST /vegetation-index`.
 
@@ -20,13 +20,13 @@ La versión 8 de SPL4SMGP es la vigente. AppEEARS la incorporó el 30 de junio d
 
 **Cómo obtener los datos.**
 
-- **AppEEARS** (recomendado, es lo que implementa FieldShift): pedido de tipo *point* con la latitud y longitud del lote, el producto `SPL4SMGP.008` y la capa `Geophysical_Data_sm_rootzone`. La tarea entra en cola y tarda de minutos a horas; al terminar se descarga un CSV. Requiere una cuenta gratuita de **NASA Earthdata**.
+- **AppEEARS** (recomendado, es lo que implementa AgroOrbit): pedido de tipo *point* con la latitud y longitud del lote, el producto `SPL4SMGP.008` y la capa `Geophysical_Data_sm_rootzone`. La tarea entra en cola y tarda de minutos a horas; al terminar se descarga un CSV. Requiere una cuenta gratuita de **NASA Earthdata**.
 - **NASA Earthdata / NSIDC**: descarga de los archivos HDF5 completos (globales) y extracción propia. Es más pesado y no hace falta para un punto.
 
 **Limitaciones para un lote chico.**
 
 - Un píxel de **9 km** (~8.100 ha) promedia muchos lotes, montes, caminos y bajos: **no es la humedad de tu lote**, es el contexto regional.
-- La humedad absoluta depende del suelo del píxel (un arenoso retiene menos que un franco). Por eso FieldShift usa **anomalías y percentiles** frente a la propia serie, no valores absolutos.
+- La humedad absoluta depende del suelo del píxel (un arenoso retiene menos que un franco). Por eso AgroOrbit usa **anomalías y percentiles** frente a la propia serie, no valores absolutos.
 - L4 es **modelado**: si el instrumento no observa, el valor sale solo del modelo.
 - L3 mide solo ~5 cm: cambia mucho con cada lluvia y no representa el perfil.
 - Hay datos desde el 31 de marzo de 2015 (unos 10 años).
@@ -55,7 +55,7 @@ La versión 6 de MOD13Q1 se dio de baja el 31 de julio de 2023, así que se usa 
 - El NDVI se satura con mucha biomasa (> 0,8) y no distingue un cultivo de las malezas.
 - **No mide materia orgánica ni carbono del suelo.** La "salud del suelo" que se infiere es indirecta: cobertura, barbechos y biomasa producida.
 
-## 3. Cómo se obtienen los datos en FieldShift
+## 3. Cómo se obtienen los datos en AgroOrbit
 
 Hay un enfoque híbrido con cascada de respaldo. El origen siempre queda indicado en `trace.status` y en `meta.origin_label`:
 

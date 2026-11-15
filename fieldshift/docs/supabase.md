@@ -1,10 +1,10 @@
 # Login e historial de lotes con Supabase
 
-FieldShift puede guardar los lotes del usuario y su historial (siembra, cosecha, riego,
+AgroOrbit puede guardar los lotes del usuario y su historial (siembra, cosecha, riego,
 observaciones) en una cuenta, para llevar la historia del lote y después decidir con ese
 registro. Eso usa **Supabase** (base de datos + login con correo y contraseña).
 
-**Importante:** FieldShift funciona **sin** esto. Si no se configura Supabase, no aparece el
+**Importante:** AgroOrbit funciona **sin** esto. Si no se configura Supabase, no aparece el
 login y los campos se guardan en el navegador, como hasta ahora. El código ya está hecho:
 solo faltan los pasos de abajo.
 

@@ -887,7 +887,7 @@ export interface components {
         };
         /**
          * AutoProfile
-         * @description Lo que FieldShift completa solo al cargar el campo. Lo que carga el productor siempre pisa esto.
+         * @description Lo que AgroOrbit completa solo al cargar el campo. Lo que carga el productor siempre pisa esto.
          */
         AutoProfile: {
             soil_estimate: components["schemas"]["SoilEstimate"] | null;
@@ -1236,7 +1236,7 @@ export interface components {
             warnings: string[];
             /**
              * Disclaimer
-             * @default FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
+             * @default AgroOrbit es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
              */
             disclaimer: string;
         };
@@ -2281,7 +2281,7 @@ export interface components {
         };
         /**
          * PowerParameter
-         * @description Parámetros diarios de NASA POWER admitidos por FieldShift.
+         * @description Parámetros diarios de NASA POWER admitidos por AgroOrbit.
          * @enum {string}
          */
         PowerParameter: "T2M" | "T2M_MAX" | "T2M_MIN" | "PRECTOTCORR" | "RH2M" | "WS2M" | "ALLSKY_SFC_SW_DWN" | "PS";
@@ -2461,7 +2461,7 @@ export interface components {
             requires_agronomist: boolean;
             /**
              * Disclaimer
-             * @default FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
+             * @default AgroOrbit es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
              */
             disclaimer: string;
             /**
@@ -2550,7 +2550,7 @@ export interface components {
             warnings: string[];
             /**
              * Disclaimer
-             * @default FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
+             * @default AgroOrbit es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
              */
             disclaimer: string;
         };
@@ -3049,7 +3049,7 @@ export interface components {
              * @description Clase textural USDA.
              */
             texture_usda: string | null;
-            /** @description Clase de FieldShift. */
+            /** @description Clase de AgroOrbit. */
             texture: components["schemas"]["SoilTexture"] | null;
             /**
              * Organic Matter Pct

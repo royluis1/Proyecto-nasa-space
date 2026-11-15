@@ -1,4 +1,4 @@
-# Cómo FieldShift responde al desafío
+# Cómo AgroOrbit responde al desafío
 
 Desafío: **Field Shift: Adapting Farms with NASA Data** (NASA Space Apps Challenge 2026).
 
@@ -6,7 +6,7 @@ Esta tabla sigue los bloques de la descripción oficial. Estado: **Hecho**, **Pa
 
 ## Requisitos centrales
 
-| Pide el desafío | Cómo lo cubre FieldShift | Estado |
+| Pide el desafío | Cómo lo cubre AgroOrbit | Estado |
 |---|---|---|
 | Usar observaciones de la Tierra de la NASA | POWER, SMAP (L3 y L4), MODIS NDVI, HLS (Landsat/Sentinel), ECOSTRESS, SRTM y GIBS | Hecho |
 | Incorporar el suelo local | Perfil de suelo del lote (textura, materia orgánica, profundidad, análisis de laboratorio). Si falta, se estima con SoilGrids y se rotula "estimado" | Hecho |
@@ -19,7 +19,7 @@ Esta tabla sigue los bloques de la descripción oficial. Estado: **Hecho**, **Pa
 
 ## Datos y armonización
 
-| Pide el desafío | Cómo lo cubre FieldShift | Estado |
+| Pide el desafío | Cómo lo cubre AgroOrbit | Estado |
 |---|---|---|
 | SMAP (humedad del suelo) | L4 zona de raíces (historia y anomalía) y L3 superficie (última observación) | Hecho |
 | ECOSTRESS (temperatura de superficie) | Temperatura de verano y estrés hídrico del lote | Hecho (muestra rotulada hasta tener tareas en vivo de AppEEARS) |
@@ -31,7 +31,7 @@ Esta tabla sigue los bloques de la descripción oficial. Estado: **Hecho**, **Pa
 
 ## Exploración de rotaciones
 
-| Pide el desafío | Cómo lo cubre FieldShift | Estado |
+| Pide el desafío | Cómo lo cubre AgroOrbit | Estado |
 |---|---|---|
 | Nutrientes, erosión, materia orgánica, plagas, agua, forraje, mercado | Componentes de suelo (materia orgánica, cobertura, pendiente), riesgo (plagas por monocultivo, sequía, calor), agua (balance FAO-56) e ingreso relativo | Parcial: el mercado es un índice relativo, no precios |
 | Alinear rotaciones con las prioridades (agua, ingreso, suelo) | Ranking ponderado por prioridades y escenarios de riego | Hecho |
@@ -39,7 +39,7 @@ Esta tabla sigue los bloques de la descripción oficial. Estado: **Hecho**, **Pa
 
 ## Mapas y visualización
 
-| Pide el desafío | Cómo lo cubre FieldShift | Estado |
+| Pide el desafío | Cómo lo cubre AgroOrbit | Estado |
 |---|---|---|
 | Mapas interactivos de tendencias | Mapa de zonas climáticas de San Luis; mapa animado de lluvia (GPM) y nubes (MODIS); lluvia año por año y anomalía de humedad del suelo de 10 años | Hecho |
 | Vulnerabilidades dentro del lote | Verdor por 9 sectores del lote (HLS) que señala el sector más débil; además pendiente del lote (SRTM), calor de superficie (ECOSTRESS) y alertas de helada | Parcial: solo el verdor se ve por sector |
@@ -47,7 +47,7 @@ Esta tabla sigue los bloques de la descripción oficial. Estado: **Hecho**, **Pa
 
 ## Diseño para el productor
 
-| Pide el desafío | Cómo lo cubre FieldShift | Estado |
+| Pide el desafío | Cómo lo cubre AgroOrbit | Estado |
 |---|---|---|
 | Fácil de entender sin experiencia técnica | Perfil "Huerta" simplificado, lenguaje llano, detalle técnico en desplegables, glosario | Hecho |
 | Cargar prioridades y restricciones (agua, equipo, mercado) | Prioridades, riego disponible, suelo y rotación actual | Parcial: no hay restricciones de maquinaria |

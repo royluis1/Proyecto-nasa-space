@@ -1,39 +1,119 @@
+"use client";
+
 import Link from "next/link";
-import { BookOpen, Home, Map, MapPinned, Sprout } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useEffect, useId, useState } from "react";
+import { Menu, X } from "lucide-react";
 import { AccountChip } from "@/components/auth/account-chip";
-import { ProfileChip } from "./profile-chip";
+import { useAuth } from "@/components/auth/auth-provider";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Logo } from "./logo";
+import { ProfileChip, StartLink } from "./profile-chip";
 import { ThemeToggle } from "./theme-toggle";
 
 const links = [
-  { href: "/", label: "Inicio", icon: Home },
-  { href: "/campos", label: "Mis campos", icon: MapPinned },
-  { href: "/zonas", label: "Mapa de zonas", icon: Map },
-  { href: "/metodologia", label: "Metodología y fuentes", icon: BookOpen },
+  { href: "/como-funciona", label: "Cómo funciona" },
+  { href: "/zonas", label: "Regiones" },
+  { href: "/campos", label: "Mis campos" },
+  { href: "/metodologia", label: "Metodología" },
 ];
 
-export function SiteHeader() {
+const isActive = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`);
+
+/** Botón principal: registrarse si hay cuentas; si no, empezar sin cuenta. */
+function MainAction({ className }: { className?: string }) {
+  const { configured, user } = useAuth();
+  if (configured && !user) {
+    return (
+      <Button asChild size="sm" className={cn("h-9 px-4", className)}>
+        <Link href="/#registro">Registrarse</Link>
+      </Button>
+    );
+  }
+  if (configured && user) return null;
   return (
-    <header className="relative z-40 border-b sm:sticky sm:top-0 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70 print:static print:hidden">
-      <div className="container flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3">
-        <Link href="/" className="flex items-center gap-2.5 rounded-lg font-display text-xl font-bold tracking-tight">
-          <span aria-hidden className="grid size-9 place-items-center rounded-xl bg-gradient-primary text-primary-foreground shadow-soft">
-            <Sprout className="size-5" />
-          </span>
-          <span>Field<span className="text-primary">Shift</span></span>
-        </Link>
-        <nav aria-label="Principal" className="order-last flex w-full flex-wrap gap-1 sm:order-none sm:w-auto">
-          {links.map(({ href, label, icon: Icon }) => (
-            <Link key={href} href={href} className="inline-flex min-h-11 items-center gap-2 rounded-full px-3.5 text-[0.95rem] font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
-              <Icon aria-hidden className="size-[18px]" />
+    <Button asChild size="sm" className={cn("h-9 px-4", className)}>
+      <StartLink>Empezar</StartLink>
+    </Button>
+  );
+}
+
+export function SiteHeader() {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const menuId = useId();
+
+  // Cerrar el menú del celular al cambiar de página o con Escape.
+  useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  return (
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-md print:static print:hidden">
+      <div className="container flex h-16 items-center justify-between gap-4">
+        <Logo />
+        <nav className="hidden items-center gap-8 lg:flex" aria-label="Principal">
+          {links.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              aria-current={isActive(pathname, href) ? "page" : undefined}
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-foreground",
+                isActive(pathname, href) ? "text-foreground" : "text-muted-foreground",
+              )}
+            >
               {label}
             </Link>
           ))}
         </nav>
         <div className="flex items-center gap-2">
+          <div className="hidden items-center gap-2 lg:flex">
+            <ProfileChip />
+          </div>
           <AccountChip />
-          <ProfileChip />
+          <MainAction />
           <ThemeToggle />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="lg:hidden"
+            aria-label={open ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={open}
+            aria-controls={menuId}
+            onClick={() => setOpen((v) => !v)}
+          >
+            {open ? <X aria-hidden /> : <Menu aria-hidden />}
+          </Button>
         </div>
+      </div>
+
+      {/* Menú del celular */}
+      <div id={menuId} hidden={!open} className="border-t border-border/60 bg-background lg:hidden">
+        <nav className="container flex flex-col gap-1 py-4" aria-label="Menú">
+          {links.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              aria-current={isActive(pathname, href) ? "page" : undefined}
+              className={cn(
+                "flex min-h-11 items-center rounded-lg px-3 text-base font-medium",
+                isActive(pathname, href) ? "bg-secondary text-foreground" : "text-foreground hover:bg-muted",
+              )}
+            >
+              {label}
+            </Link>
+          ))}
+          <div className="mt-2 border-t pt-3">
+            <ProfileChip />
+          </div>
+        </nav>
       </div>
     </header>
   );

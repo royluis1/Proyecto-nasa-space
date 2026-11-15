@@ -186,7 +186,7 @@ export default function HistorialPage() {
         lon: field.location.lon,
         area_ha: field.area_ha ?? null,
         con_riego: Boolean(field.irrigated),
-        datos: { field_id: field.id, fuente: "FieldShift" },
+        datos: { field_id: field.id, fuente: "AgroOrbit" },
       });
       setLote(l);
       setRows([]);
@@ -260,7 +260,7 @@ export default function HistorialPage() {
 
       <PageNotes>
         <p>El historial es tuyo: solo lo ves vos con tu cuenta (cada usuario accede únicamente a sus lotes).</p>
-        <p>FieldShift todavía no usa este historial para calcular el puntaje: sirve para que vos y tu agrónomo vean qué pasó en cada campaña.</p>
+        <p>AgroOrbit todavía no usa este historial para calcular el puntaje: sirve para que vos y tu agrónomo vean qué pasó en cada campaña.</p>
       </PageNotes>
     </div>
   );

@@ -1,8 +1,8 @@
 {
  "openapi": "3.1.0",
  "info": {
-  "title": "FieldShift API",
-  "description": "\nAPI de **FieldShift** (NASA Space Apps Challenge 2026 · *Field Shift: Adapting Farms with NASA Data*).\n\nCompara estrategias de rotación de cultivos usando datos NASA, información local de suelo\ny prioridades del productor.\n\n- Cada valor indica si es **observado, modelado, estimado o supuesto**.\n- `meta.data_status` indica si la respuesta usa datos en vivo, caché, muestra o valores simulados (`mock`).\n- Los errores tienen siempre la forma `{\"error\": {\"code\", \"message\", \"details\", \"request_id\"}}`.\n\n> FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.\n",
+  "title": "AgroOrbit API",
+  "description": "\nAPI de **AgroOrbit** (NASA Space Apps Challenge 2026 · *Field Shift: Adapting Farms with NASA Data*).\n\nCompara estrategias de rotación de cultivos usando datos NASA, información local de suelo\ny prioridades del productor.\n\n- Cada valor indica si es **observado, modelado, estimado o supuesto**.\n- `meta.data_status` indica si la respuesta usa datos en vivo, caché, muestra o valores simulados (`mock`).\n- Los errores tienen siempre la forma `{\"error\": {\"code\", \"message\", \"details\", \"request_id\"}}`.\n\n> AgroOrbit es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.\n",
   "version": "0.1.0"
  },
  "paths": {
@@ -2939,7 +2939,7 @@
      "generated_at"
     ],
     "title": "AutoProfile",
-    "description": "Lo que FieldShift completa solo al cargar el campo. Lo que carga el productor siempre pisa esto."
+    "description": "Lo que AgroOrbit completa solo al cargar el campo. Lo que carga el productor siempre pisa esto."
    },
    "Boundary": {
     "properties": {
@@ -3889,7 +3889,7 @@
      "disclaimer": {
       "type": "string",
       "title": "Disclaimer",
-      "default": "FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor."
+      "default": "AgroOrbit es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor."
      }
     },
     "type": "object",
@@ -6861,7 +6861,7 @@
      "PS"
     ],
     "title": "PowerParameter",
-    "description": "Parámetros diarios de NASA POWER admitidos por FieldShift."
+    "description": "Parámetros diarios de NASA POWER admitidos por AgroOrbit."
    },
    "PrecipitationSummary": {
     "properties": {
@@ -7312,7 +7312,7 @@
      "disclaimer": {
       "type": "string",
       "title": "Disclaimer",
-      "default": "FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor."
+      "default": "AgroOrbit es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor."
      },
      "generated_by": {
       "type": "string",
@@ -7545,7 +7545,7 @@
      "disclaimer": {
       "type": "string",
       "title": "Disclaimer",
-      "default": "FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor."
+      "default": "AgroOrbit es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor."
      }
     },
     "type": "object",
@@ -8758,7 +8758,7 @@
         "type": "null"
        }
       ],
-      "description": "Clase de FieldShift."
+      "description": "Clase de AgroOrbit."
      },
      "organic_matter_pct": {
       "anyOf": [

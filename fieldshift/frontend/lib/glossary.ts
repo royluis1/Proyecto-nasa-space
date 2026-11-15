@@ -14,7 +14,7 @@ export const GLOSSARY = {
   estres: {
     term: "Estrés hídrico",
     short: "Cuando al cultivo le falta agua.",
-    long: "Cuando un cultivo no recibe toda el agua que necesita. En FieldShift es el porcentaje de la demanda que la lluvia y el agua guardada en el suelo no llegan a cubrir.",
+    long: "Cuando un cultivo no recibe toda el agua que necesita. En AgroOrbit es el porcentaje de la demanda que la lluvia y el agua guardada en el suelo no llegan a cubrir.",
   },
   smap: {
     term: "Humedad del suelo (SMAP)",

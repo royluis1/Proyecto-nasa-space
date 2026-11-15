@@ -1,4 +1,4 @@
-"""Punto de entrada de la API de FieldShift."""
+"""Punto de entrada de la API de AgroOrbit."""
 
 import logging
 import time
@@ -16,7 +16,7 @@ from app.utils.logging import setup_logging
 logger = logging.getLogger("fieldshift.request")
 
 DESCRIPTION = f"""
-API de **FieldShift** (NASA Space Apps Challenge 2026 · *Field Shift: Adapting Farms with NASA Data*).
+API de **AgroOrbit** (NASA Space Apps Challenge 2026 · *Field Shift: Adapting Farms with NASA Data*).
 
 Compara estrategias de rotación de cultivos usando datos NASA, información local de suelo
 y prioridades del productor.
@@ -34,7 +34,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     setup_logging(settings.log_level)
 
     app = FastAPI(
-        title="FieldShift API",
+        title="AgroOrbit API",
         version=settings.app_version,
         description=DESCRIPTION,
         docs_url="/docs",

@@ -1,11 +1,11 @@
 # NASA Earthdata Login y relieve SRTM
 
-FieldShift descarga archivos protegidos de la NASA con **Earthdata Login** (URS). El primer uso es **SRTM** (Shuttle Radar Topography Mission, v3, de LP DAAC): la elevación y la pendiente del lote.
+AgroOrbit descarga archivos protegidos de la NASA con **Earthdata Login** (URS). El primer uso es **SRTM** (Shuttle Radar Topography Mission, v3, de LP DAAC): la elevación y la pendiente del lote.
 
 ## Cómo se configura
 
 1. Creá una cuenta gratis en https://urs.earthdata.nasa.gov. Si ya tenés la de AppEEARS, es la misma.
-2. En el perfil de Earthdata, en **Applications > Authorized Apps**, aprobá **LP DAAC Data Pool**. Si falta, el servidor devuelve una página web en vez del archivo y FieldShift avisa con ese mensaje.
+2. En el perfil de Earthdata, en **Applications > Authorized Apps**, aprobá **LP DAAC Data Pool**. Si falta, el servidor devuelve una página web en vez del archivo y AgroOrbit avisa con ese mensaje.
 3. Cargá las credenciales en el entorno del servidor (archivo `backend/.env`, o "Environment" en Render), **nunca en el código ni en el repositorio**:
 
 ```
@@ -49,7 +49,7 @@ Además:
 - Si llega una página HTML (falta aprobar la aplicación) o un 401/403, se corta con un mensaje claro.
 - Las credenciales no aparecen en los registros ni en los errores.
 
-## SRTM en FieldShift
+## SRTM en AgroOrbit
 
 1. **Baldosa**: la de 1° × 1° que contiene el lote (por ejemplo `S34W066` para -33,85, -65,2). La URL se busca en CMR, el catálogo público de NASA. Si CMR no responde, se usa la ruta conocida de LP DAAC.
 2. **Lectura**: el `.hgt` es una matriz de enteros de 16 bits big-endian, de 3601 × 3601 (SRTMGL1, 30 m) o 1201 × 1201 (SRTMGL3, 90 m). Los vacíos valen -32768.

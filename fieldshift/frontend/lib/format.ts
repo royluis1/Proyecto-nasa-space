@@ -42,7 +42,7 @@ export const SEVERITY_LABELS: Record<Severity, string> = { info: "Para tener en 
 export const LABEL_INFO: Record<DataLabel, { text: string; help: string }> = {
   observado: { text: "Observado", help: "Medido por un satélite o instrumento." },
   modelado: { text: "Modelado", help: "Salida de un modelo (por ejemplo, un reanálisis) que asimila observaciones." },
-  estimado: { text: "Estimado", help: "Calculado por FieldShift a partir de otros datos." },
+  estimado: { text: "Estimado", help: "Calculado por AgroOrbit a partir de otros datos." },
   supuesto: { text: "Supuesto", help: "Valor asumido, sin dato medido ni fuente verificada: hay que validarlo." },
 };
 

@@ -47,20 +47,20 @@ export function HeroAccount() {
 
   if (!configured || user) {
     return (
-      <Card className="animate-rise">
-        <CardContent className="space-y-5 p-6 sm:p-8">
+      <Card id="registro" className="animate-rise scroll-mt-24">
+        <CardContent className="space-y-6 p-6 sm:p-8">
           <div className="space-y-1.5">
-            <h2 className="text-2xl font-bold">{user ? "Hola de nuevo" : "Empezá en un minuto"}</h2>
-            <p className="text-muted-foreground">
-              {user ? "Seguí con tus campos y tu huerta." : "Sin cuenta: elegís si tenés una huerta o un campo y listo."}
+            <h2 className="text-2xl font-bold">{user ? "Hola de nuevo" : "Empezá ahora"}</h2>
+            <p className="text-sm text-muted-foreground">
+              {user ? "Seguí con tus campos y tu huerta." : "Gratis para productores. Elegí si tenés un campo o una huerta y listo."}
             </p>
           </div>
           <Button size="lg" asChild className="w-full">
-            <StartLink>Empezar: huerta o campo <ArrowRight aria-hidden /></StartLink>
+            <StartLink>Empezar <ArrowRight aria-hidden /></StartLink>
           </Button>
           <p className="text-center text-sm text-muted-foreground">
             ¿Solo querés mirar?{" "}
-            <Link href="/campo/campo-centro/comparador" className="font-semibold text-primary hover:underline">Ver un ejemplo</Link>
+            <Link href="/zonas" className="font-semibold text-primary hover:underline">Explorar regiones</Link>
           </p>
         </CardContent>
       </Card>
@@ -72,7 +72,7 @@ export function HeroAccount() {
       <CardContent className="space-y-6 p-6 sm:p-8">
         <div className="space-y-1.5">
           <h2 className="text-2xl font-bold">Creá tu cuenta</h2>
-          <p className="text-sm text-muted-foreground">Gratis. Guardá tus lotes y su historial para decidir con el tiempo.</p>
+          <p className="text-sm text-muted-foreground">Gratis para productores. Empezá en menos de un minuto.</p>
         </div>
         <form onSubmit={onSubmit} className="space-y-4" noValidate>
           <div className="space-y-2">
@@ -80,7 +80,7 @@ export function HeroAccount() {
             <Input id="hero-nombre" autoComplete="name" placeholder="Juan Pérez" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="hero-email">Correo</Label>
+            <Label htmlFor="hero-email">Email</Label>
             <Input id="hero-email" type="email" autoComplete="email" placeholder="juan@campo.com.ar" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
           </div>
           <div className="space-y-2">
@@ -94,9 +94,10 @@ export function HeroAccount() {
           </Button>
         </form>
         <p className="text-center text-sm text-muted-foreground">
-          ¿Ya tenés cuenta? <Link href="/cuenta" className="font-semibold text-primary hover:underline">Iniciá sesión</Link>
+          ¿Solo querés mirar?{" "}
+          <Link href="/zonas" className="font-semibold text-primary hover:underline">Explorar regiones</Link>
           {" · "}
-          <StartLink className="font-semibold text-primary hover:underline">Seguir sin cuenta</StartLink>
+          <Link href="/cuenta" className="font-semibold text-primary hover:underline">Ya tengo cuenta</Link>
         </p>
       </CardContent>
     </Card>

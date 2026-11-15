@@ -15,7 +15,7 @@ usuario** que une todo. Los números son reales: Campo Este, con datos de NASA P
 - En su zona llueven **792 mm** por año, pero la atmósfera pide **1.261 mm**: faltan **553 mm**.
 - Su campo está en una **zona de transición**: algunos años se comporta como húmedo y otros como semiárido.
 - Su rotación actual saca **57 puntos de 100** y deja el suelo desnudo **6 meses por año**.
-- FieldShift le muestra una alternativa: **cobertura – soja – vicia – sorgo**, con **73 puntos** y **2 meses** de suelo desnudo.
+- AgroOrbit le muestra una alternativa: **cobertura – soja – vicia – sorgo**, con **73 puntos** y **2 meses** de suelo desnudo.
 - Y también lo malo: pide **6 % más de agua**, hay que secar la cobertura en agosto o septiembre y conseguir semilla.
 
 Juan no recibe una orden: recibe opciones con sus pros y contras para llevarle a su agrónoma.
@@ -25,10 +25,10 @@ Juan no recibe una orden: recibe opciones con sus pros y contras para llevarle a
 | Tiempo | Imagen | Texto o voz |
 |---|---|---|
 | 0–5 s | Mapa de zonas de San Luis | "En San Luis, muchos campos están en una zona de transición: un año es húmedo y el siguiente, semiárido." |
-| 5–10 s | Diagnóstico: 792 mm de lluvia contra 1.261 mm de demanda | "FieldShift junta datos de 7 fuentes de la NASA para mostrar qué pasa en tu lote." |
+| 5–10 s | Diagnóstico: 792 mm de lluvia contra 1.261 mm de demanda | "AgroOrbit junta datos de 7 fuentes de la NASA para mostrar qué pasa en tu lote." |
 | 10–18 s | Mover una prioridad en el Dashboard y ver cambiar el ranking | "Elegís qué te importa —agua, suelo o ingreso— y compara tu rotación con seis alternativas." |
 | 18–25 s | Recomendación: 57 → 73 puntos, 6 → 2 meses de suelo desnudo | "Te dice por qué, con qué datos y qué riesgos tiene. Las dos caras." |
-| 25–30 s | Logo + "No reemplaza a tu agrónomo" | "FieldShift: decisiones con datos de la NASA, a la medida de cada productor." |
+| 25–30 s | Logo + "No reemplaza a tu agrónomo" | "AgroOrbit: decisiones con datos de la NASA, a la medida de cada productor." |
 
 Consejos para grabarlo: pantalla limpia (sin pestañas), modo claro, zoom del navegador al 110 %, sin música que tape la voz.
 

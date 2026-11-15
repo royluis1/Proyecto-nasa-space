@@ -1,4 +1,4 @@
-# FieldShift
+# AgroOrbit
 
 **Qué sembrar el año que viene, con datos de la NASA, tu suelo y tus prioridades.**
 
@@ -6,7 +6,7 @@ NASA Space Apps Challenge 2026 · desafío **Field Shift: Adapting Farms with NA
 
 **Demo en vivo:** https://proyecto-nasa-space.vercel.app/
 
-![Dashboard comparativo de FieldShift](fieldshift/docs/img/dashboard.png)
+![Dashboard comparativo de AgroOrbit](fieldshift/docs/img/dashboard.png)
 
 ## El problema
 
@@ -16,7 +16,7 @@ suelo desnudo todo el invierno) deja al suelo expuesto y al productor sin margen
 
 Los datos para decidir mejor existen (satélites y modelos de la NASA), pero están dispersos, en escalas distintas y en un lenguaje técnico.
 
-## Qué hace FieldShift
+## Qué hace AgroOrbit
 
 1. **Diagnostica el lote** con datos de la NASA: clima de 10 años, humedad del suelo, verdor de cada campaña, relieve y calor de la superficie.
 2. **Compara tu rotación actual con 6 alternativas** con un puntaje de 0 a 100 que se explica motivo por motivo: agua, suelo, riesgo, ingreso y sostenibilidad.
@@ -29,7 +29,7 @@ Los datos para decidir mejor existen (satélites y modelos de la NASA), pero est
 
 Ejemplo real (Campo Este, datos de NASA POWER): la rotación actual saca **57 puntos** y deja el suelo desnudo **6 meses por año**.
 La alternativa mixta (cobertura – soja – vicia – sorgo) saca **73 puntos** y baja a **2 meses**, a cambio de un 6 % más de demanda de
-agua y de secar la cobertura a tiempo. FieldShift muestra las dos caras.
+agua y de secar la cobertura a tiempo. AgroOrbit muestra las dos caras.
 
 ## Datos de la NASA que usa
 

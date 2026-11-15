@@ -21,7 +21,7 @@ export default function IngresarPage() {
   };
   return (
     <div className="space-y-8">
-      <PageHeader title="¿Cómo vas a usar FieldShift?" description="Elegí tu perfil. Lo podés cambiar cuando quieras desde el encabezado. No hace falta contraseña: se guarda en este navegador." />
+      <PageHeader title="¿Cómo vas a usar AgroOrbit?" description="Elegí tu perfil. Lo podés cambiar cuando quieras desde el encabezado. No hace falta contraseña: se guarda en este navegador." />
       <div className="grid gap-5 md:grid-cols-2">
         {(Object.keys(PROFILES) as Profile[]).map((p) => (
           <button

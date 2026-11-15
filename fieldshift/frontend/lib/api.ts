@@ -1,5 +1,5 @@
 /**
- * Cliente de la API de FieldShift: tipado, con tiempo máximo, reintentos con espera creciente,
+ * Cliente de la API de AgroOrbit: tipado, con tiempo máximo, reintentos con espera creciente,
  * errores normalizados y paso automático a datos de ejemplo si el servidor no responde.
  */
 import type {
@@ -100,7 +100,7 @@ async function once<T>(path: string, opts: RequestOptions): Promise<ApiEnvelope<
     if (e instanceof ApiError) throw e;
     if (opts.signal?.aborted) throw e; // cancelado por quien llamó: no es un error del servidor
     if (timedOut) throw new ApiError("El servidor tardó demasiado en responder.", 0, "TIMEOUT");
-    throw new ApiError("No se pudo conectar con el servidor de FieldShift.", 0, "NETWORK");
+    throw new ApiError("No se pudo conectar con el servidor de AgroOrbit.", 0, "NETWORK");
   } finally {
     clearTimeout(timer);
     opts.signal?.removeEventListener("abort", onAbort);

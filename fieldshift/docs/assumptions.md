@@ -92,7 +92,7 @@ Todo lo que no está respaldado por un dato observado o una fuente verificada se
 | Suelo 0-30 cm: promedio de SoilGrids ponderado por espesor (0-5, 5-15, 15-30 cm) | Supuesto | — |
 | Materia orgánica = carbono orgánico x 1,724 (factor de van Bemmelen) | Clásico; ⚠️ el factor real varía entre 1,7 y 2,0 | Supuesto |
 | Materia orgánica: baja < 1 %; media 1-2,5 %; alta > 2,5 % | Criterio general | ⚠️ a validar para suelos de San Luis |
-| Textura USDA -> clases de FieldShift (areno franco -> arenosa; franco arcillo arenoso, franco arcilloso y franco arcillo limoso -> franco arcillosa; arcillo arenoso y arcillo limoso -> arcillosa; limoso -> franco limosa) | Simplificación | Supuesto |
+| Textura USDA -> clases de AgroOrbit (areno franco -> arenosa; franco arcillo arenoso, franco arcilloso y franco arcillo limoso -> franco arcillosa; arcillo arenoso y arcillo limoso -> arcillosa; limoso -> franco limosa) | Simplificación | Supuesto |
 | Humedad SMAP en palabras: anomalía ≤ -15 % "más seco", ≥ +15 % "más húmedo" que lo normal para el mes | Supuesto | ⚠️ |
 | Sectores del lote: grilla de 3 x 3 sobre el lote (o su polígono), un píxel de Landsat de 30 m por sector, últimos 2 años | Supuesto de diseño | ⚠️ |
 | Suelo desnudo: NDVI < 0,3; sector "más débil" o "más vigoroso" si su NDVI medio difiere 10 % o más de la mediana del lote | Supuesto | ⚠️ a validar |

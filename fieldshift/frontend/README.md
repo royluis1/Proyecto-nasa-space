@@ -1,8 +1,8 @@
-# FieldShift · Frontend
+# AgroOrbit · Frontend
 
 Interfaz web para productores: marcar el campo en un mapa, contar cómo es y qué importa, y comparar rotaciones de cultivos con datos de la NASA. Next.js 15 (App Router) + React 19 + TypeScript + Tailwind CSS + componentes al estilo shadcn/ui + Leaflet + Recharts.
 
-> FieldShift es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
+> AgroOrbit es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
 
 ## Cómo correrlo
 

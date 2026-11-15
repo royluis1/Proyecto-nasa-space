@@ -1,6 +1,6 @@
 /**
  * Pronóstico de Open-Meteo consultado directamente desde el navegador (no es un dato de la NASA).
- * Se usa cuando el servidor de FieldShift no responde, para que el pronóstico y las alertas sigan funcionando.
+ * Se usa cuando el servidor de AgroOrbit no responde, para que el pronóstico y las alertas sigan funcionando.
  * Pide las mismas variables que el backend (app/services/forecast/open_meteo.py).
  */
 import type { Forecast } from "@/types/api";
@@ -16,7 +16,7 @@ export function forecastUrl(lat: number, lon: number, days = 10): string {
 
 type Daily = Record<string, (number | null)[] | string[]>;
 
-/** Convierte `data.daily` de Open-Meteo al formato de FieldShift. */
+/** Convierte `data.daily` de Open-Meteo al formato de AgroOrbit. */
 export function parseOpenMeteo(data: { latitude?: number; longitude?: number; timezone?: string; daily?: Daily }, retrievedAt = new Date()): Forecast {
   const daily = data.daily ?? {};
   const time = (daily.time as string[] | undefined) ?? [];

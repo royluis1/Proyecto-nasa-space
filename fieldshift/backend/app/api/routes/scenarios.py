@@ -17,7 +17,7 @@ def scenario_presets() -> ApiResponse[list[ScenarioPreset]]:
     """Año normal, seco, con lluvias intensas y con olas de calor; lluvia -10, -20 y -30 %; +1 y +2 °C;
     sin riego, con riego limitado y con riego disponible."""
     data = [ScenarioPreset(scenario=p.scenario, group=p.group, help=p.help) for p in PRESETS]
-    return ApiResponse(data=data, meta=ResponseMeta(data_status=DataStatus.SAMPLE, origin_label="Supuestos de sensibilidad de FieldShift"))
+    return ApiResponse(data=data, meta=ResponseMeta(data_status=DataStatus.SAMPLE, origin_label="Supuestos de sensibilidad de AgroOrbit"))
 
 
 @router.post(

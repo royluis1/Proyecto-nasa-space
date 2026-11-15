@@ -32,7 +32,7 @@ export default function CuentaPage() {
         <PageHeader title="Cuenta" description="Para guardar tus lotes y su historial entre dispositivos." />
         <Alert tone="info" title="El login todavía no está activado">
           <p>
-            FieldShift funciona sin cuenta: podés ver los datos de la NASA y los campos de ejemplo. El registro con correo se activa
+            AgroOrbit funciona sin cuenta: podés ver los datos de la NASA y los campos de ejemplo. El registro con correo se activa
             cuando se conecte Supabase. Mientras tanto, los campos que cargues se guardan en este navegador.
           </p>
         </Alert>

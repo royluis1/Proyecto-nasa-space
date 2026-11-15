@@ -81,7 +81,7 @@ const SOURCES: { name: string; label: DataLabel; what: string; res: string; use:
     limits: "Son valores estándar: no consideran tu variedad, tu fecha de siembra ni tu manejo. Algunos valores hay que verificarlos contra las tablas originales.",
   },
   {
-    name: "Catálogo de cultivos de FieldShift",
+    name: "Catálogo de cultivos de AgroOrbit",
     label: "supuesto",
     what: "Características de 16 cultivos y coberturas de San Luis: tolerancia a sequía y calor, raíces, aporte de materia orgánica, ingreso relativo, plagas.",
     res: "No aplica.",
@@ -102,12 +102,12 @@ const SOURCES: { name: string; label: DataLabel; what: string; res: string; use:
 export default function MetodologiaPage() {
   return (
     <div className="max-w-4xl space-y-10">
-      <PageHeader title="Metodología y fuentes" description="Cómo funciona FieldShift, de dónde salen los datos y qué todavía hay que validar." />
+      <PageHeader title="Metodología y fuentes" description="Cómo funciona AgroOrbit, de dónde salen los datos y qué todavía hay que validar." />
 
       <Alert tone="warning" title="Antes de leer"><p>{DISCLAIMER}</p></Alert>
 
       <section aria-labelledby="que-hace" className="space-y-3">
-        <h2 id="que-hace" className="text-2xl font-semibold">Qué hace FieldShift</h2>
+        <h2 id="que-hace" className="text-2xl font-semibold">Qué hace AgroOrbit</h2>
         <ol className="list-decimal space-y-2 pl-6 text-lg">
           <li>Toma el clima, la humedad del suelo y la vegetación de la zona de tu campo.</li>
           <li>Arma al menos tres rotaciones: tu rotación actual, una conservadora, una diversificada, una que ahorra agua, una que cuida el suelo, una de mayor ingreso y una mixta.</li>
@@ -154,7 +154,7 @@ export default function MetodologiaPage() {
         <ul className="space-y-2">
           {(["observado", "modelado", "estimado", "supuesto"] as const).map((l) => (
             <li key={l} className="flex flex-wrap items-center gap-3"><LabelBadge label={l} />
-              <span>{l === "observado" ? "Lo midió un satélite o un instrumento." : l === "modelado" ? "Sale de un modelo que combina observaciones." : l === "estimado" ? "Lo calculó FieldShift a partir de otros datos." : "Es un valor asumido, sin dato medido: hay que validarlo."}</span>
+              <span>{l === "observado" ? "Lo midió un satélite o un instrumento." : l === "modelado" ? "Sale de un modelo que combina observaciones." : l === "estimado" ? "Lo calculó AgroOrbit a partir de otros datos." : "Es un valor asumido, sin dato medido: hay que validarlo."}</span>
             </li>
           ))}
         </ul>

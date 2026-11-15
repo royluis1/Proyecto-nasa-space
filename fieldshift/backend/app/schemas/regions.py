@@ -131,14 +131,14 @@ class SoilEstimate(BaseModel):
     sand_pct: float | None
     silt_pct: float | None
     texture_usda: str | None = Field(description="Clase textural USDA.")
-    texture: SoilTexture | None = Field(description="Clase de FieldShift.")
+    texture: SoilTexture | None = Field(description="Clase de AgroOrbit.")
     organic_matter_pct: float | None = Field(description="Materia orgánica = carbono orgánico x 1,724 (factor de van Bemmelen).")
     organic_matter: Level | None
     note: str
 
 
 class AutoProfile(BaseModel):
-    """Lo que FieldShift completa solo al cargar el campo. Lo que carga el productor siempre pisa esto."""
+    """Lo que AgroOrbit completa solo al cargar el campo. Lo que carga el productor siempre pisa esto."""
 
     soil_estimate: SoilEstimate | None
     soil_applied: list[str] = Field(description="Datos del suelo que se completaron con la estimación (los que el productor no cargó).")

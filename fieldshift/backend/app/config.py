@@ -1,4 +1,4 @@
-"""Configuración de FieldShift, leída de variables de entorno (prefijo FIELDSHIFT_) o de .env."""
+"""Configuración de AgroOrbit, leída de variables de entorno (prefijo FIELDSHIFT_) o de .env."""
 
 from functools import lru_cache
 from pathlib import Path

@@ -1,4 +1,4 @@
-"""Unidades internas de FieldShift y conversión desde lo que informe POWER.
+"""Unidades internas de AgroOrbit y conversión desde lo que informe POWER.
 
 Las unidades se leen del metadato de cada respuesta, no se asumen: según la
 comunidad (AG, RE, SB) la radiación puede venir en MJ/m²/día o en kWh/m²/día.

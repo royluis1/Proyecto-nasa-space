@@ -235,7 +235,7 @@ class RegionRepository:
         both = [s.crop_name for s in here if not self.crops[s.crop_id].is_cover_crop and s.level != Level.BAJO
                 and lv.get(s.crop_id) != Level.BAJO and self.crops[s.crop_id].drought_tolerance == Level.ALTO]
         covers = [c.name for c in self.crops.values() if c.is_cover_crop]
-        src = "Catálogo de cultivos de FieldShift (tolerancias a validar con INTA)"
+        src = "Catálogo de cultivos de AgroOrbit (tolerancias a validar con INTA)"
         return [
             TransitionOption(
                 title="Cultivos más tolerantes a sequía",
@@ -259,7 +259,7 @@ class RegionRepository:
                 title="Barbecho para acumular agua",
                 detail="Barbecho limpio y con rastrojo antes del cultivo más exigente.",
                 reason="Guarda en el perfil parte de la lluvia del barbecho para el cultivo siguiente (eficiencia de barbecho: supuesto del motor).",
-                source="Motor de FieldShift, eficiencia de barbecho (docs/assumptions.md)",
+                source="Motor de AgroOrbit, eficiencia de barbecho (docs/assumptions.md)",
             ),
         ]
 
