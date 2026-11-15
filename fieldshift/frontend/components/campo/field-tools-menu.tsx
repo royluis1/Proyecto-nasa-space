@@ -25,8 +25,8 @@ const AGRICULTOR: Tool[] = localize([
   { slug: "reporte", label: L("Reporte", "Report"), text: L("El plan en PDF o CSV para llevarle a tu ingeniero agrónomo.", "The plan as PDF or CSV to take to your agronomist."), icon: FileText, tone: "bg-secondary text-primary" },
 ]);
 
+// Huerta (pocos m²): solo alertas de clima (NASA POWER + pronóstico). Sin diagnóstico satelital (SMAP/MODIS/relieve).
 const HUERTA: Tool[] = localize([
-  { slug: "diagnostico", label: L("Clima y satélites", "Weather and satellites"), text: L("Clima, humedad del suelo y verdor de tu zona con datos de la NASA.", "Weather, soil moisture and greenness in your area from NASA data."), icon: CloudSun, tone: "bg-sky-soft text-sky" },
   { slug: "alertas", label: L("Alertas", "Alerts"), text: L("Heladas, calor, tormentas y falta de agua de los próximos días.", "Frost, heat, storms and water shortage in the coming days."), icon: BellRing, tone: "bg-warning-soft text-warning" },
 ]);
 
