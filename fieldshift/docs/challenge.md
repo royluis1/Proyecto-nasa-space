@@ -1,17 +1,63 @@
-# Cumplimiento del desafío
+# Cómo FieldShift responde al desafío
 
 Desafío: **Field Shift: Adapting Farms with NASA Data** (NASA Space Apps Challenge 2026).
 
-| Requisito | Cómo lo cubre FieldShift | Estado |
+Esta tabla sigue los bloques de la descripción oficial. Estado: **Hecho**, **Parcial** (existe pero con límites) o **No hecho**.
+
+## Requisitos centrales
+
+| Pide el desafío | Cómo lo cubre FieldShift | Estado |
 |---|---|---|
-| Usar observaciones de la Tierra de la NASA | POWER, MODIS NDVI, SMAP, SRTM | Pendiente |
-| Incorporar información local de suelo | Perfil de suelo del lote (textura, profundidad, MO, análisis de laboratorio) | Schema hecho |
-| Incorporar características de cultivos | Catálogo editable con fuente y confianza | Provisorio |
-| Incorporar prioridades del productor | 5 prioridades de 0 a 10 que ponderan el puntaje | Schema y endpoint hechos |
-| Comparar al menos 3 rotaciones, incluida la actual | Actual + agua + suelo (opcional mixta); la API exige la actual | Hecho (puntaje simulado) |
-| Por qué se sugiere cada una | Recomendación con resumen y justificación | Pendiente |
-| Qué evidencia la respalda | Separación en 4 fuentes: datos NASA / suelo local / productor / validación agronómica | Schema hecho |
-| Beneficios, lagunas de información y riesgos | Campos de la recomendación y advertencias | Schema hecho |
-| Barbechos, temporadas de vulnerabilidad y oportunidades | Calendario agrícola y diagnóstico NDVI | Pendiente |
-| No reemplazar el criterio del agricultor | Advertencia en todas las respuestas; marca de "requiere agrónomo" | Hecho |
-| Declarar el uso de IA y comparar con reglas | ai_usage.md; reglas vs. k-means | Pendiente |
+| Usar observaciones de la Tierra de la NASA | POWER, SMAP (L3 y L4), MODIS NDVI, HLS (Landsat/Sentinel), ECOSTRESS, SRTM y GIBS | Hecho |
+| Incorporar el suelo local | Perfil de suelo del lote (textura, materia orgánica, profundidad, análisis de laboratorio). Si falta, se estima con SoilGrids y se rotula "estimado" | Hecho |
+| Incorporar las características de los cultivos | Catálogo de 16 cultivos con agua, tolerancias, raíz, aporte al suelo, plagas e ingreso relativo, con fuente y confianza | Hecho (a validar con INTA) |
+| Incorporar las prioridades del productor | Prioridades de 0 a 10 que ponderan el puntaje y se recalculan al instante | Hecho |
+| Comparar rotaciones, incluida la actual | La actual y 6 alternativas (conservadora, diversificada, ahorro de agua, suelo, ingreso y mixta) | Hecho |
+| Explicar por qué, con qué evidencia, beneficios, riesgos y lagunas | Recomendación con "por qué", datos a favor y en contra con puntos, supuestos, incertidumbres y datos que faltan | Hecho |
+| Barbechos, temporadas vulnerables y oportunidades | Calendario por campañas con suelo desnudo, riesgo de calor y de agua mes a mes; barbechos detectados con NDVI | Hecho |
+| No reemplazar el criterio del agricultor | Aviso en todas las pantallas y respuestas; "requiere validación agronómica local" en cada recomendación | Hecho |
+
+## Datos y armonización
+
+| Pide el desafío | Cómo lo cubre FieldShift | Estado |
+|---|---|---|
+| SMAP (humedad del suelo) | L4 zona de raíces (historia y anomalía) y L3 superficie (última observación) | Hecho |
+| ECOSTRESS (temperatura de superficie) | Temperatura de verano y estrés hídrico del lote | Hecho (muestra rotulada hasta tener tareas en vivo de AppEEARS) |
+| GPM (precipitación) | La lluvia sale de NASA POWER. GPM/IMERG tiene la app autorizada en Earthdata pero no está integrado | No hecho |
+| Landsat/MODIS (índices de vegetación) | MODIS NDVI por campaña y HLS por 9 sectores del lote | Hecho |
+| GEDI (biomasa) | No se usa: la biomasa se infiere del NDVI (indirecto) | No hecho |
+| Datos de suelo | SoilGrids estimado + análisis del productor con prioridad | Hecho |
+| Armonizar resoluciones a una grilla común | Todo se lleva al **lote** (espacio) y al **mes y la campaña** (tiempo), mostrando la escala original. Tabla en la página de Metodología | Hecho |
+
+## Exploración de rotaciones
+
+| Pide el desafío | Cómo lo cubre FieldShift | Estado |
+|---|---|---|
+| Nutrientes, erosión, materia orgánica, plagas, agua, forraje, mercado | Componentes de suelo (materia orgánica, cobertura, pendiente), riesgo (plagas por monocultivo, sequía, calor), agua (balance FAO-56) e ingreso relativo | Parcial: el mercado es un índice relativo, no precios |
+| Alinear rotaciones con las prioridades (agua, ingreso, suelo) | Ranking ponderado por prioridades y escenarios de riego | Hecho |
+| Explicar fijadoras de N, cobertura, raíz profunda y tolerantes a sequía | Cada rotación muestra qué papel cumple cada cultivo, qué le falta y por qué ayuda al suelo, con fuente y límites | Hecho |
+
+## Mapas y visualización
+
+| Pide el desafío | Cómo lo cubre FieldShift | Estado |
+|---|---|---|
+| Mapas interactivos de tendencias | Mapa de zonas climáticas de San Luis; lluvia año por año y anomalía de humedad del suelo de 10 años | Parcial: las tendencias son gráficos, no capas de mapa animadas |
+| Vulnerabilidades dentro del lote | Verdor por 9 sectores del lote (HLS) que señala el sector más débil; además pendiente del lote (SRTM), calor de superficie (ECOSTRESS) y alertas de helada | Parcial: solo el verdor se ve por sector |
+| Líneas de tiempo, capas comparadas, sliders de escenario | Calendario por campañas interactivo, escenarios de lluvia, temperatura y riego, imagen del día de GIBS | Hecho |
+
+## Diseño para el productor
+
+| Pide el desafío | Cómo lo cubre FieldShift | Estado |
+|---|---|---|
+| Fácil de entender sin experiencia técnica | Perfil "Huerta" simplificado, lenguaje llano, detalle técnico en desplegables, glosario | Hecho |
+| Cargar prioridades y restricciones (agua, equipo, mercado) | Prioridades, riego disponible, suelo y rotación actual | Parcial: no hay restricciones de maquinaria |
+| Recordar que apoya y no reemplaza | Aviso fijo en el encabezado, en cada recomendación y en el reporte | Hecho |
+| Validación con usuarios | Una ingeniera agrónoma revisó la idea: pidió información práctica para decidir, historial de lotes y datos climáticos a mano | Parcial: una sola entrevista |
+
+## Pendiente, por prioridad
+
+1. GPM/IMERG para la lluvia satelital.
+2. Tareas en vivo de AppEEARS (HLS y ECOSTRESS) en producción.
+3. Historial de lotes por usuario (código listo en Supabase, falta configurarlo).
+4. Validar el catálogo de cultivos con INTA y con más productores.
+5. GEDI y restricciones de maquinaria.

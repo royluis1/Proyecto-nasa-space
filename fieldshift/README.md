@@ -7,11 +7,11 @@ NASA Space Apps Challenge 2026 · desafío **Field Shift: Adapting Farms with NA
 
 ## Qué hace
 
-Cierra un ciclo de tres módulos:
+1. **Diagnóstico del lote** (años): clima de 10 años, humedad del suelo, verdor por campaña y por sectores, relieve y calor de superficie.
+2. **Comparador de rotaciones** (campañas): la rotación actual frente a 6 alternativas, con un puntaje explicable, prioridades del productor, escenarios climáticos, calendario y reporte.
+3. **Alerta temprana** (días): heladas, calor, tormentas y falta de agua, también en modo **Huerta**.
 
-1. **Diagnóstico de salud del suelo** (años): NDVI multianual, barbechos, suelo desnudo y pendiente.
-2. **Simulador de riesgo** (campaña): compara la rotación actual con alternativas orientadas a ahorro de agua y a salud del suelo, con un puntaje explicable y escenarios climáticos.
-3. **Monitor de campaña** (días a semanas): anomalías recientes contra la climatología del lugar.
+Demo en vivo: https://proyecto-nasa-space.vercel.app/ · Presentación: [README del repositorio](../README.md)
 
 ## Estructura
 
@@ -19,7 +19,7 @@ Cierra un ciclo de tres módulos:
 fieldshift/
 ├── backend/     API FastAPI (ver backend/README.md)
 ├── frontend/    Next.js + TypeScript + Tailwind + Leaflet
-├── scripts/     generación de muestras y ejemplos; descarga de NDVI/SMAP/SRTM pendiente
+├── scripts/     descarga y preparación de datos (zonas, provincias, muestras rotuladas)
 ├── data/        datos NASA preprocesados (samples/) y caché local (cache/)
 └── docs/        arquitectura, plan, fuentes, supuestos, uso de IA, demo, ética
 ```
@@ -28,22 +28,35 @@ fieldshift/
 
 | Parte | Estado |
 |---|---|
-| Backend base y API | Hecho |
-| Integración NASA | POWER, SMAP, MODIS NDVI ([satellite.md](docs/satellite.md)) y SRTM con Earthdata Login ([earthdata.md](docs/earthdata.md)) |
-| Base de cultivos | Hecho: 16 cultivos editables, a validar con INTA |
-| Motor de rotaciones y puntaje | Hecho: ver [docs/scoring.md](docs/scoring.md) y [ejemplos](docs/examples/README.md) |
-| Frontend y mapa | Hecho: [frontend/README.md](frontend/README.md) |
-| Dashboard comparativo | Hecho: `/campo/[id]/dashboard` |
-| Calendario, escenarios y reporte | Hecho: [guía de uso](docs/calendario_escenarios_reporte.md) |
-| Zonas climáticas, perfil automático del campo y humedad satelital | Hecho (backend y frontend): [zonas_y_perfil.md](docs/zonas_y_perfil.md). Zonas de San Luis de MUESTRA hasta correr el script con NASA POWER |
-| Perfiles Huerta y Agricultor, pronóstico y alerta temprana | Hecho: [perfiles_y_alertas.md](docs/perfiles_y_alertas.md). GPM/IMERG, Landsat y ECOSTRESS, próximamente |
+| Backend (FastAPI) y API | Hecho, 341 tests |
+| Frontend (Next.js) | Hecho, desplegado en Vercel; 154 tests |
+| Datos NASA | POWER, SMAP, MODIS NDVI, HLS, ECOSTRESS, SRTM y GIBS ([data_sources.md](docs/data_sources.md), [earthdata.md](docs/earthdata.md)) |
+| Motor de rotaciones y puntaje | Hecho: [scoring.md](docs/scoring.md) y [ejemplos](docs/examples/README.md) |
+| Dashboard, calendario, escenarios y reporte | Hecho: [calendario_escenarios_reporte.md](docs/calendario_escenarios_reporte.md) |
+| Zonas climáticas, perfil automático y humedad satelital | Hecho: [zonas_y_perfil.md](docs/zonas_y_perfil.md) |
+| Perfiles Huerta y Agricultor, pronóstico y alertas | Hecho: [perfiles_y_alertas.md](docs/perfiles_y_alertas.md) |
+| Login e historial de lotes (Supabase) | Código listo, falta configurar: [supabase.md](docs/supabase.md) |
+| GPM/IMERG, GEDI | No hecho: ver [challenge.md](docs/challenge.md) |
 
-El plan completo está en [docs/plan.md](docs/plan.md).
+Cumplimiento del desafío punto por punto: [docs/challenge.md](docs/challenge.md). Guion del video y de la demo: [docs/demo_script.md](docs/demo_script.md).
 
 ## Cómo correrlo
 
-Por ahora solo el backend: ver [backend/README.md](backend/README.md).
+Backend (Python 3.13):
+
+```bash
+cd fieldshift/backend && pip install -r requirements.txt && uvicorn app.main:app --reload
+```
+
+Frontend (Node 20 o más), en otra terminal:
+
+```bash
+cd fieldshift/frontend && npm install && npm run dev
+```
+
+Abrí http://localhost:3000. Variables de entorno: `backend/.env.example` y `frontend/.env.example`. Sin backend, el frontend
+muestra datos de ejemplo rotulados.
 
 ## Datos NASA
 
-Este proyecto usa datos de NASA POWER, MODIS (MOD13A1), SMAP y SRTM. Detalle de fuentes, resoluciones y limitaciones en [docs/data_sources.md](docs/data_sources.md).
+Este proyecto usa datos de NASA POWER, SMAP, MODIS (MOD13A1), HLS, ECOSTRESS, SRTM y GIBS. Detalle de fuentes, resoluciones y limitaciones en [docs/data_sources.md](docs/data_sources.md).
