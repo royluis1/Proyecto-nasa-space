@@ -74,6 +74,8 @@ def main() -> None:
 
     write("fields.json", [dump(f) for f in repo.list_fields()])
     write("crops.json", [dump(c) for c in repo.list_crops()])
+    from app.services.huerta_rotation import huerta_rotation  # noqa: E402
+    write("huerta-rotation.json", dump(huerta_rotation(repo.list_crops())))
     regions = RegionRepository(s.nasa_samples_dir, repo.crops)
     meta = regions.provinces["fieldshift"]
     write("provinces.json", {"source": meta["source"], "license": meta["license"], "note": meta.get("note"),

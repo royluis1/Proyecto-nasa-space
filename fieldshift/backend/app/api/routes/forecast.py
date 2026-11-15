@@ -4,8 +4,10 @@ from app.api.deps import get_early_warning_service, get_forecast_service, get_re
 from app.models.enums import DataStatus
 from app.schemas.common import ApiResponse, ErrorResponse, ResponseMeta
 from app.schemas.forecast import AlertsRequest, AlertsResult, Forecast, ForecastRequest, HuertaPanel, PlaceRequest
+from app.schemas.huerta import HuertaRotationGuide
 from app.services.early_warning import EarlyWarningService
 from app.services.forecast.open_meteo import ForecastService
+from app.services.huerta_rotation import huerta_rotation
 from app.services.repository import Repository
 from app.utils.exceptions import InvalidInputError
 
@@ -63,3 +65,14 @@ def huerta(
     r = service.huerta(req.field_id, req.latitude, req.longitude)
     st = _status(r.sources)
     return ApiResponse(data=r, meta=ResponseMeta(data_status=st, origin_label=st.origin_label, warnings=r.warnings))
+
+
+@router.get("/huerta/rotation", response_model=ApiResponse[HuertaRotationGuide], summary="Rotación de huerta por familias")
+def huerta_rotation_guide(repo: Repository = Depends(get_repository)) -> ApiResponse[HuertaRotationGuide]:
+    """Guía simple para rotar canteros por familia botánica (solanáceas, leguminosas, hojas, raíces, cucurbitáceas,
+    aliáceas), armada desde el catálogo. Fuente: INTA Pro-Huerta. Orientativa: requiere criterio local."""
+    guide = huerta_rotation(repo.list_crops())
+    return ApiResponse(data=guide, meta=ResponseMeta(
+        data_status=DataStatus.SAMPLE,
+        warnings=["Reglas orientativas de rotación de huerta (INTA Pro-Huerta): no reemplazan el criterio de un agrónomo local."],
+    ))

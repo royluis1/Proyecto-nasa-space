@@ -627,6 +627,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/huerta/rotation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Rotación de huerta por familias
+         * @description Guía simple para rotar canteros por familia botánica (solanáceas, leguminosas, hojas, raíces, cucurbitáceas,
+         *     aliáceas), armada desde el catálogo. Fuente: INTA Pro-Huerta. Orientativa: requiere criterio local.
+         */
+        get: operations["huerta_rotation_guide_huerta_rotation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/export/report": {
         parameters: {
             query?: never;
@@ -805,6 +826,11 @@ export interface components {
         /** ApiResponse[HuertaPanel] */
         ApiResponse_HuertaPanel_: {
             data: components["schemas"]["HuertaPanel"];
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[HuertaRotationGuide] */
+        ApiResponse_HuertaRotationGuide_: {
+            data: components["schemas"]["HuertaRotationGuide"];
             meta: components["schemas"]["ResponseMeta"];
         };
         /** ApiResponse[LocalitySearch] */
@@ -2041,6 +2067,28 @@ export interface components {
             /** Heat Stress Years */
             heat_stress_years: number[];
         };
+        /** HuertaFamilyGroup */
+        HuertaFamilyGroup: {
+            /** Group Id */
+            group_id: string;
+            /**
+             * Label
+             * @description Nombre del grupo de familia (p. ej. Solanáceas).
+             */
+            label: string;
+            /**
+             * Crops
+             * @description Hortalizas del catálogo en esta familia.
+             */
+            crops: string[];
+            /**
+             * Return Interval Years
+             * @description Años mínimos antes de repetir la familia en el mismo cantero (catálogo).
+             */
+            return_interval_years: number | null;
+            /** Note */
+            note: string;
+        };
         /**
          * HuertaPanel
          * @description Panel de huerta: escala de pocos m². Solo NASA POWER + pronóstico (Open-Meteo).
@@ -2074,6 +2122,23 @@ export interface components {
             sources: components["schemas"]["SourceInfo"][];
             /** Warnings */
             warnings: string[];
+        };
+        /**
+         * HuertaRotationGuide
+         * @description Guía orientativa para rotar canteros por familia. Fuente: INTA Pro-Huerta. Requiere criterio local.
+         */
+        HuertaRotationGuide: {
+            /** Groups */
+            groups: components["schemas"]["HuertaFamilyGroup"][];
+            /**
+             * Order
+             * @description Orden sugerido de familias en el cantero, temporada a temporada.
+             */
+            order: string[];
+            /** Rules */
+            rules: string[];
+            /** Source */
+            source: string;
         };
         /** Impact */
         Impact: {
@@ -5395,6 +5460,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    huerta_rotation_guide_huerta_rotation_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_HuertaRotationGuide_"];
                 };
             };
         };

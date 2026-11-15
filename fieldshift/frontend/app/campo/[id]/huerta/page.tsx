@@ -19,8 +19,45 @@ import { useAsync } from "@/hooks/use-async";
 import { api } from "@/lib/api";
 import { MONTHS_LONG, num } from "@/lib/format";
 import { friendlyWarnings } from "@/lib/plain";
-import type { ApiResult, HuertaPanel } from "@/types/api";
+import type { ApiResult, HuertaPanel, HuertaRotationGuide } from "@/types/api";
 import { tr } from "@/lib/i18n";
+
+function RotationCard() {
+  const r = useAsync<HuertaRotationGuide>(async (signal) => (await api.huertaRotation({ signal })).data, []);
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle as="h2">{tr("Rotar los canteros por familia", "Rotate beds by family")}</CardTitle>
+        <CardDescription>{tr("Para cuidar el suelo y cortar plagas: no repitas la misma familia en el mismo cantero.", "To care for the soil and break pest cycles: do not repeat the same family in the same bed.")}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <AsyncBlock state={r} what={tr("la guía de rotación", "the rotation guide")}>
+          {(g) => (
+            <div className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                {g.groups.map((grp) => (
+                  <div key={grp.group_id} className="rounded-lg border border-border p-3">
+                    <p className="font-semibold">{grp.label}</p>
+                    <p className="text-sm text-muted-foreground">{grp.crops.join(", ")}</p>
+                    <p className="mt-1 text-sm">{grp.note}</p>
+                    {grp.return_interval_years != null && (
+                      <p className="mt-1 text-xs text-muted-foreground">{tr(`No repetir antes de ${grp.return_interval_years} temporadas.`, `Do not repeat before ${grp.return_interval_years} seasons.`)}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div>
+                <p className="font-medium">{tr("Reglas simples", "Simple rules")}</p>
+                <ul className="mt-1 list-disc space-y-1 pl-5 text-sm">{g.rules.map((x) => <li key={x}>{x}</li>)}</ul>
+              </div>
+              <p className="text-xs text-muted-foreground">{tr("Fuente", "Source")}: {g.source}</p>
+            </div>
+          )}
+        </AsyncBlock>
+      </CardContent>
+    </Card>
+  );
+}
 
 function Big({ icon, title, value, children }: { icon: string; title: string; value: React.ReactNode; children?: React.ReactNode }) {
   return (
@@ -104,6 +141,8 @@ function Panel({ r }: { r: ApiResult<HuertaPanel> }) {
           )}
         </CardContent>
       </Card>
+
+      <RotationCard />
 
       <Card>
         <CardHeader><CardTitle as="h2">{tr("Consejos para esta época", "Tips for this time of year")}</CardTitle></CardHeader>

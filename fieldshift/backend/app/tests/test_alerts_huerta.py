@@ -245,3 +245,15 @@ def test_api_huerta_alertas_y_pronostico(client):
     assert a.status_code == 200 and a.json()["data"]["profile"] == "huerta"
     assert client.post("/alerts", json={"profile": "huerta"}).status_code == 400
     assert client.post("/forecast", json={"field_id": "campo-este"}).status_code == 503  # sin Open-Meteo en los tests
+
+
+def test_rotacion_de_huerta_por_familias(repo):
+    from app.services.huerta_rotation import huerta_rotation
+
+    g = huerta_rotation(repo.list_crops())
+    ids = {grp.group_id for grp in g.groups}
+    assert {"solanaceas", "leguminosas", "hojas", "raices", "aliaceas", "cucurbitaceas"} <= ids
+    assert g.order and g.order[0] == "leguminosas"  # legumbres primero (fijan nitrógeno)
+    assert "INTA Pro-Huerta" in g.source and g.rules
+    sol = next(grp for grp in g.groups if grp.group_id == "solanaceas")
+    assert "Tomate" in sol.crops and sol.return_interval_years and sol.return_interval_years >= 3

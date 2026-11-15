@@ -69,6 +69,7 @@ export type Alert = S["Alert"];
 export type AlertsResult = S["AlertsResult"];
 export type RainSummary = S["RainSummary"];
 export type HuertaPanel = S["HuertaPanel"];
+export type HuertaRotationGuide = S["HuertaRotationGuide"];
 export type ProvincesOut = S["ProvincesOut"];
 export type ZonesOut = S["ZonesOut"];
 export type ZoneAt = S["ZoneAt"];

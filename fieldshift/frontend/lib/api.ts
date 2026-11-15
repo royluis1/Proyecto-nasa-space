@@ -19,6 +19,7 @@ import type {
   FieldSectors,
   FieldSoilMoisture,
   HuertaPanel,
+  HuertaRotationGuide,
   LocalitySearch,
   NearestLocality,
   ProvincesOut,
@@ -205,6 +206,10 @@ export const api = {
   async crops(scale?: "huerta" | "campo", o: Opts = {}): Promise<ApiResult<Crop[]>> {
     const path = scale ? `/crops?scale=${scale}` : "/crops";
     return call(() => request<Crop[]>(path, o), () => demo.demoCrops(scale));
+  },
+
+  async huertaRotation(o: Opts = {}): Promise<ApiResult<HuertaRotationGuide>> {
+    return call(() => request<HuertaRotationGuide>("/huerta/rotation", o), demo.demoHuertaRotation);
   },
 
   async fields(o: Opts = {}): Promise<ApiResult<FieldOut[]>> {

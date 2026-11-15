@@ -2096,6 +2096,28 @@
     }
    }
   },
+  "/huerta/rotation": {
+   "get": {
+    "tags": [
+     "alerta temprana"
+    ],
+    "summary": "Rotación de huerta por familias",
+    "description": "Guía simple para rotar canteros por familia botánica (solanáceas, leguminosas, hojas, raíces, cucurbitáceas,\naliáceas), armada desde el catálogo. Fuente: INTA Pro-Huerta. Orientativa: requiere criterio local.",
+    "operationId": "huerta_rotation_guide_huerta_rotation_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_HuertaRotationGuide_"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/export/report": {
    "get": {
     "tags": [
@@ -2763,6 +2785,22 @@
      "meta"
     ],
     "title": "ApiResponse[HuertaPanel]"
+   },
+   "ApiResponse_HuertaRotationGuide_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/HuertaRotationGuide"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[HuertaRotationGuide]"
    },
    "ApiResponse_LocalitySearch_": {
     "properties": {
@@ -6266,6 +6304,52 @@
     ],
     "title": "HeatSummary"
    },
+   "HuertaFamilyGroup": {
+    "properties": {
+     "group_id": {
+      "type": "string",
+      "title": "Group Id"
+     },
+     "label": {
+      "type": "string",
+      "title": "Label",
+      "description": "Nombre del grupo de familia (p. ej. Solanáceas)."
+     },
+     "crops": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Crops",
+      "description": "Hortalizas del catálogo en esta familia."
+     },
+     "return_interval_years": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Return Interval Years",
+      "description": "Años mínimos antes de repetir la familia en el mismo cantero (catálogo)."
+     },
+     "note": {
+      "type": "string",
+      "title": "Note"
+     }
+    },
+    "type": "object",
+    "required": [
+     "group_id",
+     "label",
+     "crops",
+     "return_interval_years",
+     "note"
+    ],
+    "title": "HuertaFamilyGroup"
+   },
    "HuertaPanel": {
     "properties": {
      "field_id": {
@@ -6383,6 +6467,45 @@
     ],
     "title": "HuertaPanel",
     "description": "Panel de huerta: escala de pocos m². Solo NASA POWER + pronóstico (Open-Meteo).\n\nNo lleva SMAP (9 km) ni MODIS/NDVI (250 m): esa resolución no puede describir una huerta."
+   },
+   "HuertaRotationGuide": {
+    "properties": {
+     "groups": {
+      "items": {
+       "$ref": "#/components/schemas/HuertaFamilyGroup"
+      },
+      "type": "array",
+      "title": "Groups"
+     },
+     "order": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Order",
+      "description": "Orden sugerido de familias en el cantero, temporada a temporada."
+     },
+     "rules": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Rules"
+     },
+     "source": {
+      "type": "string",
+      "title": "Source"
+     }
+    },
+    "type": "object",
+    "required": [
+     "groups",
+     "order",
+     "rules",
+     "source"
+    ],
+    "title": "HuertaRotationGuide",
+    "description": "Guía orientativa para rotar canteros por familia. Fuente: INTA Pro-Huerta. Requiere criterio local."
    },
    "Impact": {
     "properties": {

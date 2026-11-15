@@ -4,7 +4,7 @@
  */
 import type {
   ApiEnvelope, CalendarRequest, CalendarTimeline, ClimateSummary, CompareResult, Crop, FieldOut, ResponseMeta, Rotation,
-  AlertsResult, FieldHeatStress, FieldSectors, FieldSoilMoisture, HuertaPanel, ProvincesOut, ZoneAt, ZoneSuitability, ZonesOut, ScenarioInput, ScenarioResult, SoilMoistureSummary, TerrainSummary, VegetationSummary,
+  AlertsResult, FieldHeatStress, FieldSectors, FieldSoilMoisture, HuertaPanel, HuertaRotationGuide, ProvincesOut, ZoneAt, ZoneSuitability, ZonesOut, ScenarioInput, ScenarioResult, SoilMoistureSummary, TerrainSummary, VegetationSummary,
 } from "@/types/api";
 import { isBaseline, sameEffect } from "../scenarios";
 import { demoNotice, disclaimer } from "../content";
@@ -134,6 +134,10 @@ export async function demoHuerta(fieldId: string): Promise<ApiEnvelope<HuertaPan
   const local = isLocalId(fieldId) ? getLocalField(fieldId) : null;
   const at = local ? { latitude: local.location.lat, longitude: local.location.lon } : {};
   return env({ ...data, ...at, field_id: fieldId }, [...(note ? [note] : []), noForecast(), ...data.warnings]);
+}
+
+export async function demoHuertaRotation(): Promise<ApiEnvelope<HuertaRotationGuide>> {
+  return env(await load<HuertaRotationGuide>("huerta-rotation"));
 }
 
 export async function demoAlerts(fieldId: string, profile: "huerta" | "agricultor"): Promise<ApiEnvelope<AlertsResult>> {
