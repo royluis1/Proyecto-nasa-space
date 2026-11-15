@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BookOpen, Home, Map, MapPinned, Sprout } from "lucide-react";
+import { AccountChip } from "@/components/auth/account-chip";
 import { ProfileChip } from "./profile-chip";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -27,6 +28,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
+          <AccountChip />
           <ProfileChip />
           <ThemeToggle />
         </div>

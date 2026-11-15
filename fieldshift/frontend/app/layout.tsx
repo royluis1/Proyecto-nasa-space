@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { AuthProvider } from "@/components/auth/auth-provider";
 import { BackendBanner } from "@/components/layout/backend-banner";
 import { DisclaimerBar } from "@/components/layout/disclaimer-bar";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -22,16 +23,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es-AR" suppressHydrationWarning>
       <body className="min-h-screen font-sans">
         <ThemeProvider>
-          <a href="#contenido" className="sr-only z-50 rounded-md bg-primary px-4 py-2 text-primary-foreground focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
-            Saltar al contenido
-          </a>
-          <SiteHeader />
-          <DisclaimerBar />
-          <BackendBanner />
-          <main id="contenido" className="container py-6">
-            {children}
-          </main>
-          <SiteFooter />
+          <AuthProvider>
+            <a href="#contenido" className="sr-only z-50 rounded-md bg-primary px-4 py-2 text-primary-foreground focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
+              Saltar al contenido
+            </a>
+            <SiteHeader />
+            <DisclaimerBar />
+            <BackendBanner />
+            <main id="contenido" className="container py-6">
+              {children}
+            </main>
+            <SiteFooter />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
