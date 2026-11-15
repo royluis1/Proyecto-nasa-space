@@ -2,12 +2,13 @@
 
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { COMPONENTS, AGGREGATION_NOTE, COMPONENT_ORDER, num } from "@/lib/format";
+import { COMPONENTS, aggregationNote, COMPONENT_ORDER, num } from "@/lib/format";
 import {
   PRIORITY_KEYS, PRIORITY_META, PRIORITY_PRESETS, componentWeights, presetValues, toBackendPriorities, type PriorityKey, type UiPriorities,
 } from "@/lib/priorities";
+import { tr } from "@/lib/i18n";
 
-const intensity = (v: number) => (v === 0 ? "No me importa" : v <= 3 ? "Poco" : v <= 6 ? "Importante" : v <= 9 ? "Muy importante" : "Lo más importante");
+const intensity = (v: number) => (v === 0 ? tr("No me importa", "Don't care") : v <= 3 ? tr("Poco", "A little") : v <= 6 ? tr("Importante", "Important") : v <= 9 ? tr("Muy importante", "Very important") : tr("Lo más importante", "Most important"));
 
 const sameAsPreset = (value: UiPriorities, id: string) => {
   const p = presetValues(id);
@@ -64,7 +65,7 @@ export function PriorityControls({ value, onChange, disabled }: Props) {
                 step={1}
                 value={[value[k]]}
                 onValueChange={([v]) => set(k, v)}
-                thumbLabel={`${meta.label}: de 0 a 10`}
+                thumbLabel={tr(`${meta.label}: de 0 a 10`, `${meta.label}: from 0 to 10`)}
                 aria-labelledby={`${id}-label`}
                 disabled={disabled}
               />
@@ -76,7 +77,7 @@ export function PriorityControls({ value, onChange, disabled }: Props) {
 
       <section aria-labelledby="reparto-titulo" className="rounded-xl border bg-muted/40 p-5">
         <h3 id="reparto-titulo" className="mb-3 text-lg font-semibold">
-          Cómo se reparte el puntaje
+          {tr("Cómo se reparte el puntaje", "How the score is split")}
         </h3>
         <ul className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
           {COMPONENT_ORDER.map((c) => (
@@ -93,7 +94,7 @@ export function PriorityControls({ value, onChange, disabled }: Props) {
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-sm text-muted-foreground">{AGGREGATION_NOTE}</p>
+        <p className="mt-3 text-sm text-muted-foreground">{aggregationNote()}</p>
       </section>
     </div>
   );

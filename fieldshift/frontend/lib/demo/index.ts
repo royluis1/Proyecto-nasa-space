@@ -7,9 +7,10 @@ import type {
   AlertsResult, FieldHeatStress, FieldSectors, FieldSoilMoisture, HuertaPanel, ProvincesOut, ZoneAt, ZoneSuitability, ZonesOut, ScenarioInput, ScenarioResult, SoilMoistureSummary, TerrainSummary, VegetationSummary,
 } from "@/types/api";
 import { isBaseline, sameEffect } from "../scenarios";
-import { DEMO_NOTICE, DISCLAIMER } from "../content";
+import { demoNotice, disclaimer } from "../content";
 import { ORIGIN_LABELS } from "../format";
 import { getLocalField, isLocalId, listLocalFields } from "../local-fields";
+import { currentLang, tr } from "@/lib/i18n";
 
 export const EXAMPLE_IDS = ["campo-este", "campo-centro", "campo-conlara"] as const;
 type ExampleId = (typeof EXAMPLE_IDS)[number];
@@ -17,14 +18,15 @@ type ExampleId = (typeof EXAMPLE_IDS)[number];
 const demoMeta = (extra: string[] = []): ResponseMeta => ({
   data_status: "sample",
   origin_label: ORIGIN_LABELS.demo,
-  warnings: [DEMO_NOTICE, ...extra],
-  disclaimer: DISCLAIMER,
+  warnings: [demoNotice(), ...extra],
+  disclaimer: disclaimer(),
 });
 const env = <T>(data: T, extra: string[] = []): ApiEnvelope<T> => ({ data, meta: demoMeta(extra) });
 
 async function load<T>(name: string): Promise<T> {
   // Las rutas están acotadas a los archivos de ./data: el bundler solo incluye esos.
-  const mod = await import(`./data/${name}.json`);
+  // En inglés se usan los generados con el backend en inglés (./data/en).
+  const mod = currentLang() === "en" ? await import(`./data/en/${name}.json`) : await import(`./data/${name}.json`);
   return (mod.default ?? mod) as T;
 }
 
@@ -45,7 +47,10 @@ export async function exampleIdFor(fieldId: string): Promise<{ id: ExampleId; no
   );
   return {
     id: nearest.id as ExampleId,
-    note: `Este campo está guardado solo en este navegador: se muestran los resultados del campo de ejemplo más cercano (${nearest.name}).`,
+    note: tr(
+      `Este campo está guardado solo en este navegador: se muestran los resultados del campo de ejemplo más cercano (${nearest.name}).`,
+      `This field is saved only in this browser: results from the nearest example field (${nearest.name}) are shown.`,
+    ),
   };
 }
 
@@ -91,9 +96,9 @@ export async function demoCompare(fieldId: string, scenario?: ScenarioInput | nu
           return { ...ev, score: { ...sc, components } };
         })
         .sort((a, b) => a.score.rank - b.score.rank);
-      extra.push("En modo demostración, los puntajes reflejan el escenario elegido pero el detalle de factores es el del clima del período.");
+      extra.push(tr("En modo demostración, los puntajes reflejan el escenario elegido pero el detalle de factores es el del clima del período.", "In demo mode, scores reflect the chosen scenario but the factor details use the period's weather."));
     } else {
-      extra.push("En modo demostración solo hay escenarios predefinidos: se muestra el clima del período.");
+      extra.push(tr("En modo demostración solo hay escenarios predefinidos: se muestra el clima del período.", "In demo mode there are only preset scenarios: the period's weather is shown."));
     }
   }
   const result = { ...data, evaluations, scenario: applied, field_id: fieldId, ranking: evaluations.map((e) => e.score) } as CompareResult;
@@ -120,14 +125,14 @@ export async function demoVegetation(fieldId: string): Promise<ApiEnvelope<Veget
   return env(await load<VegetationSummary>(`vegetation-${id}`), note ? [note] : []);
 }
 
-const NO_FORECAST = "Sin conexión con el servidor: el pronóstico (Open-Meteo) no está disponible y las alertas son solo de ejemplo.";
+const noForecast = () => tr("Sin conexión con el servidor: el pronóstico (Open-Meteo) no está disponible y las alertas son solo de ejemplo.", "No connection to the server: the forecast (Open-Meteo) is not available and the alerts are examples only.");
 
 export async function demoHuerta(fieldId: string): Promise<ApiEnvelope<HuertaPanel>> {
   const { id, note } = await exampleIdFor(fieldId);
   const data = await load<HuertaPanel>(`huerta-${id}`);
   const local = isLocalId(fieldId) ? getLocalField(fieldId) : null;
   const at = local ? { latitude: local.location.lat, longitude: local.location.lon } : {};
-  return env({ ...data, ...at, field_id: fieldId }, [...(note ? [note] : []), NO_FORECAST, ...data.warnings]);
+  return env({ ...data, ...at, field_id: fieldId }, [...(note ? [note] : []), noForecast(), ...data.warnings]);
 }
 
 export async function demoAlerts(fieldId: string, profile: "huerta" | "agricultor"): Promise<ApiEnvelope<AlertsResult>> {
@@ -135,7 +140,7 @@ export async function demoAlerts(fieldId: string, profile: "huerta" | "agriculto
   const data = await load<AlertsResult>(`alerts-${id}-${profile}`);
   const local = isLocalId(fieldId) ? getLocalField(fieldId) : null;
   const at = local ? { latitude: local.location.lat, longitude: local.location.lon } : {};
-  return env({ ...data, ...at }, [...(note ? [note] : []), NO_FORECAST, ...data.warnings]);
+  return env({ ...data, ...at }, [...(note ? [note] : []), noForecast(), ...data.warnings]);
 }
 
 export async function demoProvinces(): Promise<ApiEnvelope<ProvincesOut>> {
@@ -149,11 +154,11 @@ export async function demoZones(provinceId: string): Promise<ApiEnvelope<ZonesOu
   }
   const prov = (await load<ProvincesOut>("provinces")).features.find((f) => (f.properties as { id: string }).id === provinceId);
   const name = prov ? String((prov.properties as { name: string }).name) : provinceId;
-  return env({ province_id: provinceId, province_name: name, available: false, warning: "Zonificación disponible próximamente para esta provincia.", zones: [], cells: [] });
+  return env({ province_id: provinceId, province_name: name, available: false, warning: tr("Zonificación disponible próximamente para esta provincia.", "Zoning for this province is coming soon."), zones: [], cells: [] });
 }
 
 export async function demoSuitability(zoneId: string): Promise<ApiEnvelope<ZoneSuitability>> {
-  return env(await load<ZoneSuitability>(`suitability-${zoneId}`), ["Aptitud orientativa por reglas: no es una recomendación de siembra."]);
+  return env(await load<ZoneSuitability>(`suitability-${zoneId}`), [tr("Aptitud orientativa por reglas: no es una recomendación de siembra.", "Rule-based indicative suitability: not a planting recommendation.")]);
 }
 
 /** Zona de un campo sin conexión: la de su campo de ejemplo más cercano (se avisa). */
@@ -185,7 +190,7 @@ export async function demoTerrain(fieldId: string): Promise<ApiEnvelope<TerrainS
   const { id, note } = await exampleIdFor(fieldId);
   return env(await load<TerrainSummary>(`terrain-${id}`), [
     ...(note ? [note] : []),
-    "Relieve de MUESTRA SIMULADA: con credenciales de Earthdata, el servidor descarga SRTM real.",
+    tr("Relieve de MUESTRA SIMULADA: con credenciales de Earthdata, el servidor descarga SRTM real.", "SIMULATED SAMPLE terrain: with Earthdata credentials, the server downloads real SRTM."),
   ]);
 }
 
@@ -198,7 +203,7 @@ export async function demoScenarios(fieldId: string, requested: ScenarioInput[])
       return hit ? { ...hit, scenario: { ...hit.scenario, id: r.id, name: r.name } } : undefined;
     })
     .filter((s): s is ScenarioResult => Boolean(s));
-  const extra = wanted.length < requested.length ? ["En modo demostración solo hay escenarios predefinidos: los demás no se calcularon."] : [];
+  const extra = wanted.length < requested.length ? [tr("En modo demostración solo hay escenarios predefinidos: los demás no se calcularon.", "In demo mode there are only preset scenarios: the others were not calculated.")] : [];
   return env(wanted.length ? wanted : all, [...(note ? [note] : []), ...extra]);
 }
 
@@ -233,7 +238,7 @@ export async function demoCalendar(fieldId: string, req: CalendarRequest): Promi
   const tl = all.find((t) => t.rotation.id === req.rotation_id) ?? all.find((t) => t.is_recommended) ?? all[0];
   const n = Math.min(4, Math.max(2, req.campaigns ?? 3));
   const extra = note ? [note] : [];
-  if (!isBaseline(req.scenario)) extra.push("En modo demostración el calendario está calculado solo para el año normal.");
+  if (!isBaseline(req.scenario)) extra.push(tr("En modo demostración el calendario está calculado solo para el año normal.", "In demo mode the calendar is calculated only for the normal year."));
   const shifted = shiftTimeline({ ...tl, field_id: fieldId, campaigns: tl.campaigns.slice(0, n), scenario: null }, req.first_campaign_year ?? nextCampaignYear());
   const campaigns = shifted.campaigns.map((c) => c.index);
   return env(

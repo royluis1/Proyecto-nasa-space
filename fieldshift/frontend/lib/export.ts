@@ -1,5 +1,6 @@
 import { STRATEGY_LABELS } from "./format";
-import { DISCLAIMER } from "./content";
+import { disclaimer } from "./content";
+import { tr } from "./i18n";
 import { friendlyWarnings } from "./plain";
 import type { CompareResult, RotationEvaluation } from "@/types/api";
 
@@ -14,10 +15,10 @@ const esc = (v: unknown): string => {
 /** CSV del ranking (con BOM para que Excel respete los acentos). */
 export function buildCsv(fieldName: string, origin: string, result: CompareResult, evaluations: RotationEvaluation[]): string {
   const rows: unknown[][] = [
-    [`# ${DISCLAIMER}`],
-    [`# Origen de los datos: ${origin}`],
+    [`# ${disclaimer()}`],
+    [tr(`# Origen de los datos: ${origin}`, `# Data origin: ${origin}`)],
     ...friendlyWarnings(result.warnings).map((w) => [`# ${w}`]),
-    ["# Campo", fieldName],
+    [tr("# Campo", "# Field"), fieldName],
     [],
     ["puesto", "rotacion_id", "estrategia", "rotacion", "puntaje_total", "rango_min", "rango_max", "confianza", "A_agua", "S_suelo", "R_riesgo", "I_ingreso", "E_sostenibilidad", "explicacion"],
   ];
@@ -33,7 +34,7 @@ export function buildCsv(fieldName: string, origin: string, result: CompareResul
 
 export function buildJson(fieldName: string, origin: string, result: CompareResult, evaluations: RotationEvaluation[]): string {
   return JSON.stringify(
-    { campo: fieldName, origen_de_datos: origin, generado: new Date().toISOString(), advertencia: DISCLAIMER, ...result, ranking: undefined, evaluations },
+    { campo: fieldName, origen_de_datos: origin, generado: new Date().toISOString(), advertencia: disclaimer(), ...result, ranking: undefined, evaluations },
     null,
     2,
   );

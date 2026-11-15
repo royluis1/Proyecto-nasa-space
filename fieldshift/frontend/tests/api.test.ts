@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError, api, call, describeError, getBackendState, request, resetBackendState, retryConfig } from "@/lib/api";
+import { setCurrentLang } from "@/lib/i18n";
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 const envelope = <T,>(data: T) => ({ data, meta: { data_status: "live", warnings: [], disclaimer: "x", origin_label: "DATO NASA EN VIVO" } });
@@ -28,8 +29,19 @@ describe("cliente de la API", () => {
     await request("/x", { method: "POST", body: { a: 1 } });
     const [, init] = fetchMock.mock.calls[0];
     expect(init.method).toBe("POST");
-    expect(init.headers).toEqual({ "Content-Type": "application/json" });
+    expect(init.headers).toEqual({ "Content-Type": "application/json", "Accept-Language": "es" });
     expect(init.body).toBe('{"a":1}');
+  });
+
+  it("pide los textos en el idioma elegido", async () => {
+    setCurrentLang("en");
+    try {
+      fetchMock.mockResolvedValueOnce(json(envelope([])));
+      await request("/x");
+      expect(fetchMock.mock.calls[0][1].headers).toEqual({ "Accept-Language": "en" });
+    } finally {
+      setCurrentLang("es");
+    }
   });
 
   it("reintenta ante un error 502 y termina bien", async () => {

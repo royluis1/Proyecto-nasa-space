@@ -1,6 +1,9 @@
 import { Swatch } from "@/components/zones/patterns";
 import { LEVEL_STYLES, groupByLevel } from "@/lib/zones";
 import type { CropSuitability } from "@/types/api";
+import { L, localize, tr } from "@/lib/i18n";
+
+const CONFIDENCE_WORD: Record<string, string> = localize({ alta: L("alta", "high"), media: L("media", "medium"), baja: L("baja", "low") });
 
 /** Aptitud orientativa agrupada por nivel, con motivos, riesgos y lo que depende del suelo y del manejo. */
 export function SuitabilityList({ items, compact = false }: { items: CropSuitability[]; compact?: boolean }) {
@@ -17,9 +20,9 @@ export function SuitabilityList({ items, compact = false }: { items: CropSuitabi
                   <summary className="cursor-pointer font-medium">{c.crop_name}{!compact && c.reasons[0] ? <span className="font-normal text-muted-foreground"> · {c.reasons[0]}</span> : null}</summary>
                   <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
                     {c.reasons.map((x) => <li key={x}>{x}</li>)}
-                    {c.risks.map((x) => <li key={x}><strong>Riesgo:</strong> {x}</li>)}
+                    {c.risks.map((x) => <li key={x}><strong>{tr("Riesgo:", "Risk:")}</strong> {x}</li>)}
                   </ul>
-                  <p className="mt-1 text-xs text-muted-foreground">Confianza {c.confidence}. {c.note}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{tr("Confianza", "Confidence")} {CONFIDENCE_WORD[c.confidence] ?? c.confidence}. {c.note}</p>
                 </details>
               </li>
             ))}
@@ -28,11 +31,11 @@ export function SuitabilityList({ items, compact = false }: { items: CropSuitabi
       ))}
       {!compact && depends.length > 0 && (
         <div className="rounded-md bg-muted p-3 text-sm">
-          <p className="font-medium">Lo que la zona no captura:</p>
+          <p className="font-medium">{tr("Lo que la zona no captura:", "What the area does not capture:")}</p>
           <ul className="list-disc pl-5">{depends.map((d) => <li key={d}>{d}</li>)}</ul>
         </div>
       )}
-      <p className="text-sm font-medium">Requiere validación agronómica local.</p>
+      <p className="text-sm font-medium">{tr("Requiere validación agronómica local.", "Requires local agronomic validation.")}</p>
     </div>
   );
 }

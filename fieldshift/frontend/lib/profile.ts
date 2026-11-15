@@ -1,4 +1,5 @@
 /** Perfil de uso (Huerta o Agricultor). Sin contraseñas: se guarda en este navegador. */
+import { tr } from "./i18n";
 
 export type Profile = "huerta" | "agricultor";
 export const PROFILE_KEY = "fieldshift:perfil";
@@ -6,15 +7,23 @@ export const PROFILE_EVENT = "fieldshift:perfil";
 
 export const PROFILES: Record<Profile, { label: string; icon: string; who: string; home: (fieldId: string) => string }> = {
   huerta: {
-    label: "Huerta",
+    get label() {
+      return tr("Huerta", "Garden");
+    },
     icon: "🥬",
-    who: "Tengo una huerta en casa, comunitaria o produzco verduras en poca superficie.",
+    get who() {
+      return tr("Tengo una huerta en casa, comunitaria o produzco verduras en poca superficie.", "I have a home or community vegetable garden, or grow vegetables on a small area.");
+    },
     home: (id) => `/campo/${id}/huerta`,
   },
   agricultor: {
-    label: "Agricultor",
+    get label() {
+      return tr("Agricultor", "Farmer");
+    },
     icon: "🚜",
-    who: "Manejo lotes de cultivos extensivos y quiero comparar rotaciones.",
+    get who() {
+      return tr("Manejo lotes de cultivos extensivos y quiero comparar rotaciones.", "I manage field-crop plots and want to compare rotations.");
+    },
     home: (id) => `/campo/${id}/perfil`,
   },
 };

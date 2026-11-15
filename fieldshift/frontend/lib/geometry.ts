@@ -1,4 +1,5 @@
 import type { Boundary } from "@/types/api";
+import { tr } from "./i18n";
 
 export type LngLat = [number, number];
 
@@ -41,7 +42,7 @@ export function ringAreaHa(ring: LngLat[]): number {
 
 export function ringCentroid(ring: LngLat[]): { lat: number; lon: number } {
   const pts = open(ring);
-  if (pts.length === 0) throw new Error("El polígono está vacío.");
+  if (pts.length === 0) throw new Error(tr("El polígono está vacío.", "The polygon is empty."));
   const mean = { lon: pts.reduce((a, p) => a + p[0], 0) / pts.length, lat: pts.reduce((a, p) => a + p[1], 0) / pts.length };
   if (pts.length < 3) return mean;
   const xy = project(pts, mean.lat);
@@ -97,14 +98,14 @@ export function parseGeoJson(text: string): LngLat[] {
   try {
     json = JSON.parse(text);
   } catch {
-    throw new Error("El archivo no es un GeoJSON válido (no se pudo leer el JSON).");
+    throw new Error(tr("El archivo no es un GeoJSON válido (no se pudo leer el JSON).", "The file is not valid GeoJSON (the JSON could not be read)."));
   }
   const rings = ringFromGeometry(json).filter((r) => Array.isArray(r) && r.length >= 3);
-  if (rings.length === 0) throw new Error("No encontré ningún polígono en el archivo. Tiene que ser un GeoJSON de tipo Polygon o MultiPolygon.");
+  if (rings.length === 0) throw new Error(tr("No encontré ningún polígono en el archivo. Tiene que ser un GeoJSON de tipo Polygon o MultiPolygon.", "No polygon was found in the file. It must be a GeoJSON of type Polygon or MultiPolygon."));
   const best = rings.reduce((a, b) => (ringAreaHa(b) >= ringAreaHa(a) ? b : a));
   const clean = best.map((p) => [Number(p[0]), Number(p[1])] as LngLat);
   if (clean.some(([lon, lat]) => !isValidLatLon(lat, lon))) {
-    throw new Error("Las coordenadas del polígono están fuera de rango. El GeoJSON debe estar en WGS84 (longitud, latitud).");
+    throw new Error(tr("Las coordenadas del polígono están fuera de rango. El GeoJSON debe estar en WGS84 (longitud, latitud).", "The polygon coordinates are out of range. The GeoJSON must be in WGS84 (longitude, latitude)."));
   }
   return closeRing(clean);
 }

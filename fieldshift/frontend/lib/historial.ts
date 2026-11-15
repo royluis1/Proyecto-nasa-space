@@ -1,16 +1,17 @@
 import type { HistorialRow } from "@/lib/supabase/lotes";
+import { appLocale, L, localize, tr } from "./i18n";
 
 /** Tipos de registro del historial de un lote. Lo pidió la agrónoma: llevar la historia para después decidir. */
 export const TIPOS = ["siembra", "cosecha", "riego", "observacion", "nota"] as const;
 export type TipoRegistro = (typeof TIPOS)[number];
 
-export const TIPO_LABEL: Record<TipoRegistro, string> = {
-  siembra: "Siembra",
-  cosecha: "Cosecha",
-  riego: "Riego",
-  observacion: "Observación",
-  nota: "Nota",
-};
+export const TIPO_LABEL: Record<TipoRegistro, string> = localize({
+  siembra: L("Siembra", "Planting"),
+  cosecha: L("Cosecha", "Harvest"),
+  riego: L("Riego", "Irrigation"),
+  observacion: L("Observación", "Observation"),
+  nota: L("Nota", "Note"),
+});
 
 /** Los que necesitan decir qué cultivo. */
 export const NEEDS_CROP: ReadonlySet<TipoRegistro> = new Set(["siembra", "cosecha"]);
@@ -27,19 +28,19 @@ export interface NuevoRegistroForm {
 /** Revisa el formulario antes de mandarlo. Devuelve un error por campo (vacío si está todo bien). */
 export function validateRegistro(f: NuevoRegistroForm, today: Date = new Date()): Partial<Record<keyof NuevoRegistroForm, string>> {
   const errors: Partial<Record<keyof NuevoRegistroForm, string>> = {};
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(f.fecha)) errors.fecha = "Elegí una fecha.";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(f.fecha)) errors.fecha = tr("Elegí una fecha.", "Choose a date.");
   else {
     const d = new Date(`${f.fecha}T00:00:00`);
     const limit = new Date(today);
     limit.setDate(limit.getDate() + 1);
-    if (Number.isNaN(d.getTime())) errors.fecha = "La fecha no es válida.";
-    else if (d > limit) errors.fecha = "El historial es de lo que ya pasó: la fecha no puede ser futura.";
-    else if (d.getFullYear() < 1950) errors.fecha = "Revisá el año.";
+    if (Number.isNaN(d.getTime())) errors.fecha = tr("La fecha no es válida.", "The date is not valid.");
+    else if (d > limit) errors.fecha = tr("El historial es de lo que ya pasó: la fecha no puede ser futura.", "The history is for what already happened: the date can't be in the future.");
+    else if (d.getFullYear() < 1950) errors.fecha = tr("Revisá el año.", "Check the year.");
   }
-  if (!isTipo(f.tipo)) errors.tipo = "Elegí qué pasó.";
-  else if (NEEDS_CROP.has(f.tipo) && !f.cultivo.trim()) errors.cultivo = `Para una ${TIPO_LABEL[f.tipo].toLowerCase()} decí qué cultivo.`;
-  if (f.nota.length > 1000) errors.nota = "La nota es muy larga (máximo 1000 caracteres).";
-  if (f.tipo === "nota" && !f.nota.trim()) errors.nota = "Escribí la nota.";
+  if (!isTipo(f.tipo)) errors.tipo = tr("Elegí qué pasó.", "Choose what happened.");
+  else if (NEEDS_CROP.has(f.tipo) && !f.cultivo.trim()) errors.cultivo = tr(`Para una ${TIPO_LABEL[f.tipo].toLowerCase()} decí qué cultivo.`, `For a ${TIPO_LABEL[f.tipo].toLowerCase()}, say which crop.`);
+  if (f.nota.length > 1000) errors.nota = tr("La nota es muy larga (máximo 1000 caracteres).", "The note is too long (1000 characters max).");
+  if (f.tipo === "nota" && !f.nota.trim()) errors.nota = tr("Escribí la nota.", "Write the note.");
   return errors;
 }
 
@@ -68,5 +69,5 @@ export function sownSequence(rows: Pick<HistorialRow, "fecha" | "tipo" | "cultiv
 /** Fecha en formato argentino, sin correrse de día por la zona horaria. */
 export function fechaLarga(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" });
+  return new Date(y, m - 1, d).toLocaleDateString(appLocale(), { day: "numeric", month: "long", year: "numeric" });
 }

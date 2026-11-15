@@ -4,6 +4,7 @@ import { Legend, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, 
 import { COMPONENTS, COMPONENT_ORDER, STRATEGY_LABELS, num } from "@/lib/format";
 import type { RotationEvaluation } from "@/types/api";
 import { CHART, ChartFrame } from "./chart-frame";
+import { tr } from "@/lib/i18n";
 
 // Cada serie lleva un trazo distinto además del color: no depende solo del color.
 const SERIES = [
@@ -27,10 +28,10 @@ export function RadarCompare({ evaluations, pick = "auto" }: { evaluations: Rota
   }));
   return (
     <ChartFrame
-      title="Las mejores opciones y tu rotación actual, componente por componente"
-      caption="Cuanto más lejos del centro, mejor el componente (0 a 100)."
+      title={tr("Las mejores opciones y tu rotación actual, componente por componente", "The best options and your current rotation, component by component")}
+      caption={tr("Cuanto más lejos del centro, mejor el componente (0 a 100).", "The farther from the center, the better the component (0 to 100).")}
       height={340}
-      table={{ headers: ["Componente", ...names], rows: data.map((d) => [String(d.eje), ...names.map((n) => num(Number(d[n])))]) }}
+      table={{ headers: [tr("Componente", "Component"), ...names], rows: data.map((d) => [String(d.eje), ...names.map((n) => num(Number(d[n])))]) }}
     >
       <RadarChart data={data} outerRadius="70%">
         <PolarGrid stroke="currentColor" strokeOpacity={0.25} />

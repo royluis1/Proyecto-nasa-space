@@ -28,6 +28,7 @@ import { BASE_ID, GROUP_LABELS, GROUP_ORDER, PRESET_SCENARIOS, isBaseline, toReq
 import { timelineTotals } from "@/lib/timeline";
 import { cn } from "@/lib/utils";
 import type { ApiResult, CalendarTimeline, Crop, Level, Rotation, TimelineAdvice, TimelineCampaign } from "@/types/api";
+import { L, localize, tr } from "@/lib/i18n";
 
 function WindowsTable({ rotation, crops }: { rotation: Rotation; crops: Record<string, Crop> }) {
   const cal = buildCalendar(rotation);
@@ -35,7 +36,7 @@ function WindowsTable({ rotation, crops }: { rotation: Rotation; crops: Record<s
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Cultivo</TableHead><TableHead>Año</TableHead><TableHead>Siembra</TableHead><TableHead>Hasta</TableHead><TableHead>Época habitual de siembra</TableHead><TableHead>¿Encaja?</TableHead>
+          <TableHead>{tr("Cultivo", "Crop")}</TableHead><TableHead>{tr("Año", "Year")}</TableHead><TableHead>{tr("Siembra", "Planting")}</TableHead><TableHead>{tr("Hasta", "Until")}</TableHead><TableHead>{tr("Época habitual de siembra", "Usual planting season")}</TableHead><TableHead>{tr("¿Encaja?", "Does it fit?")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -53,9 +54,9 @@ function WindowsTable({ rotation, crops }: { rotation: Rotation; crops: Record<s
               <TableCell className="max-w-64 text-sm">{crop?.sowing_window ?? "—"}</TableCell>
               <TableCell>
                 {inWindow === null ? "—" : inWindow && okLen ? (
-                  <span className="inline-flex items-center gap-1"><CheckCircle2 aria-hidden className="size-4" /> Sí</span>
+                  <span className="inline-flex items-center gap-1"><CheckCircle2 aria-hidden className="size-4" /> {tr("Sí", "Yes")}</span>
                 ) : (
-                  <span className="inline-flex items-center gap-1"><TriangleAlert aria-hidden className="size-4" /> {inWindow ? "Ciclo fuera de lo habitual" : "Siembra fuera de la época habitual"}</span>
+                  <span className="inline-flex items-center gap-1"><TriangleAlert aria-hidden className="size-4" /> {inWindow ? tr("Ciclo fuera de lo habitual", "Unusual cycle length") : tr("Siembra fuera de la época habitual", "Planting outside the usual season")}</span>
                 )}
               </TableCell>
             </TableRow>
@@ -66,7 +67,7 @@ function WindowsTable({ rotation, crops }: { rotation: Rotation; crops: Record<s
   );
 }
 
-const PRIORITY_WORD: Record<Level, string> = { alto: "alta", medio: "media", bajo: "baja" };
+const PRIORITY_WORD: Record<Level, string> = localize({ alto: L("alta", "high"), medio: L("media", "medium"), bajo: L("baja", "low") });
 const SEVERITY_ICON: Record<Level, typeof TriangleAlert> = { alto: OctagonAlert, medio: TriangleAlert, bajo: Info };
 const ADVICE_ICON: Record<TimelineAdvice["kind"], typeof TriangleAlert> = {
   cobertura: Layers, calor: Thermometer, agua: Droplet, siembra: Sprout, rotacion: Trophy, datos: Satellite,
@@ -74,7 +75,7 @@ const ADVICE_ICON: Record<TimelineAdvice["kind"], typeof TriangleAlert> = {
 
 function AdviceList({ advice, campaigns }: { advice: TimelineAdvice[]; campaigns: TimelineCampaign[] }) {
   const label = (ids: number[]) =>
-    ids.length === campaigns.length ? "Todas las campañas" : ids.map((i) => campaigns.find((c) => c.index === i)?.label ?? i).join(", ");
+    ids.length === campaigns.length ? tr("Todas las campañas", "All seasons") : ids.map((i) => campaigns.find((c) => c.index === i)?.label ?? i).join(", ");
   return (
     <ul className="space-y-3">
       {advice.map((a, i) => {
@@ -86,7 +87,7 @@ function AdviceList({ advice, campaigns }: { advice: TimelineAdvice[]; campaigns
             <div className="space-y-1">
               <p>{a.text}</p>
               <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                <span className="inline-flex items-center gap-1"><Sev aria-hidden className="size-4" /> Prioridad {PRIORITY_WORD[a.severity]}</span>
+                <span className="inline-flex items-center gap-1"><Sev aria-hidden className="size-4" /> {tr(`Prioridad ${PRIORITY_WORD[a.severity]}`, `${PRIORITY_WORD[a.severity][0].toUpperCase()}${PRIORITY_WORD[a.severity].slice(1)} priority`)}</span>
                 <span>· {label(a.campaigns)}</span>
               </p>
             </div>
@@ -101,20 +102,20 @@ function CompareTotals({ a, b }: { a: CalendarTimeline; b: CalendarTimeline }) {
   const ta = timelineTotals(a);
   const tb = timelineTotals(b);
   const rows: [string, number, number, boolean][] = [
-    ["Meses con cultivo vivo", ta.covered, tb.covered, true],
-    ["Meses de suelo desnudo", ta.bare, tb.bare, false],
-    ["Meses con riesgo alto de calor", ta.heat, tb.heat, false],
-    ["Meses con riesgo alto de falta de agua", ta.water, tb.water, false],
+    [tr("Meses con cultivo vivo", "Months with a living crop"), ta.covered, tb.covered, true],
+    [tr("Meses de suelo desnudo", "Months of bare soil"), ta.bare, tb.bare, false],
+    [tr("Meses con riesgo alto de calor", "Months with high heat risk"), ta.heat, tb.heat, false],
+    [tr("Meses con riesgo alto de falta de agua", "Months with high water-shortage risk"), ta.water, tb.water, false],
   ];
   return (
     <Table>
-      <TableCaption>Totales de las {ta.campaigns} campañas. Mejor = más meses con cultivo vivo y menos meses con suelo desnudo o riesgo alto.</TableCaption>
-      <TableHeader><TableRow><TableHead>Indicador</TableHead><TableHead>{rotationTitle(a.rotation)}</TableHead><TableHead>{rotationTitle(b.rotation)} (actual)</TableHead><TableHead>¿Cuál conviene?</TableHead></TableRow></TableHeader>
+      <TableCaption>{tr(`Totales de las ${ta.campaigns} campañas. Mejor = más meses con cultivo vivo y menos meses con suelo desnudo o riesgo alto.`, `Totals for the ${ta.campaigns} seasons. Better = more months with a living crop and fewer months of bare soil or high risk.`)}</TableCaption>
+      <TableHeader><TableRow><TableHead>{tr("Indicador", "Indicator")}</TableHead><TableHead>{rotationTitle(a.rotation)}</TableHead><TableHead>{rotationTitle(b.rotation)} ({tr("actual", "current")})</TableHead><TableHead>{tr("¿Cuál conviene?", "Which is better?")}</TableHead></TableRow></TableHeader>
       <TableBody>
         {rows.map(([label, x, y, higher]) => (
           <TableRow key={label}>
             <TableCell>{label}</TableCell><TableCell className="tabular-nums">{x}</TableCell><TableCell className="tabular-nums">{y}</TableCell>
-            <TableCell>{x === y ? "Igual" : (x > y) === higher ? "La elegida" : "La actual"}</TableCell>
+            <TableCell>{x === y ? tr("Igual", "Same") : (x > y) === higher ? tr("La elegida", "The chosen one") : tr("La actual", "The current one")}</TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -163,22 +164,22 @@ function CalendarioContent() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Calendario agrícola"
-        description="Cuándo se siembra y se cosecha, y en qué meses hay riesgo."
+        title={tr("Calendario agrícola", "Farm calendar")}
+        description={tr("Cuándo se siembra y se cosecha, y en qué meses hay riesgo.", "When to plant and harvest, and which months carry risk.")}
       >
       </PageHeader>
       {!selected ? (
         compare.error ? (
-          <Alert tone="error" title="No pudimos armar las rotaciones"><p>{compare.error}</p></Alert>
+          <Alert tone="error" title={tr("No pudimos armar las rotaciones", "We couldn't build the rotations")}><p>{compare.error}</p></Alert>
         ) : (
-          <div role="status" aria-busy="true"><span className="sr-only">Cargando…</span><Skeleton className="h-64 w-full" /></div>
+          <div role="status" aria-busy="true"><span className="sr-only">{tr("Cargando…", "Loading…")}</span><Skeleton className="h-64 w-full" /></div>
         )
       ) : (
         <>
           <Card>
             <CardContent className="grid gap-4 pt-6 md:grid-cols-3">
               <div className="space-y-1.5">
-                <Label htmlFor="rot">Rotación</Label>
+                <Label htmlFor="rot">{tr("Rotación", "Rotation")}</Label>
                 <Select id="rot" value={selected.rotation.id} onChange={(e) => setParam("rotacion", e.target.value)}>
                   {evals.map((e) => (
                     <option key={e.rotation.id} value={e.rotation.id}>
@@ -188,7 +189,7 @@ function CalendarioContent() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="esc">Escenario climático</Label>
+                <Label htmlFor="esc">{tr("Escenario climático", "Climate scenario")}</Label>
                 <Select id="esc" value={scenarioId} onChange={(e) => setParam("escenario", e.target.value)}>
                   {GROUP_ORDER.map((g) => (
                     <optgroup key={g} label={GROUP_LABELS[g]}>
@@ -198,7 +199,7 @@ function CalendarioContent() {
                 </Select>
               </div>
               <fieldset className="space-y-1.5">
-                <legend className="text-sm font-medium">Campañas</legend>
+                <legend className="text-sm font-medium">{tr("Campañas", "Seasons")}</legend>
                 <div className="flex gap-2">
                   {[2, 3, 4].map((n) => (
                     <Button key={n} size="sm" variant={n === nCampaigns ? "default" : "outline"} aria-pressed={n === nCampaigns} onClick={() => setParam("campanias", String(n))}>{n}</Button>
@@ -208,13 +209,13 @@ function CalendarioContent() {
               {actual && actual.rotation.id !== selected.rotation.id && (
                 <div className="flex items-center gap-3 md:col-span-3">
                   <Switch id="vs-actual" checked={withActual} onCheckedChange={setWithActual} />
-                  <Label htmlFor="vs-actual">Comparar con mi rotación actual</Label>
+                  <Label htmlFor="vs-actual">{tr("Comparar con mi rotación actual", "Compare with my current rotation")}</Label>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          <AsyncBlock state={timeline} what="el calendario">
+          <AsyncBlock state={timeline} what={tr("el calendario", "the calendar")}>
             {(r) => {
               const tl = r.data;
               return (
@@ -223,22 +224,22 @@ function CalendarioContent() {
                     <CardHeader>
                       <CardTitle as="h2">{rotationTitle(tl.rotation)}</CardTitle>
                       <CardDescription>
-                        {STRATEGY_LABELS[tl.rotation.strategy]} · {PRESET_SCENARIOS.find((p) => p.id === scenarioId)?.name} · {tl.irrigated ? "con riego" : "secano"} ·{" "}
-                        {tl.is_recommended ? "es la recomendada para este escenario" : `${num(tl.score_total)} puntos (la recomendada tiene ${num(tl.recommended_total)})`}
+                        {STRATEGY_LABELS[tl.rotation.strategy]} · {PRESET_SCENARIOS.find((p) => p.id === scenarioId)?.name} · {tl.irrigated ? tr("con riego", "irrigated") : tr("secano", "rainfed")} ·{" "}
+                        {tl.is_recommended ? tr("es la recomendada para este escenario", "it is the recommended one for this scenario") : tr(`${num(tl.score_total)} puntos (la recomendada tiene ${num(tl.recommended_total)})`, `${num(tl.score_total)} points (the recommended one has ${num(tl.recommended_total)})`)}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                      <Disclosure label="¿Cómo leer el calendario?"><TimelineLegend /></Disclosure>
+                      <Disclosure label={tr("¿Cómo leer el calendario?", "How to read the calendar?")}><TimelineLegend /></Disclosure>
                       {crops.data ? tl.campaigns.map((c) => <CampaignTimeline key={c.index} campaign={c} crops={cropMap} />) : <Skeleton className="h-48 w-full" />}
                     </CardContent>
                   </Card>
 
                   <Card>
-                    <CardHeader><CardTitle as="h2">Qué tener en cuenta</CardTitle></CardHeader>
+                    <CardHeader><CardTitle as="h2">{tr("Qué tener en cuenta", "What to keep in mind")}</CardTitle></CardHeader>
                     <CardContent className="space-y-3">
                       <AdviceList advice={tl.advice.slice(0, 3)} campaigns={tl.campaigns} />
                       {tl.advice.length > 3 && (
-                        <Disclosure label={`Ver ${tl.advice.length - 3} recomendaciones más`}>
+                        <Disclosure label={tr(`Ver ${tl.advice.length - 3} recomendaciones más`, `See ${tl.advice.length - 3} more recommendations`)}>
                           <AdviceList advice={tl.advice.slice(3)} campaigns={tl.campaigns} />
                         </Disclosure>
                       )}
@@ -247,13 +248,13 @@ function CalendarioContent() {
 
                   {showActual && (
                     <Card>
-                      <CardHeader><CardTitle as="h2">Frente a tu rotación actual</CardTitle><CardDescription>Mismo escenario y mismas campañas.</CardDescription></CardHeader>
+                      <CardHeader><CardTitle as="h2">{tr("Frente a tu rotación actual", "Vs. your current rotation")}</CardTitle><CardDescription>{tr("Mismo escenario y mismas campañas.", "Same scenario and same seasons.")}</CardDescription></CardHeader>
                       <CardContent className="space-y-6">
-                        <AsyncBlock state={actualTl} what="el calendario de tu rotación actual">
+                        <AsyncBlock state={actualTl} what={tr("el calendario de tu rotación actual", "your current rotation's calendar")}>
                           {(a) => (
                             <>
                               <CompareTotals a={tl} b={a.data} />
-                              {a.data.campaigns.map((c) => <CampaignTimeline key={c.index} campaign={c} crops={cropMap} rotationName="Tu rotación actual" />)}
+                              {a.data.campaigns.map((c) => <CampaignTimeline key={c.index} campaign={c} crops={cropMap} rotationName={tr("Tu rotación actual", "Your current rotation")} />)}
                             </>
                           )}
                         </AsyncBlock>
@@ -262,11 +263,11 @@ function CalendarioContent() {
                   )}
 
                   <PageNotes>
-                    <WarningsList warnings={friendlyWarnings(r.meta.warnings).filter((w) => !/prioridades por defecto/i.test(w))} title="Avisos" />
-                    <p>Las fechas son típicas, no una recomendación de siembra: ajustalas con tu ingeniero agrónomo según la variedad, el agua del perfil y el pronóstico.</p>
-                    <Disclosure label="Datos usados y supuestos" contentClassName="grid gap-4 lg:grid-cols-2">
-                      <div><h3 className="font-medium text-foreground">Datos usados</h3><ul className="mt-1 list-disc space-y-1 pl-5">{tl.data_used.map((d) => <li key={d}>{d}</li>)}</ul></div>
-                      <div><h3 className="font-medium text-foreground">Supuestos</h3><ul className="mt-1 list-disc space-y-1 pl-5">{tl.assumptions.map((d) => <li key={d}>{d}</li>)}</ul></div>
+                    <WarningsList warnings={friendlyWarnings(r.meta.warnings).filter((w) => !/prioridades por defecto|default priorities/i.test(w))} title={tr("Avisos", "Notices")} />
+                    <p>{tr("Las fechas son típicas, no una recomendación de siembra: ajustalas con tu ingeniero agrónomo según la variedad, el agua del perfil y el pronóstico.", "The dates are typical, not a planting recommendation: adjust them with your agronomist based on the variety, soil-profile water and the forecast.")}</p>
+                    <Disclosure label={tr("Datos usados y supuestos", "Data used and assumptions")} contentClassName="grid gap-4 lg:grid-cols-2">
+                      <div><h3 className="font-medium text-foreground">{tr("Datos usados", "Data used")}</h3><ul className="mt-1 list-disc space-y-1 pl-5">{tl.data_used.map((d) => <li key={d}>{d}</li>)}</ul></div>
+                      <div><h3 className="font-medium text-foreground">{tr("Supuestos", "Assumptions")}</h3><ul className="mt-1 list-disc space-y-1 pl-5">{tl.assumptions.map((d) => <li key={d}>{d}</li>)}</ul></div>
                     </Disclosure>
                   </PageNotes>
                 </div>
@@ -274,8 +275,8 @@ function CalendarioContent() {
             }}
           </AsyncBlock>
 
-          <Disclosure variant="card" label="¿Las fechas de siembra encajan con la época de cada cultivo?">
-            <AsyncBlock state={crops} what="el catálogo de cultivos">
+          <Disclosure variant="card" label={tr("¿Las fechas de siembra encajan con la época de cada cultivo?", "Do the planting dates fit each crop's season?")}>
+            <AsyncBlock state={crops} what={tr("el catálogo de cultivos", "the crop catalog")}>
               {() => <WindowsTable rotation={selected.rotation} crops={cropMap} />}
             </AsyncBlock>
           </Disclosure>

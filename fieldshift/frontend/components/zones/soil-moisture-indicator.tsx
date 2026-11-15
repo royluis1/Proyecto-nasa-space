@@ -6,8 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { useAsync } from "@/hooks/use-async";
 import { api } from "@/lib/api";
 import type { ApiResult, FieldSoilMoisture, SoilMoistureProduct } from "@/types/api";
+import { appLocale, tr } from "@/lib/i18n";
+import { LABEL_INFO } from "@/lib/format";
+import type { DataLabel } from "@/types/api";
 
-const fmtDate = (iso: string | null) => (iso ? new Date(`${iso}T12:00:00`).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" }) : "sin dato");
+const fmtDate = (iso: string | null) => (iso ? new Date(`${iso}T12:00:00`).toLocaleDateString(appLocale(), { day: "numeric", month: "long", year: "numeric" }) : tr("sin dato", "no data"));
 
 function Spark({ p }: { p: SoilMoistureProduct }) {
   const vals = p.recent.map((x) => x.value).filter((v): v is number => v != null);
@@ -25,15 +28,15 @@ function Product({ p, demo }: { p: SoilMoistureProduct; demo: boolean }) {
   return (
     <article className="space-y-1 rounded-[1rem] border p-4">
       <p className="flex flex-wrap items-center gap-2 font-semibold">
-        {p.product.startsWith("SPL3") ? "Superficie (SMAP L3)" : "Zona de raíces (SMAP L4)"}
-        <Badge variant={p.label === "observado" ? "cultivo" : "agua"}>{p.label}</Badge>
-        <Badge variant={demo || p.origin === "sample" ? "alerta" : "outline"}>{demo ? "DATOS DE EJEMPLO" : p.origin_label}</Badge>
+        {p.product.startsWith("SPL3") ? tr("Superficie (SMAP L3)", "Surface (SMAP L3)") : tr("Zona de raíces (SMAP L4)", "Root zone (SMAP L4)")}
+        <Badge variant={p.label === "observado" ? "cultivo" : "agua"}>{LABEL_INFO[p.label as DataLabel]?.text ?? p.label}</Badge>
+        <Badge variant={demo || p.origin === "sample" ? "alerta" : "outline"}>{demo ? tr("DATOS DE EJEMPLO", "SAMPLE DATA") : p.origin_label}</Badge>
       </p>
-      <p className="text-sm text-muted-foreground">{p.depth} · píxel de {p.resolution}</p>
-      <p>Última observación disponible: <strong>{fmtDate(p.last_observation)}</strong>{p.last_value != null && <> · {p.last_value.toLocaleString("es-AR")} {p.units}</>}</p>
+      <p className="text-sm text-muted-foreground">{p.depth} · {tr("píxel de", "pixel of")} {p.resolution}</p>
+      <p>{tr("Última observación disponible:", "Latest available observation:")} <strong>{fmtDate(p.last_observation)}</strong>{p.last_value != null && <> · {p.last_value.toLocaleString(appLocale())} {p.units}</>}</p>
       <p className="text-lg font-medium">{p.reading}</p>
       <Spark p={p} />
-      <p className="sr-only">Serie de los últimos {p.recent.length} datos disponibles.</p>
+      <p className="sr-only">{tr(`Serie de los últimos ${p.recent.length} datos disponibles.`, `Series of the last ${p.recent.length} available values.`)}</p>
     </article>
   );
 }
@@ -42,7 +45,7 @@ function Product({ p, demo }: { p: SoilMoistureProduct; demo: boolean }) {
 export function SoilMoistureIndicator({ fieldId }: { fieldId: string }) {
   const s = useAsync<ApiResult<FieldSoilMoisture>>((signal) => api.fieldSoilMoisture(fieldId, { signal }), [fieldId]);
   return (
-    <AsyncBlock state={s} what="la humedad del suelo satelital">
+    <AsyncBlock state={s} what={tr("la humedad del suelo satelital", "satellite soil moisture")}>
       {(r) => (
         <section aria-labelledby="hum-sat" className="space-y-3">
           <h3 id="hum-sat" className="text-lg font-semibold">{r.data.title}</h3>

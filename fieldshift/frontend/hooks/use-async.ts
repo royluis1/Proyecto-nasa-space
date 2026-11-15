@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { describeError } from "@/lib/api";
+import { useLang } from "@/components/i18n/lang-provider";
 
 export interface AsyncState<T> {
   data: T | null;
@@ -14,10 +15,12 @@ export interface AsyncState<T> {
 /**
  * Carga datos al montar y cada vez que cambian las dependencias.
  * Cancela el pedido anterior y descarta respuestas viejas. Mantiene el dato anterior mientras recarga.
+ * Al cambiar el idioma vuelve a pedir: los textos del backend vienen en el idioma elegido.
  */
 export function useAsync<T>(fn: (signal: AbortSignal) => Promise<T>, deps: unknown[], enabled = true): AsyncState<T> {
   const [state, setState] = useState<{ data: T | null; error: string | null; loading: boolean }>({ data: null, error: null, loading: enabled });
   const [tick, setTick] = useState(0);
+  const { lang } = useLang();
   const fnRef = useRef(fn);
   fnRef.current = fn;
 
@@ -34,7 +37,7 @@ export function useAsync<T>(fn: (signal: AbortSignal) => Promise<T>, deps: unkno
       });
     return () => controller.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...deps, tick, enabled]);
+  }, [...deps, tick, enabled, lang]);
 
   const reload = useCallback(() => setTick((t) => t + 1), []);
   return { ...state, reload };

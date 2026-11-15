@@ -6,6 +6,8 @@ import { useState } from "react";
 import { LogOut, UserRound } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { useAuth } from "@/components/auth/auth-provider";
+import { LoginNotConfigured } from "@/components/auth/login-not-configured";
+import { useT } from "@/components/i18n/lang-provider";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +17,7 @@ import { Label } from "@/components/ui/label";
 type Mode = "entrar" | "registro";
 
 export default function CuentaPage() {
+  const t = useT();
   const { user, loading, configured, signIn, signUp, signOut } = useAuth();
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("entrar");
@@ -25,25 +28,10 @@ export default function CuentaPage() {
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
 
-  // Supabase todavía no configurado: la app funciona igual, solo que sin login.
-  if (!configured) {
-    return (
-      <div className="mx-auto max-w-xl space-y-6">
-        <PageHeader title="Cuenta" description="Para guardar tus lotes y su historial entre dispositivos." />
-        <Alert tone="info" title="El login todavía no está activado">
-          <p>
-            AgroOrbit funciona sin cuenta: podés ver los datos de la NASA y los campos de ejemplo. El registro con correo se activa
-            cuando se conecte Supabase. Mientras tanto, los campos que cargues se guardan en este navegador.
-          </p>
-        </Alert>
-      </div>
-    );
-  }
-
-  if (loading) {
+  if (configured && loading) {
     return (
       <div className="mx-auto max-w-xl">
-        <p className="text-muted-foreground">Cargando…</p>
+        <p className="text-muted-foreground">{t("Cargando…", "Loading…")}</p>
       </div>
     );
   }
@@ -52,20 +40,21 @@ export default function CuentaPage() {
   if (user) {
     return (
       <div className="mx-auto max-w-xl space-y-6">
-        <PageHeader title="Tu cuenta" />
+        <PageHeader title={t("Tu cuenta", "Your account")} />
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <UserRound aria-hidden className="size-5" /> Sesión iniciada
+              <UserRound aria-hidden className="size-5" /> {t("Sesión iniciada", "Signed in")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p>
-              Entraste como <strong>{user.email}</strong>. Tus lotes y su historial se guardan en tu cuenta.
+              {t("Entraste como", "Signed in as")} <strong>{user.email}</strong>.{" "}
+              {t("Tus lotes y su historial se guardan en tu cuenta.", "Your fields and their history are saved to your account.")}
             </p>
             <div className="flex flex-wrap gap-3">
               <Button asChild>
-                <Link href="/campos">Ir a mis campos</Link>
+                <Link href="/campos">{t("Ir a mis campos", "Go to my fields")}</Link>
               </Button>
               <Button
                 variant="outline"
@@ -74,7 +63,7 @@ export default function CuentaPage() {
                   router.refresh();
                 }}
               >
-                <LogOut aria-hidden /> Cerrar sesión
+                <LogOut aria-hidden /> {t("Cerrar sesión", "Sign out")}
               </Button>
             </div>
           </CardContent>
@@ -83,8 +72,15 @@ export default function CuentaPage() {
     );
   }
 
+  const switchMode = (m: Mode) => {
+    setMode(m);
+    setError(null);
+    setOk(null);
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!configured) return;
     setError(null);
     setOk(null);
     setBusy(true);
@@ -96,11 +92,12 @@ export default function CuentaPage() {
       } else {
         const r = await signUp(email, password, nombre || undefined);
         if (r.error) setError(r.error);
-        else if (r.needsEmailConfirm) setOk("Te enviamos un correo para confirmar la cuenta. Revisá tu casilla y después iniciá sesión.");
+        else if (r.needsEmailConfirm)
+          setOk(t("Te enviamos un correo para confirmar la cuenta. Revisá tu casilla y después iniciá sesión.", "We sent you an email to confirm your account. Check your inbox and then sign in."));
         else router.push("/campos");
       }
     } catch {
-      setError("No se pudo conectar. Probá de nuevo en un momento.");
+      setError(t("No se pudo conectar. Probá de nuevo en un momento.", "Could not connect. Please try again in a moment."));
     } finally {
       setBusy(false);
     }
@@ -109,16 +106,18 @@ export default function CuentaPage() {
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <PageHeader
-        title={mode === "entrar" ? "Iniciar sesión" : "Crear cuenta"}
-        description="Guardá tus lotes y su historial para tomar decisiones con el tiempo."
+        title={mode === "entrar" ? t("Iniciar sesión", "Sign in") : t("Crear cuenta", "Create account")}
+        description={t("Guardá tus lotes y su historial para tomar decisiones con el tiempo.", "Save your fields and their history to make decisions over time.")}
       />
 
-      <div className="flex gap-2" role="tablist" aria-label="Entrar o registrarse">
-        <Button variant={mode === "entrar" ? "default" : "outline"} role="tab" aria-selected={mode === "entrar"} onClick={() => { setMode("entrar"); setError(null); setOk(null); }}>
-          Ya tengo cuenta
+      {!configured && <LoginNotConfigured />}
+
+      <div className="flex gap-2" role="tablist" aria-label={t("Entrar o registrarse", "Sign in or sign up")}>
+        <Button variant={mode === "entrar" ? "default" : "outline"} role="tab" aria-selected={mode === "entrar"} onClick={() => switchMode("entrar")}>
+          {t("Ya tengo cuenta", "I have an account")}
         </Button>
-        <Button variant={mode === "registro" ? "default" : "outline"} role="tab" aria-selected={mode === "registro"} onClick={() => { setMode("registro"); setError(null); setOk(null); }}>
-          Soy nuevo
+        <Button variant={mode === "registro" ? "default" : "outline"} role="tab" aria-selected={mode === "registro"} onClick={() => switchMode("registro")}>
+          {t("Soy nuevo", "I'm new")}
         </Button>
       </div>
 
@@ -127,16 +126,16 @@ export default function CuentaPage() {
           <form onSubmit={submit} className="space-y-4">
             {mode === "registro" && (
               <div className="space-y-1.5">
-                <Label htmlFor="nombre">Tu nombre (opcional)</Label>
+                <Label htmlFor="nombre">{t("Tu nombre (opcional)", "Your name (optional)")}</Label>
                 <Input id="nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} autoComplete="name" placeholder="Roy" />
               </div>
             )}
             <div className="space-y-1.5">
-              <Label htmlFor="email">Correo</Label>
-              <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" placeholder="vos@correo.com" />
+              <Label htmlFor="email">{t("Correo", "Email")}</Label>
+              <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" placeholder={t("vos@correo.com", "you@email.com")} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password">Contraseña</Label>
+              <Label htmlFor="password">{t("Contraseña", "Password")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -145,15 +144,15 @@ export default function CuentaPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete={mode === "entrar" ? "current-password" : "new-password"}
-                placeholder="Mínimo 6 caracteres"
+                placeholder={t("Mínimo 6 caracteres", "At least 6 characters")}
               />
             </div>
 
             {error && <Alert tone="error">{error}</Alert>}
             {ok && <Alert tone="success">{ok}</Alert>}
 
-            <Button type="submit" size="lg" disabled={busy} className="w-full">
-              {busy ? "Un momento…" : mode === "entrar" ? "Entrar" : "Crear cuenta"}
+            <Button type="submit" size="lg" disabled={busy || !configured} className="w-full">
+              {busy ? t("Un momento…", "One moment…") : mode === "entrar" ? t("Entrar", "Sign in") : t("Crear cuenta", "Create account")}
             </Button>
           </form>
         </CardContent>
@@ -161,9 +160,9 @@ export default function CuentaPage() {
 
       <p className="text-center text-sm text-muted-foreground">
         {mode === "entrar" ? (
-          <>¿No tenés cuenta? <button type="button" className="font-medium text-primary underline" onClick={() => setMode("registro")}>Creá una</button></>
+          <>{t("¿No tenés cuenta?", "Don't have an account?")} <button type="button" className="font-medium text-primary underline" onClick={() => switchMode("registro")}>{t("Creá una", "Create one")}</button></>
         ) : (
-          <>¿Ya tenés cuenta? <button type="button" className="font-medium text-primary underline" onClick={() => setMode("entrar")}>Iniciá sesión</button></>
+          <>{t("¿Ya tenés cuenta?", "Already have an account?")} <button type="button" className="font-medium text-primary underline" onClick={() => switchMode("entrar")}>{t("Iniciá sesión", "Sign in")}</button></>
         )}
       </p>
     </div>

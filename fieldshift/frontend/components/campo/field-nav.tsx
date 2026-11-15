@@ -5,27 +5,30 @@ import { usePathname } from "next/navigation";
 import { BarChart3, CalendarDays, History, Layers, LayoutDashboard, Sprout, UserRound } from "lucide-react";
 import { useProfile } from "@/hooks/use-profile";
 import { cn } from "@/lib/utils";
+import { L, localize } from "@/lib/i18n";
+import { useT } from "@/components/i18n/lang-provider";
 
-const huertaSteps = [
-  { slug: "huerta", label: "Mi huerta", icon: Sprout },
-  { slug: "historial", label: "Mi historial", icon: History },
-];
+const huertaSteps = localize([
+  { slug: "huerta", label: L("Mi huerta", "My garden"), icon: Sprout },
+  { slug: "historial", label: L("Mi historial", "My history"), icon: History },
+]);
 
-const steps = [
-  { slug: "perfil", label: "Perfil y prioridades", icon: UserRound },
-  { slug: "comparador", label: "Comparador", icon: BarChart3 },
+const steps = localize([
+  { slug: "perfil", label: L("Perfil y prioridades", "Profile and priorities"), icon: UserRound },
+  { slug: "comparador", label: L("Comparador", "Comparison"), icon: BarChart3 },
   { slug: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { slug: "calendario", label: "Calendario", icon: CalendarDays },
-  { slug: "escenarios", label: "Escenarios", icon: Layers },
-  { slug: "historial", label: "Historial", icon: History },
-];
+  { slug: "calendario", label: L("Calendario", "Calendar"), icon: CalendarDays },
+  { slug: "escenarios", label: L("Escenarios", "Scenarios"), icon: Layers },
+  { slug: "historial", label: L("Historial", "History"), icon: History },
+]);
 
 export function FieldNav({ fieldId }: { fieldId: string }) {
+  const t = useT();
   const pathname = usePathname();
   const profile = useProfile();
   const items = profile === "huerta" ? huertaSteps : steps;
   return (
-    <nav aria-label="Pasos del campo" className="-mx-1 overflow-x-auto pb-1 print:hidden">
+    <nav aria-label={t("Pasos del campo", "Field steps")} className="-mx-1 overflow-x-auto pb-1 print:hidden">
       <ol className="flex min-w-max gap-1 px-1">
         {items.map(({ slug, label, icon: Icon }, i) => {
           const href = `/campo/${fieldId}/${slug}`;

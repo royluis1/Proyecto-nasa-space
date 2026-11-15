@@ -5,6 +5,7 @@ import { GROUP_LABELS, INDICATORS, VERDICT_TEXT, judge, type IndicatorGroup, typ
 import { STRATEGY_LABELS, rotationTitle } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { RotationEvaluation } from "@/types/api";
+import { tr } from "@/lib/i18n";
 
 const VERDICT_ICON: Record<Verdict, typeof ArrowUp> = { mejor: ArrowUp, peor: ArrowDown, igual: Equal, sin_dato: HelpCircle };
 const VERDICT_CLS: Record<Verdict, string> = {
@@ -41,13 +42,13 @@ export function IndicatorGrid({ a, b }: { a: RotationEvaluation; b: RotationEval
             </CardHeader>
             <CardContent>
               <table className="w-full text-sm">
-                <caption className="sr-only">Indicadores de {GROUP_LABELS[g]}: {title(a)} contra {title(b)}.</caption>
+                <caption className="sr-only">{tr(`Indicadores de ${GROUP_LABELS[g]}: ${title(a)} contra ${title(b)}.`, `${GROUP_LABELS[g]} indicators: ${title(a)} vs. ${title(b)}.`)}</caption>
                 <thead>
                   <tr className="text-left text-muted-foreground">
-                    <th scope="col" className="py-1.5 pr-2 font-medium">Indicador</th>
+                    <th scope="col" className="py-1.5 pr-2 font-medium">{tr("Indicador", "Indicator")}</th>
                     <th scope="col" className="px-2 font-medium">{STRATEGY_LABELS[a.rotation.strategy]}</th>
                     <th scope="col" className="px-2 font-medium">{STRATEGY_LABELS[b.rotation.strategy]}</th>
-                    <th scope="col" className="pl-2 font-medium">{same ? "" : "La segunda es…"}</th>
+                    <th scope="col" className="pl-2 font-medium">{same ? "" : tr("La segunda es…", "The second one is…")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -71,7 +72,7 @@ export function IndicatorGrid({ a, b }: { a: RotationEvaluation; b: RotationEval
               </table>
               {g === "riesgo" && (
                 <ul className="mt-3 space-y-2 border-t pt-3">
-                  {b.risk_flags.length === 0 && <li className="text-sm text-muted-foreground">Sin riesgos destacados en {STRATEGY_LABELS[b.rotation.strategy].toLowerCase()}.</li>}
+                  {b.risk_flags.length === 0 && <li className="text-sm text-muted-foreground">{tr(`Sin riesgos destacados en ${STRATEGY_LABELS[b.rotation.strategy].toLowerCase()}.`, `No notable risks in ${STRATEGY_LABELS[b.rotation.strategy].toLowerCase()}.`)}</li>}
                   {b.risk_flags.map((f) => {
                     const Icon = flagIcon(f.icon);
                     return (

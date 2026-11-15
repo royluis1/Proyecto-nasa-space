@@ -1,6 +1,7 @@
 import { LabelBadge, OriginBadge } from "@/components/provenance/badges";
 import { num } from "@/lib/format";
 import type { DataTrace, OriginStatus } from "@/types/api";
+import { appLocale, tr } from "@/lib/i18n";
 
 interface Quality {
   valid_pct: number;
@@ -9,7 +10,7 @@ interface Quality {
   bad_quality: number;
 }
 
-const date = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" }) : "—");
+const date = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleDateString(appLocale(), { day: "numeric", month: "long", year: "numeric" }) : "—");
 
 /** Trazabilidad de un bloque de datos satelitales: fuente, producto, fechas, resolución, estado y limitaciones. */
 export function TraceInfo({ trace, quality, demo }: { trace: DataTrace; quality?: Quality; demo?: boolean }) {
@@ -21,18 +22,18 @@ export function TraceInfo({ trace, quality, demo }: { trace: DataTrace; quality?
         <LabelBadge label={trace.label} />
       </div>
       <dl className="grid gap-x-6 gap-y-1 sm:grid-cols-2">
-        <div><dt className="inline font-medium">Fuente: </dt><dd className="inline">{trace.source}</dd></div>
-        <div><dt className="inline font-medium">Producto: </dt><dd className="inline">{trace.product}</dd></div>
-        <div><dt className="inline font-medium">Resolución: </dt><dd className="inline">{trace.spatial_resolution} · {trace.temporal_resolution}</dd></div>
-        {trace.depth && <div><dt className="inline font-medium">Profundidad: </dt><dd className="inline">{trace.depth}</dd></div>}
-        <div><dt className="inline font-medium">Período: </dt><dd className="inline">{date(trace.period_start)} a {date(trace.period_end)}</dd></div>
-        <div><dt className="inline font-medium">Último dato: </dt><dd className="inline">{date(trace.last_observation)}</dd></div>
-        <div><dt className="inline font-medium">Obtenido el: </dt><dd className="inline">{date(trace.retrieved_at)}</dd></div>
-        {trace.pixel_site && <div><dt className="inline font-medium">Sitio de la muestra: </dt><dd className="inline">{trace.pixel_site}</dd></div>}
+        <div><dt className="inline font-medium">{tr("Fuente: ", "Source: ")}</dt><dd className="inline">{trace.source}</dd></div>
+        <div><dt className="inline font-medium">{tr("Producto: ", "Product: ")}</dt><dd className="inline">{trace.product}</dd></div>
+        <div><dt className="inline font-medium">{tr("Resolución: ", "Resolution: ")}</dt><dd className="inline">{trace.spatial_resolution} · {trace.temporal_resolution}</dd></div>
+        {trace.depth && <div><dt className="inline font-medium">{tr("Profundidad: ", "Depth: ")}</dt><dd className="inline">{trace.depth}</dd></div>}
+        <div><dt className="inline font-medium">{tr("Período: ", "Period: ")}</dt><dd className="inline">{date(trace.period_start)} {tr("a", "to")} {date(trace.period_end)}</dd></div>
+        <div><dt className="inline font-medium">{tr("Último dato: ", "Latest data: ")}</dt><dd className="inline">{date(trace.last_observation)}</dd></div>
+        <div><dt className="inline font-medium">{tr("Obtenido el: ", "Retrieved on: ")}</dt><dd className="inline">{date(trace.retrieved_at)}</dd></div>
+        {trace.pixel_site && <div><dt className="inline font-medium">{tr("Sitio de la muestra: ", "Sample site: ")}</dt><dd className="inline">{trace.pixel_site}</dd></div>}
         {quality && (
           <div>
-            <dt className="inline font-medium">Calidad: </dt>
-            <dd className="inline">{num(quality.valid_pct, 0)} % de datos válidos ({num(quality.valid)} de {num(quality.records)}{quality.bad_quality ? `; ${num(quality.bad_quality)} descartados por nubes o mala calidad` : ""})</dd>
+            <dt className="inline font-medium">{tr("Calidad: ", "Quality: ")}</dt>
+            <dd className="inline">{num(quality.valid_pct, 0)} % {tr("de datos válidos", "valid data")} ({num(quality.valid)} {tr("de", "of")} {num(quality.records)}{quality.bad_quality ? tr(`; ${num(quality.bad_quality)} descartados por nubes o mala calidad`, `; ${num(quality.bad_quality)} discarded for clouds or poor quality`) : ""})</dd>
           </div>
         )}
       </dl>

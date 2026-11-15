@@ -9,47 +9,53 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import type { T } from "@/lib/i18n";
+import { useT } from "@/components/i18n/lang-provider";
+import { LangToggle } from "@/components/i18n/lang-toggle";
 import { Logo } from "./logo";
 import { ProfileChip, StartLink } from "./profile-chip";
 import { ThemeToggle } from "./theme-toggle";
 
-const links = [
-  { href: "/como-funciona", label: "Cómo funciona" },
-  { href: "/zonas", label: "Regiones" },
-  { href: "/campos", label: "Mis campos" },
-  { href: "/metodologia", label: "Metodología" },
+const links = (t: T) => [
+  { href: "/como-funciona", label: t("Cómo funciona", "How it works") },
+  { href: "/zonas", label: t("Regiones", "Regions") },
+  { href: "/campos", label: t("Mis campos", "My fields") },
+  { href: "/metodologia", label: t("Metodología", "Methodology") },
 ];
 
 const isActive = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
 /** Botón principal: registrarse si hay cuentas; si no, empezar sin cuenta. */
 function MainAction({ className }: { className?: string }) {
+  const t = useT();
   const { configured, user } = useAuth();
   if (configured && !user) {
     return (
       <Button asChild size="sm" className={cn("h-9 px-4", className)}>
-        <Link href="/#registro">Registrarse</Link>
+        <Link href="/#registro">{t("Registrarse", "Sign up")}</Link>
       </Button>
     );
   }
   if (configured && user) return null;
   return (
     <Button asChild size="sm" className={cn("h-9 px-4", className)}>
-      <StartLink>Empezar</StartLink>
+      <StartLink>{t("Empezar", "Start")}</StartLink>
     </Button>
   );
 }
 
 export function SiteHeader() {
+  const t = useT();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const navLinks = links(t);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-md print:static print:hidden">
       <div className="container flex h-16 items-center justify-between gap-4">
         <Logo />
-        <nav className="hidden items-center gap-8 lg:flex" aria-label="Principal">
-          {links.map(({ href, label }) => (
+        <nav className="hidden items-center gap-8 lg:flex" aria-label={t("Principal", "Main")}>
+          {navLinks.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
@@ -69,18 +75,19 @@ export function SiteHeader() {
           </div>
           <AccountChip />
           <MainAction />
+          <LangToggle className="hidden sm:inline-flex" />
           <ThemeToggle />
           {/* Menú del celular y la tablet: panel que se abre desde la derecha */}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button type="button" variant="ghost" size="icon" className="lg:hidden" aria-label="Abrir menú">
+              <Button type="button" variant="ghost" size="icon" className="lg:hidden" aria-label={t("Abrir menú", "Open menu")}>
                 <Menu aria-hidden />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-72">
-              <SheetTitle className="sr-only">Menú</SheetTitle>
-              <nav className="mt-8 flex flex-col gap-1" aria-label="Menú">
-                {links.map(({ href, label }) => (
+              <SheetTitle className="sr-only">{t("Menú", "Menu")}</SheetTitle>
+              <nav className="mt-8 flex flex-col gap-1" aria-label={t("Menú", "Menu")}>
+                {navLinks.map(({ href, label }) => (
                   <Link
                     key={href}
                     href={href}
@@ -94,8 +101,9 @@ export function SiteHeader() {
                     {label}
                   </Link>
                 ))}
-                <div className="mt-3 border-t pt-4">
+                <div className="mt-3 flex flex-col items-start gap-3 border-t pt-4">
                   <ProfileChip />
+                  <LangToggle className="sm:hidden" />
                 </div>
               </nav>
             </SheetContent>

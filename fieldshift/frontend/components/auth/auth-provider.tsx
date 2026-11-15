@@ -3,6 +3,7 @@
 import * as React from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase/client";
+import { tr } from "@/lib/i18n";
 
 interface AuthResult {
   error?: string;
@@ -24,14 +25,14 @@ interface AuthValue {
 
 const AuthContext = React.createContext<AuthValue | null>(null);
 
-/** Traduce los errores de Supabase a algo claro en español. */
+/** Traduce los errores de Supabase a algo claro, en el idioma elegido. */
 function friendlyError(message: string): string {
   const m = message.toLowerCase();
-  if (m.includes("invalid login")) return "Correo o contraseña incorrectos.";
-  if (m.includes("already registered") || m.includes("already been registered")) return "Ese correo ya tiene una cuenta. Probá iniciar sesión.";
-  if (m.includes("password should be at least")) return "La contraseña es muy corta (mínimo 6 caracteres).";
-  if (m.includes("email not confirmed")) return "Todavía no confirmaste el correo. Revisá tu casilla.";
-  if (m.includes("unable to validate email") || m.includes("invalid email")) return "Ese correo no parece válido.";
+  if (m.includes("invalid login")) return tr("Correo o contraseña incorrectos.", "Wrong email or password.");
+  if (m.includes("already registered") || m.includes("already been registered")) return tr("Ese correo ya tiene una cuenta. Probá iniciar sesión.", "That email already has an account. Try signing in.");
+  if (m.includes("password should be at least")) return tr("La contraseña es muy corta (mínimo 6 caracteres).", "The password is too short (at least 6 characters).");
+  if (m.includes("email not confirmed")) return tr("Todavía no confirmaste el correo. Revisá tu casilla.", "You haven't confirmed your email yet. Check your inbox.");
+  if (m.includes("unable to validate email") || m.includes("invalid email")) return tr("Ese correo no parece válido.", "That email doesn't look valid.");
   return message;
 }
 
@@ -55,14 +56,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = React.useCallback<AuthValue["signIn"]>(async (email, password) => {
     const supabase = getSupabase();
-    if (!supabase) return { error: "El login todavía no está configurado." };
+    if (!supabase) return { error: tr("El login todavía no está configurado.", "Sign-in is not configured yet.") };
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     return error ? { error: friendlyError(error.message) } : {};
   }, []);
 
   const signUp = React.useCallback<AuthValue["signUp"]>(async (email, password, nombre) => {
     const supabase = getSupabase();
-    if (!supabase) return { error: "El registro todavía no está configurado." };
+    if (!supabase) return { error: tr("El registro todavía no está configurado.", "Sign-up is not configured yet.") };
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,

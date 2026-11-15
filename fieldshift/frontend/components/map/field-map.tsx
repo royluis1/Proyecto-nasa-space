@@ -13,6 +13,7 @@ import { GIBS_ATTRIBUTION, GIBS_FIRST_DATE, GIBS_MAX_NATIVE_ZOOM, clampGibsDate,
 import { closeRing, parseCoordinates, parseGeoJson, ringAreaHa, ringCentroid, type LngLat } from "@/lib/geometry";
 import { num } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { tr } from "@/lib/i18n";
 
 export interface MapPoint {
   lat: number;
@@ -50,10 +51,14 @@ const SAN_LUIS: [number, number] = [-33.7, -65.8];
 const MAX_GEOJSON_BYTES = 2_000_000;
 
 const TILES = {
-  mapa: { url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", attribution: "© colaboradores de OpenStreetMap" },
+  mapa: { url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", get attribution() {
+      return tr("© colaboradores de OpenStreetMap", "© OpenStreetMap contributors");
+    } },
   satelite: {
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attribution: "Imágenes © Esri, Maxar, Earthstar Geographics y la comunidad GIS",
+    get attribution() {
+      return tr("Imágenes © Esri, Maxar, Earthstar Geographics y la comunidad GIS", "Imagery © Esri, Maxar, Earthstar Geographics and the GIS community");
+    },
   },
 } as const;
 
@@ -187,9 +192,9 @@ export default function FieldMap({
     try {
       const found = await searchPlaces(q);
       setPlaces(found);
-      if (found.length === 0) setSearchMsg("No encontré ese lugar en Argentina. Probá con otro nombre o ingresá las coordenadas.");
+      if (found.length === 0) setSearchMsg(tr("No encontré ese lugar en Argentina. Probá con otro nombre o ingresá las coordenadas.", "I couldn't find that place in Argentina. Try another name or enter the coordinates."));
     } catch {
-      setSearchMsg("No se pudo buscar el lugar (sin conexión o servicio no disponible). Podés marcar el punto en el mapa o ingresar las coordenadas.");
+      setSearchMsg(tr("No se pudo buscar el lugar (sin conexión o servicio no disponible). Podés marcar el punto en el mapa o ingresar las coordenadas.", "The place could not be searched (offline or service unavailable). You can mark the point on the map or enter the coordinates."));
     } finally {
       setSearching(false);
     }
@@ -198,7 +203,7 @@ export default function FieldMap({
   function goToCoords() {
     const c = parseCoordinates(coords);
     if (!c) {
-      setCoordsMsg("No entendí las coordenadas. Escribí latitud y longitud, por ejemplo: -33.85, -65.20");
+      setCoordsMsg(tr("No entendí las coordenadas. Escribí latitud y longitud, por ejemplo: -33.85, -65.20", "I couldn't understand the coordinates. Type latitude and longitude, for example: -33.85, -65.20"));
       return;
     }
     setCoordsMsg(null);
@@ -212,13 +217,13 @@ export default function FieldMap({
     if (!file) return;
     setFileMsg(null);
     if (file.size > MAX_GEOJSON_BYTES) {
-      setFileMsg("El archivo es muy grande (máximo 2 MB).");
+      setFileMsg(tr("El archivo es muy grande (máximo 2 MB).", "The file is too large (2 MB max)."));
       return;
     }
     try {
       applyPolygon(parseGeoJson(await file.text()));
     } catch (err) {
-      setFileMsg(err instanceof Error ? err.message : "No se pudo leer el archivo.");
+      setFileMsg(err instanceof Error ? err.message : tr("No se pudo leer el archivo.", "The file could not be read."));
     }
   }
 
@@ -230,45 +235,45 @@ export default function FieldMap({
 
   return (
     <div className={cn("space-y-3", className)}>
-      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Tipo de mapa">
+      <div className="flex flex-wrap items-center gap-2" role="group" aria-label={tr("Tipo de mapa", "Map type")}>
         <Button type="button" size="sm" variant={base === "mapa" ? "default" : "outline"} aria-pressed={base === "mapa"} onClick={() => setBase("mapa")}>
-          <MapIcon aria-hidden /> Mapa
+          <MapIcon aria-hidden /> {tr("Mapa", "Map")}
         </Button>
         <Button type="button" size="sm" variant={base === "satelite" ? "default" : "outline"} aria-pressed={base === "satelite"} onClick={() => setBase("satelite")}>
-          <Satellite aria-hidden /> Satélite
+          <Satellite aria-hidden /> {tr("Satélite", "Satellite")}
         </Button>
         <Button type="button" size="sm" variant={base === "nasa" ? "default" : "outline"} aria-pressed={base === "nasa"} onClick={() => setBase("nasa")}>
-          <Orbit aria-hidden /> NASA del día
+          <Orbit aria-hidden /> {tr("NASA del día", "NASA of the day")}
         </Button>
         {editing && (
           <>
             <span className="mx-1 hidden h-6 w-px bg-border sm:block" aria-hidden />
             {!drawing ? (
               <Button type="button" size="sm" variant="outline" onClick={() => { setDrawing(true); setDraft([]); }}>
-                <Hexagon aria-hidden /> Dibujar polígono
+                <Hexagon aria-hidden /> {tr("Dibujar polígono", "Draw polygon")}
               </Button>
             ) : (
               <>
                 <Button type="button" size="sm" onClick={finishDraft} disabled={draft.length < 3}>
-                  <Check aria-hidden /> Terminar ({draft.length} vértices)
+                  <Check aria-hidden /> {tr(`Terminar (${draft.length} vértices)`, `Finish (${draft.length} vertices)`)}
                 </Button>
                 <Button type="button" size="sm" variant="outline" onClick={() => setDraft((d) => d.slice(0, -1))} disabled={draft.length === 0}>
-                  <Undo2 aria-hidden /> Deshacer vértice
+                  <Undo2 aria-hidden /> {tr("Deshacer vértice", "Undo vertex")}
                 </Button>
                 <Button type="button" size="sm" variant="ghost" onClick={() => { setDrawing(false); setDraft([]); }}>
-                  Cancelar
+                  {tr("Cancelar", "Cancel")}
                 </Button>
               </>
             )}
             {ring && !drawing && (
               <Button type="button" size="sm" variant="ghost" onClick={() => onPolygonChange?.(null)}>
-                <Eraser aria-hidden /> Borrar polígono
+                <Eraser aria-hidden /> {tr("Borrar polígono", "Delete polygon")}
               </Button>
             )}
             <Button type="button" size="sm" variant="outline" asChild>
               <label className="cursor-pointer">
-                <FileUp aria-hidden /> Cargar GeoJSON
-                <input type="file" accept=".geojson,.json,application/geo+json,application/json" className="sr-only" onChange={onFile} aria-label="Cargar polígono desde un archivo GeoJSON" />
+                <FileUp aria-hidden /> {tr("Cargar GeoJSON", "Upload GeoJSON")}
+                <input type="file" accept=".geojson,.json,application/geo+json,application/json" className="sr-only" onChange={onFile} aria-label={tr("Cargar polígono desde un archivo GeoJSON", "Upload polygon from a GeoJSON file")} />
               </label>
             </Button>
           </>
@@ -280,16 +285,16 @@ export default function FieldMap({
           {/* Sin <form>: este mapa vive dentro del formulario del campo y los formularios no se pueden anidar. */}
           {showPlaceSearch && (
           <div className="space-y-1.5" role="search">
-            <Label htmlFor={`${uid}-q`}>Buscar un lugar por nombre</Label>
+            <Label htmlFor={`${uid}-q`}>{tr("Buscar un lugar por nombre", "Search for a place by name")}</Label>
             <div className="flex gap-2">
-              <Input id={`${uid}-q`} value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={onEnter(runSearch)} placeholder="Ej.: Villa Mercedes, San Luis" autoComplete="off" />
+              <Input id={`${uid}-q`} value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={onEnter(runSearch)} placeholder={tr("Ej.: Villa Mercedes, San Luis", "E.g.: Villa Mercedes, San Luis")} autoComplete="off" />
               <Button type="button" variant="secondary" onClick={() => void runSearch()} disabled={searching || !query.trim()}>
-                <Search aria-hidden /> {searching ? "Buscando…" : "Buscar"}
+                <Search aria-hidden /> {searching ? tr("Buscando…", "Searching…") : tr("Buscar", "Search")}
               </Button>
             </div>
             {searchMsg && <p role="status" className="text-sm text-muted-foreground">{searchMsg}</p>}
             {places.length > 0 && (
-              <ul className="divide-y rounded-md border bg-card" aria-label="Resultados de la búsqueda">
+              <ul className="divide-y rounded-md border bg-card" aria-label={tr("Resultados de la búsqueda", "Search results")}>
                 {places.map((p) => (
                   <li key={`${p.lat},${p.lon}`}>
                     <button type="button" className="w-full px-3 py-2 text-left text-sm hover:bg-accent" onClick={() => { setPoint(p); fly(p.lat, p.lon); setPlaces([]); }}>
@@ -302,11 +307,11 @@ export default function FieldMap({
           </div>
           )}
           <div className="space-y-1.5">
-            <Label htmlFor={`${uid}-c`}>Coordenadas (latitud, longitud)</Label>
+            <Label htmlFor={`${uid}-c`}>{tr("Coordenadas (latitud, longitud)", "Coordinates (latitude, longitude)")}</Label>
             <div className="flex gap-2">
               <Input id={`${uid}-c`} value={coords} onChange={(e) => setCoords(e.target.value)} onKeyDown={onEnter(goToCoords)} placeholder="-33.85, -65.20" inputMode="decimal" autoComplete="off" />
               <Button type="button" variant="secondary" onClick={goToCoords} disabled={!coords.trim()}>
-                <Navigation aria-hidden /> Ir
+                <Navigation aria-hidden /> {tr("Ir", "Go")}
               </Button>
             </div>
             {coordsMsg && <p role="alert" className="text-sm text-destructive">{coordsMsg}</p>}
@@ -317,8 +322,8 @@ export default function FieldMap({
 
       {base === "nasa" && (
         <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-card p-2 text-sm">
-          <Label htmlFor={`${uid}-gibs`} className="font-medium">Imagen del día</Label>
-          <Button type="button" size="sm" variant="outline" aria-label="Día anterior" onClick={() => setNasaDate((d) => shiftGibsDate(d, -1))} disabled={nasaDate <= GIBS_FIRST_DATE}>
+          <Label htmlFor={`${uid}-gibs`} className="font-medium">{tr("Imagen del día", "Image of the day")}</Label>
+          <Button type="button" size="sm" variant="outline" aria-label={tr("Día anterior", "Previous day")} onClick={() => setNasaDate((d) => shiftGibsDate(d, -1))} disabled={nasaDate <= GIBS_FIRST_DATE}>
             <ChevronLeft aria-hidden />
           </Button>
           <Input
@@ -330,18 +335,20 @@ export default function FieldMap({
             value={nasaDate}
             onChange={(e) => e.target.value && setNasaDate(clampGibsDate(e.target.value))}
           />
-          <Button type="button" size="sm" variant="outline" aria-label="Día siguiente" onClick={() => setNasaDate((d) => shiftGibsDate(d, 1))} disabled={nasaDate >= maxDate}>
+          <Button type="button" size="sm" variant="outline" aria-label={tr("Día siguiente", "Next day")} onClick={() => setNasaDate((d) => shiftGibsDate(d, 1))} disabled={nasaDate >= maxDate}>
             <ChevronRight aria-hidden />
           </Button>
           <p className="basis-full text-muted-foreground">
-            Satélite Terra de la NASA (MODIS, color real, píxel de ~250 m) vía NASA GIBS. Lo blanco son nubes; las franjas negras, zonas que el satélite no
-            cubrió ese día. Si no se ve tu zona, probá con otro día.
+            {tr(
+              "Satélite Terra de la NASA (MODIS, color real, píxel de ~250 m) vía NASA GIBS. Lo blanco son nubes; las franjas negras, zonas que el satélite no cubrió ese día. Si no se ve tu zona, probá con otro día.",
+              "NASA's Terra satellite (MODIS, true color, ~250 m pixel) via NASA GIBS. White is clouds; black stripes are areas the satellite did not cover that day. If you can't see your area, try another day.",
+            )}
           </p>
         </div>
       )}
       <div
         role="group"
-        aria-label={editing ? "Mapa interactivo: hacé clic para marcar el campo. También podés usar las coordenadas." : "Mapa de campos"}
+        aria-label={editing ? tr("Mapa interactivo: hacé clic para marcar el campo. También podés usar las coordenadas.", "Interactive map: click to mark the field. You can also use the coordinates.") : tr("Mapa de campos", "Fields map")}
         className="overflow-hidden rounded-lg border"
       >
         <MapContainer center={initial.center} zoom={initial.zoom} scrollWheelZoom className={cn("z-0 w-full", heightClass)}>
@@ -381,7 +388,7 @@ export default function FieldMap({
               keyboard={false}
               eventHandlers={{ dragend: (e) => { const p = (e.target as L.Marker).getLatLng(); setPoint({ lat: p.lat, lon: p.lng }); } }}
             >
-              <Tooltip>Campo seleccionado (arrastralo para ajustar)</Tooltip>
+              <Tooltip>{tr("Campo seleccionado (arrastralo para ajustar)", "Selected field (drag it to adjust)")}</Tooltip>
             </Marker>
           )}
         </MapContainer>
@@ -391,10 +398,10 @@ export default function FieldMap({
         <p role="status" aria-live="polite" className="flex flex-wrap items-center gap-2 text-sm">
           <MapPin aria-hidden className="size-4" />
           {drawing
-            ? `Dibujando: hacé clic en cada esquina del lote (${draft.length} vértices) y después tocá “Terminar”.`
+            ? tr(`Dibujando: hacé clic en cada esquina del lote (${draft.length} vértices) y después tocá “Terminar”.`, `Drawing: click each corner of the plot (${draft.length} vertices) and then tap “Finish”.`)
             : point
-              ? `Punto seleccionado: ${num(point.lat, 4)}, ${num(point.lon, 4)}${ring ? ` · Polígono de ${num(areaHa, 1)} ha` : ""}`
-              : "Todavía no marcaste el campo: hacé clic en el mapa, buscá un lugar o ingresá las coordenadas."}
+              ? tr(`Punto seleccionado: ${num(point.lat, 4)}, ${num(point.lon, 4)}${ring ? ` · Polígono de ${num(areaHa, 1)} ha` : ""}`, `Selected point: ${num(point.lat, 4)}, ${num(point.lon, 4)}${ring ? ` · ${num(areaHa, 1)} ha polygon` : ""}`)
+              : tr("Todavía no marcaste el campo: hacé clic en el mapa, buscá un lugar o ingresá las coordenadas.", "You haven't marked the field yet: click the map, search for a place or enter the coordinates.")}
         </p>
       )}
     </div>

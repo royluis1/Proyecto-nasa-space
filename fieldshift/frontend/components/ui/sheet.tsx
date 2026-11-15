@@ -6,6 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { tr } from "@/lib/i18n";
 
 const Sheet = SheetPrimitive.Root;
 
@@ -63,7 +64,7 @@ const SheetContent = React.forwardRef<
     <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
       <SheetPrimitive.Close className="absolute right-3 top-3 grid size-9 place-items-center rounded-lg opacity-70 ring-offset-background cursor-pointer transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
         <X aria-hidden className="h-5 w-5" />
-        <span className="sr-only">Cerrar</span>
+        <span className="sr-only">{tr("Cerrar", "Close")}</span>
       </SheetPrimitive.Close>
       {children}
     </SheetPrimitive.Content>

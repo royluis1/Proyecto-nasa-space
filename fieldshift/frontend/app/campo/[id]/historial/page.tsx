@@ -18,6 +18,7 @@ import { api } from "@/lib/api";
 import { NEEDS_CROP, TIPOS, TIPO_LABEL, fechaLarga, groupByYear, isTipo, sownSequence, validateRegistro, type NuevoRegistroForm } from "@/lib/historial";
 import { addHistorial, createLote, deleteHistorial, findLoteByFieldId, listHistorial, type HistorialRow, type LoteRow } from "@/lib/supabase/lotes";
 import type { Crop } from "@/types/api";
+import { tr } from "@/lib/i18n";
 
 const today = () => {
   const d = new Date();
@@ -52,10 +53,10 @@ function NewRecordForm({ lote, onAdded }: { lote: LoteRow; onAdded: (r: Historia
         nota: form.nota.trim() || null,
       });
       onAdded(row);
-      setSaved(`Guardado: ${TIPO_LABEL[tipo].toLowerCase()} del ${fechaLarga(form.fecha)}.`);
+      setSaved(tr(`Guardado: ${TIPO_LABEL[tipo].toLowerCase()} del ${fechaLarga(form.fecha)}.`, `Saved: ${TIPO_LABEL[tipo].toLowerCase()} on ${fechaLarga(form.fecha)}.`));
       setForm({ ...EMPTY, fecha: form.fecha, tipo: form.tipo });
     } catch (err) {
-      setFail(`No se pudo guardar: ${(err as Error).message}`);
+      setFail(tr(`No se pudo guardar: ${(err as Error).message}`, `Could not save: ${(err as Error).message}`));
     } finally {
       setBusy(false);
     }
@@ -68,14 +69,14 @@ function NewRecordForm({ lote, onAdded }: { lote: LoteRow; onAdded: (r: Historia
     <form onSubmit={onSubmit} noValidate className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="h-tipo">¿Qué pasó?</Label>
+          <Label htmlFor="h-tipo">{tr("¿Qué pasó?", "What happened?")}</Label>
           <Select id="h-tipo" value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value })} aria-invalid={Boolean(errors.tipo)}>
             {TIPOS.map((t) => <option key={t} value={t}>{TIPO_LABEL[t]}</option>)}
           </Select>
           {err("tipo")}
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="h-fecha">Fecha</Label>
+          <Label htmlFor="h-fecha">{tr("Fecha", "Date")}</Label>
           <Input
             id="h-fecha" type="date" max={today()} value={form.fecha}
             onChange={(e) => setForm({ ...form, fecha: e.target.value })}
@@ -85,9 +86,9 @@ function NewRecordForm({ lote, onAdded }: { lote: LoteRow; onAdded: (r: Historia
         </div>
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="h-cultivo">Cultivo{NEEDS_CROP.has(tipo) ? "" : " (opcional)"}</Label>
+        <Label htmlFor="h-cultivo">{tr("Cultivo", "Crop")}{NEEDS_CROP.has(tipo) ? "" : tr(" (opcional)", " (optional)")}</Label>
         <Input
-          id="h-cultivo" list="h-cultivos" value={form.cultivo} autoComplete="off" placeholder="Por ejemplo: Soja"
+          id="h-cultivo" list="h-cultivos" value={form.cultivo} autoComplete="off" placeholder={tr("Por ejemplo: Soja", "For example: Soybean")}
           onChange={(e) => setForm({ ...form, cultivo: e.target.value })}
           aria-invalid={Boolean(errors.cultivo)} aria-describedby={errors.cultivo ? "h-cultivo-error" : undefined}
         />
@@ -95,11 +96,11 @@ function NewRecordForm({ lote, onAdded }: { lote: LoteRow; onAdded: (r: Historia
         {err("cultivo")}
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="h-nota">Comentario{tipo === "nota" ? "" : " (opcional)"}</Label>
+        <Label htmlFor="h-nota">{tr("Comentario", "Comment")}{tipo === "nota" ? "" : tr(" (opcional)", " (optional)")}</Label>
         <textarea
           id="h-nota" rows={3} value={form.nota} maxLength={1000}
           onChange={(e) => setForm({ ...form, nota: e.target.value })}
-          placeholder="Rinde, lluvia que cayó, plagas, lo que te parezca importante para la próxima campaña."
+          placeholder={tr("Rinde, lluvia que cayó, plagas, lo que te parezca importante para la próxima campaña.", "Yield, rain that fell, pests, anything you think matters for next season.")}
           className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground"
           aria-invalid={Boolean(errors.nota)} aria-describedby={errors.nota ? "h-nota-error" : undefined}
         />
@@ -107,13 +108,13 @@ function NewRecordForm({ lote, onAdded }: { lote: LoteRow; onAdded: (r: Historia
       </div>
       {fail && <Alert tone="error">{fail}</Alert>}
       <p aria-live="polite" className="text-sm font-medium text-success">{saved}</p>
-      <Button type="submit" disabled={busy}><Save aria-hidden /> {busy ? "Guardando…" : "Guardar en el historial"}</Button>
+      <Button type="submit" disabled={busy}><Save aria-hidden /> {busy ? tr("Guardando…", "Saving…") : tr("Guardar en el historial", "Save to history")}</Button>
     </form>
   );
 }
 
 function Timeline({ rows, onDelete }: { rows: HistorialRow[]; onDelete: (id: string) => void }) {
-  if (rows.length === 0) return <p className="text-muted-foreground">Todavía no cargaste nada. Empezá por la última siembra o cosecha.</p>;
+  if (rows.length === 0) return <p className="text-muted-foreground">{tr("Todavía no cargaste nada. Empezá por la última siembra o cosecha.", "You haven't added anything yet. Start with the last planting or harvest.")}</p>;
   const byId = new Map(rows.map((r) => [r.id, r]));
   return (
     <div className="space-y-6">
@@ -123,7 +124,7 @@ function Timeline({ rows, onDelete }: { rows: HistorialRow[]; onDelete: (id: str
           <ol className="space-y-2 border-l-2 border-primary/30 pl-4">
             {group.map(({ id }) => {
               const r = byId.get(id)!;
-              const t = isTipo(r.tipo) ? TIPO_LABEL[r.tipo] : r.tipo ?? "Registro";
+              const t = isTipo(r.tipo) ? TIPO_LABEL[r.tipo] : r.tipo ?? tr("Registro", "Record");
               return (
                 <li key={id} className="flex items-start justify-between gap-3 rounded-lg border bg-card p-3">
                   <div>
@@ -133,8 +134,8 @@ function Timeline({ rows, onDelete }: { rows: HistorialRow[]; onDelete: (id: str
                   </div>
                   <Button
                     type="button" size="icon" variant="outline"
-                    aria-label={`Borrar ${t.toLowerCase()} del ${fechaLarga(r.fecha)}`}
-                    onClick={() => { if (window.confirm("¿Borrar este registro?")) onDelete(id); }}
+                    aria-label={tr(`Borrar ${t.toLowerCase()} del ${fechaLarga(r.fecha)}`, `Delete ${t.toLowerCase()} on ${fechaLarga(r.fecha)}`)}
+                    onClick={() => { if (window.confirm(tr("¿Borrar este registro?", "Delete this record?"))) onDelete(id); }}
                   >
                     <Trash2 aria-hidden className="size-4" />
                   </Button>
@@ -164,7 +165,7 @@ export default function HistorialPage() {
       setRows(l ? await listHistorial(l.id) : []);
     } catch (e) {
       setLote(null);
-      setError(`No se pudo leer tu historial: ${(e as Error).message}`);
+      setError(tr(`No se pudo leer tu historial: ${(e as Error).message}`, `Could not read your history: ${(e as Error).message}`));
     }
   }, [fieldId]);
 
@@ -191,7 +192,7 @@ export default function HistorialPage() {
       setLote(l);
       setRows([]);
     } catch (e) {
-      setError(`No se pudo guardar el campo: ${(e as Error).message}`);
+      setError(tr(`No se pudo guardar el campo: ${(e as Error).message}`, `Could not save the field: ${(e as Error).message}`));
     } finally {
       setSaving(false);
     }
@@ -202,55 +203,55 @@ export default function HistorialPage() {
       await deleteHistorial(id);
       setRows((rs) => rs.filter((r) => r.id !== id));
     } catch (e) {
-      setError(`No se pudo borrar: ${(e as Error).message}`);
+      setError(tr(`No se pudo borrar: ${(e as Error).message}`, `Could not delete: ${(e as Error).message}`));
     }
   }
 
   return (
     <div className="max-w-4xl space-y-6">
-      <PageHeader title="Historial del lote" description="Lo que sembraste, cosechaste y observaste, guardado para decidir mejor la próxima campaña." />
+      <PageHeader title={tr("Historial del lote", "Field history")} description={tr("Lo que sembraste, cosechaste y observaste, guardado para decidir mejor la próxima campaña.", "What you planted, harvested and observed, saved to decide better next season.")} />
 
       {!configured ? (
-        <Alert tone="info" title="El historial necesita una cuenta">
-          <p>Para guardar el historial entre dispositivos hace falta iniciar sesión, y el inicio de sesión todavía no está activado en esta instalación.</p>
+        <Alert tone="info" title={tr("El historial necesita una cuenta", "History needs an account")}>
+          <p>{tr("Para guardar el historial entre dispositivos hace falta iniciar sesión, y el inicio de sesión todavía no está activado en esta instalación.", "Saving the history across devices requires signing in, and sign-in is not enabled on this installation yet.")}</p>
         </Alert>
       ) : loading ? (
-        <p className="text-muted-foreground">Cargando…</p>
+        <p className="text-muted-foreground">{tr("Cargando…", "Loading…")}</p>
       ) : !user ? (
         <Card>
           <CardContent className="flex flex-wrap items-center justify-between gap-4 pt-5">
-            <p>Iniciá sesión para guardar el historial de este campo en tu cuenta.</p>
-            <Button asChild><Link href="/cuenta"><LogIn aria-hidden /> Entrar o crear cuenta</Link></Button>
+            <p>{tr("Iniciá sesión para guardar el historial de este campo en tu cuenta.", "Sign in to save this field's history to your account.")}</p>
+            <Button asChild><Link href="/cuenta"><LogIn aria-hidden /> {tr("Entrar o crear cuenta", "Sign in or create an account")}</Link></Button>
           </CardContent>
         </Card>
       ) : lote === undefined ? (
-        <p role="status" className="text-muted-foreground">Buscando tu historial…</p>
+        <p role="status" className="text-muted-foreground">{tr("Buscando tu historial…", "Looking for your history…")}</p>
       ) : !lote ? (
         <Card>
           <CardHeader>
-            <CardTitle as="h2" className="flex items-center gap-2"><History aria-hidden className="size-5" /> Empezá el historial de {field?.name ?? "este campo"}</CardTitle>
-            <CardDescription>Guardamos el campo en tu cuenta y después cargás lo que va pasando.</CardDescription>
+            <CardTitle as="h2" className="flex items-center gap-2"><History aria-hidden className="size-5" /> {tr(`Empezá el historial de ${field?.name ?? "este campo"}`, `Start the history of ${field?.name ?? "this field"}`)}</CardTitle>
+            <CardDescription>{tr("Guardamos el campo en tu cuenta y después cargás lo que va pasando.", "We save the field to your account and then you log what happens.")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={saveLote} disabled={saving || !field}><Save aria-hidden /> {saving ? "Guardando…" : "Guardar este campo en mi cuenta"}</Button>
+            <Button onClick={saveLote} disabled={saving || !field}><Save aria-hidden /> {saving ? tr("Guardando…", "Saving…") : tr("Guardar este campo en mi cuenta", "Save this field to my account")}</Button>
           </CardContent>
         </Card>
       ) : (
         <>
           <Card>
-            <CardHeader><CardTitle as="h2">Cargar un registro</CardTitle></CardHeader>
+            <CardHeader><CardTitle as="h2">{tr("Cargar un registro", "Add a record")}</CardTitle></CardHeader>
             <CardContent><NewRecordForm lote={lote} onAdded={(r) => setRows((rs) => [r, ...rs])} /></CardContent>
           </Card>
           {sequence.length >= 2 && (
             <Card>
               <CardContent className="pt-5">
-                <p><strong>Lo que se sembró, en orden:</strong> {sequence.join(" → ")}.</p>
-                <p className="text-sm text-muted-foreground">Es tu rotación real según lo que cargaste. Compará con la del perfil del campo.</p>
+                <p><strong>{tr("Lo que se sembró, en orden:", "What was planted, in order:")}</strong> {sequence.join(" → ")}.</p>
+                <p className="text-sm text-muted-foreground">{tr("Es tu rotación real según lo que cargaste. Compará con la del perfil del campo.", "It's your real rotation based on what you entered. Compare it with the field profile's.")}</p>
               </CardContent>
             </Card>
           )}
           <section aria-labelledby="registros" className="space-y-3">
-            <h2 id="registros" className="text-2xl font-semibold">Registros</h2>
+            <h2 id="registros" className="text-2xl font-semibold">{tr("Registros", "Records")}</h2>
             <Timeline rows={rows} onDelete={remove} />
           </section>
         </>
@@ -259,8 +260,8 @@ export default function HistorialPage() {
       {error && <Alert tone="error">{error}</Alert>}
 
       <PageNotes>
-        <p>El historial es tuyo: solo lo ves vos con tu cuenta (cada usuario accede únicamente a sus lotes).</p>
-        <p>AgroOrbit todavía no usa este historial para calcular el puntaje: sirve para que vos y tu agrónomo vean qué pasó en cada campaña.</p>
+        <p>{tr("El historial es tuyo: solo lo ves vos con tu cuenta (cada usuario accede únicamente a sus lotes).", "The history is yours: only you see it with your account (each user only accesses their own fields).")}</p>
+        <p>{tr("AgroOrbit todavía no usa este historial para calcular el puntaje: sirve para que vos y tu agrónomo vean qué pasó en cada campaña.", "AgroOrbit doesn't use this history to calculate the score yet: it helps you and your agronomist see what happened each season.")}</p>
       </PageNotes>
     </div>
   );

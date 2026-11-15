@@ -24,6 +24,7 @@ import { num, SOIL_TEXTURES } from "@/lib/format";
 import { fromBoundary, ringAreaHa, ringCentroid, toBoundary, type LngLat } from "@/lib/geometry";
 import { cn } from "@/lib/utils";
 import type { Crop, FieldCreate, FieldOut, Level, SoilEstimate, SoilTexture } from "@/types/api";
+import { L, appLocale, localize, tr } from "@/lib/i18n";
 
 interface FormState {
   name: string;
@@ -53,7 +54,7 @@ const POLYGON_RESET_KM = 5;
 /** Tiempo que se ve la confirmación antes de ir al campo. */
 const REDIRECT_MS = 2400;
 
-const OM_WORD: Record<Level, string> = { bajo: "baja", medio: "media", alto: "alta" };
+const OM_WORD: Record<Level, string> = localize({ bajo: L("baja", "low"), medio: L("media", "medium"), alto: L("alta", "high") });
 
 /** Del campo guardado al formulario. `crop_history` incluye el cultivo actual como último elemento. */
 export function toFormState(f: FieldOut | null): FormState {
@@ -85,14 +86,14 @@ export type FormErrors = Partial<Record<"name" | "point" | "area_ha" | "slope_pc
 
 export function validate(s: FormState): FormErrors {
   const e: FormErrors = {};
-  if (!s.name.trim()) e.name = "Poné un nombre para reconocer el campo.";
-  if (!s.point) e.point = "Marcá la ubicación del campo: buscá tu ciudad o pueblo, tocá el mapa o ingresá las coordenadas.";
+  if (!s.name.trim()) e.name = tr("Poné un nombre para reconocer el campo.", "Give the field a name you'll recognize.");
+  if (!s.point) e.point = tr("Marcá la ubicación del campo: buscá tu ciudad o pueblo, tocá el mapa o ingresá las coordenadas.", "Mark the field location: search your city or town, tap the map or enter the coordinates.");
   const area = Number(s.area_ha.replace(",", "."));
-  if (!s.area_ha.trim() || !Number.isFinite(area) || area <= 0) e.area_ha = "Ingresá la superficie en hectáreas (mayor que 0).";
-  else if (area > 100_000) e.area_ha = "La superficie máxima es de 100.000 ha.";
+  if (!s.area_ha.trim() || !Number.isFinite(area) || area <= 0) e.area_ha = tr("Ingresá la superficie en hectáreas (mayor que 0).", "Enter the area in hectares (greater than 0).");
+  else if (area > 100_000) e.area_ha = tr("La superficie máxima es de 100.000 ha.", "The maximum area is 100,000 ha.");
   if (s.slope_pct.trim()) {
     const slope = Number(s.slope_pct.replace(",", "."));
-    if (!Number.isFinite(slope) || slope < 0 || slope > 100) e.slope_pct = "La pendiente tiene que estar entre 0 y 100 %.";
+    if (!Number.isFinite(slope) || slope < 0 || slope > 100) e.slope_pct = tr("La pendiente tiene que estar entre 0 y 100 %.", "The slope must be between 0 and 100 %.");
   }
   return e;
 }
@@ -120,7 +121,7 @@ export function toFieldCreate(form: FormState): FieldCreate {
           provenance: {
             label: s.lab_analysis ? "observado" : "estimado",
             confidence: s.lab_analysis ? "alta" : "baja",
-            note: s.lab_analysis ? "Análisis de laboratorio declarado por el productor." : "Declarado por el productor.",
+            note: s.lab_analysis ? tr("Análisis de laboratorio declarado por el productor.", "Laboratory test reported by the farmer.") : tr("Declarado por el productor.", "Reported by the farmer."),
           },
         }
       : null,
@@ -157,7 +158,7 @@ const describedBy = (id: string, hint?: string, error?: string) => (error ? `${i
 
 /** Marca de las casillas completadas con la estimación. */
 const EstimatedTag = () => (
-  <span className="rounded-full bg-sky-soft px-2 py-0.5 text-xs font-semibold text-sky">Estimado automáticamente</span>
+  <span className="rounded-full bg-sky-soft px-2 py-0.5 text-xs font-semibold text-sky">{tr("Estimado automáticamente", "Estimated automatically")}</span>
 );
 
 /* ------------------------------ suelo estimado del punto ------------------------------ */
@@ -172,23 +173,25 @@ function SoilEstimateBox({ lookup, hasPoint, lab }: { lookup: SoilLookup; hasPoi
   const box = "rounded-xl border p-4 text-sm";
   let body: React.ReactNode;
   if (!hasPoint) {
-    body = <p>Elegí la ubicación del campo (paso 1) y el suelo se completa solo con la estimación de ese punto.</p>;
+    body = <p>{tr("Elegí la ubicación del campo (paso 1) y el suelo se completa solo con la estimación de ese punto.", "Choose the field location (step 1) and the soil fills in automatically with that point's estimate.")}</p>;
   } else if (lookup.status === "loading" || lookup.status === "idle") {
     body = (
       <p className="flex items-center gap-2">
         <Loader2 aria-hidden className="size-4 shrink-0 animate-spin" />
-        <span>Buscando el suelo de este punto… El mapa de suelos puede tardar más de un minuto: mientras tanto podés seguir completando y guardar.</span>
+        <span>{tr("Buscando el suelo de este punto… El mapa de suelos puede tardar más de un minuto: mientras tanto podés seguir completando y guardar.", "Looking up the soil at this point… The soil map can take more than a minute: meanwhile you can keep filling in and save.")}</span>
       </p>
     );
   } else if (lookup.status === "error") {
-    body = <p>No pudimos estimar el suelo ahora ({lookup.message}). Podés cargarlo a mano.</p>;
+    body = <p>{tr(`No pudimos estimar el suelo ahora (${lookup.message}). Podés cargarlo a mano.`, `We couldn't estimate the soil now (${lookup.message}). You can enter it by hand.`)}</p>;
   } else if (!lookup.estimate) {
-    body = <p>No hay una estimación de suelo para este punto (puede ser agua, zona urbana o un lugar sin datos). Si lo sabés, cargalo vos.</p>;
+    body = <p>{tr("No hay una estimación de suelo para este punto (puede ser agua, zona urbana o un lugar sin datos). Si lo sabés, cargalo vos.", "There is no soil estimate for this point (it may be water, an urban area or a place without data). If you know it, enter it yourself.")}</p>;
   } else if (!usableEstimate(lookup.estimate)) {
     body = (
       <p>
-        No pudimos consultar el mapa de suelos en este momento. <strong>No completamos el suelo con datos de muestra</strong>: cargalo vos si lo
-        sabés, o volvé a intentar más tarde.
+        {tr(
+          <>No pudimos consultar el mapa de suelos en este momento. <strong>No completamos el suelo con datos de muestra</strong>: cargalo vos si lo sabés, o volvé a intentar más tarde.</>,
+          <>We couldn&apos;t query the soil map right now. <strong>We don&apos;t fill in the soil with sample data</strong>: enter it yourself if you know it, or try again later.</>,
+        )}
       </p>
     );
   } else {
@@ -196,25 +199,27 @@ function SoilEstimateBox({ lookup, hasPoint, lab }: { lookup: SoilLookup; hasPoi
     body = (
       <div className="space-y-1.5">
         <p className="text-base">
-          Suelo estimado de este punto: <strong>{e.texture ? SOIL_TEXTURES[e.texture] : (e.texture_usda ?? "sin textura")}</strong>
+          {tr("Suelo estimado de este punto:", "Estimated soil at this point:")} <strong>{e.texture ? SOIL_TEXTURES[e.texture] : (e.texture_usda ?? tr("sin textura", "no texture"))}</strong>
           {e.organic_matter && (
-            <>, materia orgánica <strong>{OM_WORD[e.organic_matter]}</strong>{e.organic_matter_pct != null && <> (~{num(e.organic_matter_pct, 1)} %)</>}</>
+            <>, {tr("materia orgánica", "organic matter")} <strong>{OM_WORD[e.organic_matter]}</strong>{e.organic_matter_pct != null && <> (~{num(e.organic_matter_pct, 1)} %)</>}</>
           )}
           .
         </p>
         {e.clay_pct != null && (
-          <p className="text-muted-foreground">Arcilla {num(e.clay_pct)} %, arena {num(e.sand_pct)} %, limo {num(e.silt_pct)} %.</p>
+          <p className="text-muted-foreground">{tr("Arcilla", "Clay")} {num(e.clay_pct)} %, {tr("arena", "sand")} {num(e.sand_pct)} %, {tr("limo", "silt")} {num(e.silt_pct)} %.</p>
         )}
         {lookup.distanceKm > 0 && (
           <p className="font-medium">
-            Ojo: es el suelo de los alrededores, a unos {num(lookup.distanceKm)} km, porque en el punto elegido no hay suelo agrícola (por ejemplo, el
-            centro del pueblo). Mové el punto a tu campo para afinarlo.
+            {tr(
+              `Ojo: es el suelo de los alrededores, a unos ${num(lookup.distanceKm)} km, porque en el punto elegido no hay suelo agrícola (por ejemplo, el centro del pueblo). Mové el punto a tu campo para afinarlo.`,
+              `Note: this is the soil of the surroundings, about ${num(lookup.distanceKm)} km away, because there is no farm soil at the chosen point (for example, the town center). Move the point to your field to refine it.`,
+            )}
           </p>
         )}
         <p className="text-muted-foreground">
-          Fuente: {e.source} · {e.depth} · píxel de {e.resolution} · {e.origin_label}. Es una estimación de un mapa de suelos, no un análisis.
+          {tr("Fuente", "Source")}: {e.source} · {e.depth} · {tr("píxel de", "pixel of")} {e.resolution} · {e.origin_label}. {tr("Es una estimación de un mapa de suelos, no un análisis.", "It is an estimate from a soil map, not a lab test.")}
         </p>
-        {lab && <p className="font-medium">Tenés análisis de laboratorio: usamos tus valores y no esta estimación.</p>}
+        {lab && <p className="font-medium">{tr("Tenés análisis de laboratorio: usamos tus valores y no esta estimación.", "You have a lab test: we use your values, not this estimate.")}</p>}
       </div>
     );
   }
@@ -234,26 +239,26 @@ type StepState = "pending" | "ok" | "info";
 function stepsOf(p: SaveProgress): { icon: LucideIcon; label: string; state: StepState; detail: string }[] {
   if (p.phase === "saving") {
     return [
-      { icon: Save, label: "Guardando el campo", state: "pending", detail: "…" },
-      { icon: Layers, label: "Suelo estimado (SoilGrids)", state: "pending", detail: "…" },
-      { icon: CloudSun, label: "Zona climática (NASA POWER)", state: "pending", detail: "…" },
+      { icon: Save, label: tr("Guardando el campo", "Saving the field"), state: "pending", detail: "…" },
+      { icon: Layers, label: tr("Suelo estimado (SoilGrids)", "Estimated soil (SoilGrids)"), state: "pending", detail: "…" },
+      { icon: CloudSun, label: tr("Zona climática (NASA POWER)", "Climate zone (NASA POWER)"), state: "pending", detail: "…" },
     ];
   }
   const ap = p.field.auto_profile;
   const soilOrigin = ap?.soil_estimate?.origin;
   return [
-    { icon: Save, label: "Campo guardado", state: "ok", detail: p.demo ? "En este navegador" : "Listo" },
+    { icon: Save, label: tr("Campo guardado", "Field saved"), state: "ok", detail: p.demo ? tr("En este navegador", "In this browser") : tr("Listo", "Done") },
     {
       icon: Layers,
-      label: "Suelo estimado (SoilGrids)",
+      label: tr("Suelo estimado (SoilGrids)", "Estimated soil (SoilGrids)"),
       state: soilOrigin === "live" || soilOrigin === "cached" ? "ok" : "info",
-      detail: soilOrigin === "live" || soilOrigin === "cached" ? "Listo" : soilOrigin === "sample" ? "Dato de muestra" : "Sin dato",
+      detail: soilOrigin === "live" || soilOrigin === "cached" ? tr("Listo", "Done") : soilOrigin === "sample" ? tr("Dato de muestra", "Sample data") : tr(tr("Sin dato", "No data"), "No data"),
     },
     {
       icon: CloudSun,
-      label: "Zona climática (NASA POWER)",
+      label: tr("Zona climática (NASA POWER)", "Climate zone (NASA POWER)"),
       state: ap?.zone?.zone ? "ok" : "info",
-      detail: ap?.zone?.zone ? "Listo" : "Sin zonificación",
+      detail: ap?.zone?.zone ? tr("Listo", "Done") : tr("Sin zonificación", "No zoning"),
     },
   ];
 }
@@ -287,7 +292,7 @@ function SaveOverlay({ progress }: { progress: SaveProgress }) {
           )}
         </div>
         <h2 id="guardado-titulo" ref={headingRef} tabIndex={-1} className="mt-6 font-display text-lg font-semibold outline-none">
-          {done ? <>¡Listo! Guardamos «{name}»</> : "Guardando tu campo y consultando datos satelitales…"}
+          {done ? tr(`¡Listo! Guardamos «${name}»`, `Done! We saved “${name}”`) : tr("Guardando tu campo y consultando datos satelitales…", "Saving your field and querying satellite data…")}
         </h2>
         <ul className="mt-5 space-y-2 text-left" aria-live="polite">
           {stepsOf(progress).map(({ icon: Icon, label, state, detail }) => (
@@ -304,9 +309,9 @@ function SaveOverlay({ progress }: { progress: SaveProgress }) {
         {done && (
           <div className="mt-6 space-y-2">
             <Button asChild size="lg" className="w-full">
-              <Link ref={goRef} href={progress.href}>Ir a mi campo</Link>
+              <Link ref={goRef} href={progress.href}>{tr("Ir a mi campo", "Go to my field")}</Link>
             </Button>
-            <p className="text-sm text-muted-foreground">Te llevamos en un momento…</p>
+            <p className="text-sm text-muted-foreground">{tr("Te llevamos en un momento…", "Taking you there in a moment…")}</p>
           </div>
         )}
       </div>
@@ -344,7 +349,7 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
   const [placeNote, setPlaceNote] = useState<string | null>(null);
   const [soil, setSoil] = useState<SoilLookup>({ status: "idle" });
 
-  const cropOptions = useMemo(() => [...(crops.data ?? [])].filter((c) => !c.is_cover_crop).sort((a, b) => a.name.localeCompare(b.name, "es")), [crops.data]);
+  const cropOptions = useMemo(() => [...(crops.data ?? [])].filter((c) => !c.is_cover_crop).sort((a, b) => a.name.localeCompare(b.name, appLocale())), [crops.data]);
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => {
     setSavedAt(null);
     setS((p) => ({ ...p, [k]: v }));
@@ -403,7 +408,7 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
     e.target.value = "";
     if (!file) return;
     if (file.size > 15 * 1024 * 1024) {
-      setLabFileMsg("El archivo es muy grande (máximo 15 MB).");
+      setLabFileMsg(tr("El archivo es muy grande (máximo 15 MB).", "The file is too large (15 MB max)."));
       return;
     }
     setLabFileMsg(null);
@@ -417,7 +422,7 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
     // Si había un lote dibujado lejos de la ciudad nueva, era de otro lugar: se borra (y se avisa).
     const far = Boolean(s.polygon && distanceKm(ringCentroid(s.polygon), loc) > POLYGON_RESET_KM);
     setS((p) => ({ ...p, point: { lat: loc.lat, lon: loc.lon }, polygon: far ? null : p.polygon, name: nm.name, autoName: nm.auto }));
-    setPlaceNote(far ? "Borramos el lote que habías dibujado porque estaba en otro lugar. Dibujalo de nuevo si querés." : null);
+    setPlaceNote(far ? tr("Borramos el lote que habías dibujado porque estaba en otro lugar. Dibujalo de nuevo si querés.", "We removed the plot you had drawn because it was somewhere else. Draw it again if you like.") : null);
   }
 
   /** Punto movido desde el mapa (clic, arrastre o coordenadas): el nombre de ciudad escrito ya no corresponde. */
@@ -474,7 +479,7 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
       }
     } catch (e) {
       setProgress(null);
-      setSaveError(describeError(e) + (mode === "edit" ? " Si estás sin conexión, usá “Guardar como campo nuevo”." : ""));
+      setSaveError(describeError(e) + (mode === "edit" ? tr(" Si estás sin conexión, usá “Guardar como campo nuevo”.", " If you are offline, use “Save as a new field”.") : ""));
     } finally {
       setSaving(false);
     }
@@ -494,38 +499,38 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
       {/* 1. Ubicación */}
       <Card>
         <CardHeader>
-          <CardTitle as={h}>1. ¿Dónde está el campo?</CardTitle>
-          <CardDescription>Buscá tu ciudad o pueblo: el mapa, las coordenadas, el nombre y el suelo se completan solos.</CardDescription>
+          <CardTitle as={h}>{tr("1. ¿Dónde está el campo?", "1. Where is the field?")}</CardTitle>
+          <CardDescription>{tr("Buscá tu ciudad o pueblo: el mapa, las coordenadas, el nombre y el suelo se completan solos.", "Search for your city or town: the map, coordinates, name and soil fill in automatically.")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <LocalitySearch
             id={id("localidad")}
-            label="Buscá tu ciudad o pueblo"
-            help="Es la forma más rápida. Después podés mover el punto en el mapa para afinarlo."
+            label={tr("Buscá tu ciudad o pueblo", "Search for your city or town")}
+            help={tr("Es la forma más rápida. Después podés mover el punto en el mapa para afinarlo.", "It's the fastest way. Then you can move the point on the map to refine it.")}
             onSelect={onLocality}
             clearSignal={clearPlace}
           />
-          <p className="text-sm text-muted-foreground">O tocá el mapa donde está el campo:</p>
+          <p className="text-sm text-muted-foreground">{tr("O tocá el mapa donde está el campo:", "Or tap the map where the field is:")}</p>
           <div id={id("map")} tabIndex={-1}>
             <FieldMap mode="edit" point={s.point} polygon={s.polygon} onPointChange={onMapPoint} onPolygonChange={onPolygon} showPlaceSearch={false} />
           </div>
-          {s.point && <LocalityLine lat={s.point.lat} lon={s.point.lon} live prefix="Ubicación elegida: " className="text-base font-medium text-foreground" />}
+          {s.point && <LocalityLine lat={s.point.lat} lon={s.point.lon} live prefix={tr("Ubicación elegida: ", "Chosen location: ")} className="text-base font-medium text-foreground" />}
           {s.polygon && (
             <p aria-live="polite" className="text-base">
-              Lote dibujado: <strong>{num(ringAreaHa(s.polygon), 1)} ha</strong>. La superficie se completó sola en el paso 3.
+              {tr("Lote dibujado:", "Drawn plot:")} <strong>{num(ringAreaHa(s.polygon), 1)} ha</strong>. {tr("La superficie se completó sola en el paso 3.", "The area was filled in automatically in step 3.")}
             </p>
           )}
           {placeNote && <p role="status" className="text-sm text-muted-foreground">{placeNote}</p>}
           {errors.point && <p role="alert" className="text-sm font-medium text-destructive">{errors.point}</p>}
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field id={id("name")} label="Nombre del campo" error={errors.name} hint={s.autoName && s.name === s.autoName ? "Lo tomamos de la ciudad: cambialo si querés." : undefined}>
+            <Field id={id("name")} label={tr("Nombre del campo", "Field name")} error={errors.name} hint={s.autoName && s.name === s.autoName ? tr("Lo tomamos de la ciudad: cambialo si querés.", "Taken from the city: change it if you like.") : undefined}>
               <Input
                 id={id("name")} value={s.name} onChange={(e) => set("name", e.target.value)} aria-invalid={Boolean(errors.name)}
-                aria-describedby={describedBy(id("name"), s.autoName && s.name === s.autoName ? "x" : undefined, errors.name)} autoComplete="off" placeholder="Ej.: Lote Norte"
+                aria-describedby={describedBy(id("name"), s.autoName && s.name === s.autoName ? "x" : undefined, errors.name)} autoComplete="off" placeholder={tr("Ej.: Lote Norte", "E.g.: North Plot")}
               />
             </Field>
-            <Field id={id("farm")} label="Establecimiento (opcional)">
-              <Input id={id("farm")} value={s.farm_name} onChange={(e) => set("farm_name", e.target.value)} autoComplete="off" placeholder="Ej.: La Esperanza" />
+            <Field id={id("farm")} label={tr("Establecimiento (opcional)", "Farm (optional)")}>
+              <Input id={id("farm")} value={s.farm_name} onChange={(e) => set("farm_name", e.target.value)} autoComplete="off" placeholder={tr("Ej.: La Esperanza", "E.g.: La Esperanza")} />
             </Field>
           </div>
         </CardContent>
@@ -534,15 +539,15 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
       {/* 2. Análisis de suelo */}
       <Card>
         <CardHeader>
-          <CardTitle as={h} className="flex items-center gap-2"><FlaskConical aria-hidden className="size-5 text-primary" /> 2. Análisis de suelo</CardTitle>
-          <CardDescription>Se completa solo con el suelo estimado del punto. Si tenés un análisis de laboratorio, marcalo y cargá tus valores: siempre ganan los tuyos.</CardDescription>
+          <CardTitle as={h} className="flex items-center gap-2"><FlaskConical aria-hidden className="size-5 text-primary" /> {tr("2. Análisis de suelo", "2. Soil test")}</CardTitle>
+          <CardDescription>{tr("Se completa solo con el suelo estimado del punto. Si tenés un análisis de laboratorio, marcalo y cargá tus valores: siempre ganan los tuyos.", "It fills in automatically with the point's estimated soil. If you have a lab test, check it and enter your values: yours always win.")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-3 rounded-xl border p-4">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <Label htmlFor={id("lab")}>Tengo análisis de suelo de laboratorio</Label>
-                <p className="text-sm text-muted-foreground">Sube la confianza del resultado y reemplaza a la estimación.</p>
+                <Label htmlFor={id("lab")}>{tr("Tengo análisis de suelo de laboratorio", "I have a laboratory soil test")}</Label>
+                <p className="text-sm text-muted-foreground">{tr("Sube la confianza del resultado y reemplaza a la estimación.", "It raises the result's confidence and replaces the estimate.")}</p>
               </div>
               <Switch id={id("lab")} checked={s.lab_analysis} onCheckedChange={onLab} />
             </div>
@@ -559,22 +564,24 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
                     <span className="text-muted-foreground">{labFile.size >= 1024 * 1024 ? `${num(labFile.size / 1024 / 1024, 1)} MB` : `${num(Math.max(1, labFile.size / 1024))} KB`}</span>
                     <Button asChild size="sm" variant="outline">
                       <a href={labFile.url} target="_blank" rel="noreferrer">
-                        <ExternalLink aria-hidden /> Ver
+                        <ExternalLink aria-hidden /> {tr("Ver", "View")}
                       </a>
                     </Button>
-                    <Button type="button" size="sm" variant="ghost" aria-label={`Quitar el archivo ${labFile.name}`} onClick={() => setLabFile(null)}>
-                      <X aria-hidden /> Quitar
+                    <Button type="button" size="sm" variant="ghost" aria-label={tr(`Quitar el archivo ${labFile.name}`, `Remove the file ${labFile.name}`)} onClick={() => setLabFile(null)}>
+                      <X aria-hidden /> {tr("Quitar", "Remove")}
                     </Button>
                   </div>
                 ) : (
                   <Button type="button" variant="outline" onClick={() => fileRef.current?.click()}>
-                    <Paperclip aria-hidden /> Agregar archivo
+                    <Paperclip aria-hidden /> {tr("Agregar archivo", "Add file")}
                   </Button>
                 )}
                 {labFileMsg && <p role="alert" className="text-sm text-destructive">{labFileMsg}</p>}
                 <p className="text-sm text-muted-foreground">
-                  PDF, foto o planilla del análisis. Queda a mano para consultarlo mientras cargás los valores de abajo: todavía no se guarda en el
-                  servidor.
+                  {tr(
+                    "PDF, foto o planilla del análisis. Queda a mano para consultarlo mientras cargás los valores de abajo: todavía no se guarda en el servidor.",
+                    "PDF, photo or spreadsheet of the test. It stays handy while you enter the values below: it is not saved on the server yet.",
+                  )}
                 </p>
               </div>
             )}
@@ -582,43 +589,43 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
           <SoilEstimateBox lookup={soil} hasPoint={Boolean(s.point)} lab={s.lab_analysis} />
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
-              id={id("texture")} label="Tipo de suelo (textura)"
+              id={id("texture")} label={tr("Tipo de suelo (textura)", "Soil type (texture)")}
               badge={s.soilAuto.texture ? <EstimatedTag /> : undefined}
-              hint={s.soilAuto.texture ? "Viene de la estimación: cambiala si sabés el dato real." : "Sin este dato suponemos franco arenosa."}
+              hint={s.soilAuto.texture ? tr("Viene de la estimación: cambiala si sabés el dato real.", "From the estimate: change it if you know the real value.") : tr("Sin este dato suponemos franco arenosa.", "Without this we assume sandy loam.")}
             >
               <Select id={id("texture")} value={s.texture} onChange={(e) => onSoilChange("texture", e.target.value as SoilTexture | "")} aria-describedby={describedBy(id("texture"), "x")}>
-                <option value="">No lo sé</option>
+                <option value="">{tr("No lo sé", "I don't know")}</option>
                 {Object.entries(SOIL_TEXTURES).map(([k, v]) => (
                   <option key={k} value={k}>{v}</option>
                 ))}
               </Select>
             </Field>
             <Field
-              id={id("om")} label="Materia orgánica"
+              id={id("om")} label={tr("Materia orgánica", "Organic matter")}
               badge={s.soilAuto.organic_matter ? <EstimatedTag /> : undefined}
-              hint={s.soilAuto.organic_matter ? "Viene de la estimación: cambiala si tenés el análisis." : "Los satélites no la miden: es tu estimación o un análisis."}
+              hint={s.soilAuto.organic_matter ? tr("Viene de la estimación: cambiala si tenés el análisis.", "From the estimate: change it if you have the lab test.") : tr("Los satélites no la miden: es tu estimación o un análisis.", "Satellites don't measure it: it's your estimate or a lab test.")}
             >
               <Select id={id("om")} value={s.organic_matter} onChange={(e) => onSoilChange("organic_matter", e.target.value as Level | "")} aria-describedby={describedBy(id("om"), "x")}>
-                <option value="">No lo sé</option>
-                <option value="bajo">Baja</option>
-                <option value="medio">Media</option>
-                <option value="alto">Alta</option>
+                <option value="">{tr("No lo sé", "I don't know")}</option>
+                <option value="bajo">{tr("Baja", "Low")}</option>
+                <option value="medio">{tr("Media", "Medium")}</option>
+                <option value="alto">{tr("Alta", "High")}</option>
               </Select>
             </Field>
-            <Field id={id("depth")} label="Profundidad del suelo" hint="Cuánto pueden bajar las raíces.">
+            <Field id={id("depth")} label={tr("Profundidad del suelo", "Soil depth")} hint={tr("Cuánto pueden bajar las raíces.", "How deep roots can go.")}>
               <Select id={id("depth")} value={s.depth} onChange={(e) => set("depth", e.target.value as Level | "")} aria-describedby={describedBy(id("depth"), "x")}>
-                <option value="">No lo sé</option>
-                <option value="bajo">Somera (menos de ~60 cm)</option>
-                <option value="medio">Media (~1 m)</option>
-                <option value="alto">Profunda (más de ~1,4 m)</option>
+                <option value="">{tr("No lo sé", "I don't know")}</option>
+                <option value="bajo">{tr("Somera (menos de ~60 cm)", "Shallow (less than ~60 cm)")}</option>
+                <option value="medio">{tr("Media (~1 m)", "Medium (~1 m)")}</option>
+                <option value="alto">{tr("Profunda (más de ~1,4 m)", "Deep (more than ~1.4 m)")}</option>
               </Select>
             </Field>
-            <Field id={id("drain")} label="Drenaje" hint="Todavía no influye en el puntaje: queda registrado.">
+            <Field id={id("drain")} label={tr("Drenaje", "Drainage")} hint={tr("Todavía no influye en el puntaje: queda registrado.", "It doesn't affect the score yet: it is recorded.")}>
               <Select id={id("drain")} value={s.drainage} onChange={(e) => set("drainage", e.target.value as Level | "")} aria-describedby={describedBy(id("drain"), "x")}>
-                <option value="">No lo sé</option>
-                <option value="bajo">Lento: se anega</option>
-                <option value="medio">Bueno</option>
-                <option value="alto">Excesivo: el agua se va rápido</option>
+                <option value="">{tr("No lo sé", "I don't know")}</option>
+                <option value="bajo">{tr("Lento: se anega", "Slow: it waterlogs")}</option>
+                <option value="medio">{tr("Bueno", "Good")}</option>
+                <option value="alto">{tr("Excesivo: el agua se va rápido", "Excessive: water drains fast")}</option>
               </Select>
             </Field>
           </div>
@@ -628,20 +635,20 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
       {/* 3. Tamaño y cultivos */}
       <Card>
         <CardHeader>
-          <CardTitle as={h}>3. Tamaño y cultivos</CardTitle>
-          <CardDescription>Si dibujaste el lote, la superficie se calcula sola (la podés corregir).</CardDescription>
+          <CardTitle as={h}>{tr("3. Tamaño y cultivos", "3. Size and crops")}</CardTitle>
+          <CardDescription>{tr("Si dibujaste el lote, la superficie se calcula sola (la podés corregir).", "If you drew the plot, the area is calculated automatically (you can correct it).")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field id={id("area")} label="Superficie (hectáreas)" error={errors.area_ha} hint={areaFromDrawing ? "Calculada con el lote que dibujaste: corregila si hace falta." : "Por ejemplo: 250. Si dibujás el lote en el mapa, se calcula sola."}>
+            <Field id={id("area")} label={tr("Superficie (hectáreas)", "Area (hectares)")} error={errors.area_ha} hint={areaFromDrawing ? tr("Calculada con el lote que dibujaste: corregila si hace falta.", "Calculated from the plot you drew: correct it if needed.") : tr("Por ejemplo: 250. Si dibujás el lote en el mapa, se calcula sola.", "For example: 250. If you draw the plot on the map, it is calculated automatically.")}>
               <Input id={id("area")} inputMode="decimal" value={s.area_ha} onChange={(e) => { setAreaFromDrawing(false); set("area_ha", e.target.value); }} aria-invalid={Boolean(errors.area_ha)} aria-describedby={describedBy(id("area"), "x", errors.area_ha)} />
             </Field>
-            <Field id={id("crop")} label="Cultivo actual" hint={crops.error ? "No se pudo cargar la lista de cultivos." : "El de esta campaña o el último que sembraste."}>
+            <Field id={id("crop")} label={tr("Cultivo actual", "Current crop")} hint={crops.error ? tr("No se pudo cargar la lista de cultivos.", "The crop list could not be loaded.") : tr("El de esta campaña o el último que sembraste.", "This season's crop or the last one you planted.")}>
               {crops.loading && !crops.data ? (
                 <Skeleton className="h-11 w-full" />
               ) : (
                 <Select id={id("crop")} value={s.current_crop} onChange={(e) => set("current_crop", e.target.value)}>
-                  <option value="">No lo sé / lote en barbecho</option>
+                  <option value="">{tr("No lo sé / lote en barbecho", "I don't know / plot in fallow")}</option>
                   {cropOptions.map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
@@ -651,29 +658,29 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
           </div>
 
           <fieldset className="space-y-3">
-            <legend className="text-base font-medium">Rotación histórica</legend>
+            <legend className="text-base font-medium">{tr("Rotación histórica", "Crop history")}</legend>
             <p className="text-sm text-muted-foreground">
-              Cultivos de las campañas anteriores, de la más vieja a la más reciente. Con esto detectamos monocultivos y armamos tu rotación actual.
+              {tr("Cultivos de las campañas anteriores, de la más vieja a la más reciente. Con esto detectamos monocultivos y armamos tu rotación actual.", "Crops from previous seasons, from oldest to most recent. We use this to detect monoculture and build your current rotation.")}
             </p>
-            {s.previous.length === 0 && <p className="text-sm italic text-muted-foreground">Todavía no cargaste campañas anteriores.</p>}
+            {s.previous.length === 0 && <p className="text-sm italic text-muted-foreground">{tr("Todavía no cargaste campañas anteriores.", "You haven't added previous seasons yet.")}</p>}
             <ol className="space-y-2">
               {s.previous.map((c, i) => (
                 <li key={i} className="flex items-center gap-2">
-                  <span className="w-28 shrink-0 text-sm text-muted-foreground">Hace {s.previous.length - i + 0} campaña{s.previous.length - i > 1 ? "s" : ""}</span>
-                  <Select aria-label={`Cultivo de hace ${s.previous.length - i} campaña${s.previous.length - i > 1 ? "s" : ""}`} value={c} onChange={(e) => set("previous", s.previous.map((p, j) => (j === i ? e.target.value : p)))}>
-                    <option value="">Sin dato</option>
+                  <span className="w-28 shrink-0 text-sm text-muted-foreground">{tr(`Hace ${s.previous.length - i} campaña${s.previous.length - i > 1 ? "s" : ""}`, `${s.previous.length - i} season${s.previous.length - i > 1 ? "s" : ""} ago`)}</span>
+                  <Select aria-label={tr(`Cultivo de hace ${s.previous.length - i} campaña${s.previous.length - i > 1 ? "s" : ""}`, `Crop from ${s.previous.length - i} season${s.previous.length - i > 1 ? "s" : ""} ago`)} value={c} onChange={(e) => set("previous", s.previous.map((p, j) => (j === i ? e.target.value : p)))}>
+                    <option value="">{tr("Sin dato", "No data")}</option>
                     {cropOptions.map((o) => (
                       <option key={o.id} value={o.id}>{o.name}</option>
                     ))}
                   </Select>
-                  <Button type="button" variant="ghost" size="icon" aria-label={`Quitar la campaña de hace ${s.previous.length - i}`} onClick={() => set("previous", s.previous.filter((_, j) => j !== i))}>
+                  <Button type="button" variant="ghost" size="icon" aria-label={tr(`Quitar la campaña de hace ${s.previous.length - i}`, `Remove the season from ${s.previous.length - i} ago`)} onClick={() => set("previous", s.previous.filter((_, j) => j !== i))}>
                     <Trash2 aria-hidden />
                   </Button>
                 </li>
               ))}
             </ol>
             <Button type="button" variant="outline" size="sm" disabled={s.previous.length >= MAX_PREVIOUS} onClick={() => set("previous", [...s.previous, ""])}>
-              <Plus aria-hidden /> Agregar campaña anterior
+              <Plus aria-hidden /> {tr("Agregar campaña anterior", "Add previous season")}
             </Button>
           </fieldset>
         </CardContent>
@@ -682,53 +689,53 @@ export function FieldForm({ mode, initial = null, onSaved }: Props) {
       {/* 4. Manejo */}
       <Card>
         <CardHeader>
-          <CardTitle as={h}>4. Manejo</CardTitle>
-          <CardDescription>Todo es opcional. Si no sabés un dato, dejalo en blanco.</CardDescription>
+          <CardTitle as={h}>{tr("4. Manejo", "4. Management")}</CardTitle>
+          <CardDescription>{tr("Todo es opcional. Si no sabés un dato, dejalo en blanco.", "Everything is optional. If you don't know something, leave it blank.")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between gap-4 rounded-xl border p-4">
             <div>
-              <Label htmlFor={id("irr")}>Tengo riego disponible</Label>
-              <p className="text-sm text-muted-foreground">Con riego se cubre buena parte del déficit de agua, pero se descuenta el costo del agua aplicada.</p>
+              <Label htmlFor={id("irr")}>{tr("Tengo riego disponible", "I have irrigation available")}</Label>
+              <p className="text-sm text-muted-foreground">{tr("Con riego se cubre buena parte del déficit de agua, pero se descuenta el costo del agua aplicada.", "Irrigation covers much of the water deficit, but the cost of applied water is deducted.")}</p>
             </div>
             <Switch id={id("irr")} checked={s.irrigated} onCheckedChange={(v) => set("irrigated", v)} />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field id={id("slope")} label="Pendiente (%)" error={errors.slope_pct} hint="Si la dejás vacía, la calculamos con el relieve de la NASA (SRTM).">
-              <Input id={id("slope")} inputMode="decimal" value={s.slope_pct} onChange={(e) => set("slope_pct", e.target.value)} aria-invalid={Boolean(errors.slope_pct)} aria-describedby={describedBy(id("slope"), "x", errors.slope_pct)} placeholder="Ej.: 1,5" />
+            <Field id={id("slope")} label={tr("Pendiente (%)", "Slope (%)")} error={errors.slope_pct} hint={tr("Si la dejás vacía, la calculamos con el relieve de la NASA (SRTM).", "If you leave it empty, we calculate it with NASA terrain data (SRTM).")}>
+              <Input id={id("slope")} inputMode="decimal" value={s.slope_pct} onChange={(e) => set("slope_pct", e.target.value)} aria-invalid={Boolean(errors.slope_pct)} aria-describedby={describedBy(id("slope"), "x", errors.slope_pct)} placeholder={tr("Ej.: 1,5", "E.g.: 1.5")} />
             </Field>
-            <Field id={id("budget")} label="Presupuesto para hacer cambios" hint="Todavía no influye en el puntaje: queda registrado.">
+            <Field id={id("budget")} label={tr("Presupuesto para hacer cambios", "Budget for changes")} hint={tr("Todavía no influye en el puntaje: queda registrado.", "It doesn't affect the score yet: it is recorded.")}>
               <Select id={id("budget")} value={s.budget} onChange={(e) => set("budget", e.target.value as Level | "")} aria-describedby={describedBy(id("budget"), "x")}>
-                <option value="">Prefiero no decirlo</option>
-                <option value="bajo">Ajustado</option>
-                <option value="medio">Medio</option>
-                <option value="alto">Amplio</option>
+                <option value="">{tr("Prefiero no decirlo", "I'd rather not say")}</option>
+                <option value="bajo">{tr("Ajustado", "Tight")}</option>
+                <option value="medio">{tr("Medio", "Medium")}</option>
+                <option value="alto">{tr("Amplio", "Ample")}</option>
               </Select>
             </Field>
           </div>
         </CardContent>
       </Card>
 
-      {saveError && <Alert tone="error" title="No se pudo guardar">{saveError}</Alert>}
+      {saveError && <Alert tone="error" title={tr("No se pudo guardar", "Could not save")}>{saveError}</Alert>}
 
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" size="lg" disabled={saving}>
           {saving ? <Loader2 aria-hidden className="animate-spin" /> : <Save aria-hidden />}
-          {saving ? "Guardando…" : mode === "create" ? "Guardar y seguir" : "Guardar cambios"}
+          {saving ? tr("Guardando…", "Saving…") : mode === "create" ? tr("Guardar y seguir", "Save and continue") : tr("Guardar cambios", "Save changes")}
         </Button>
         {mode === "edit" && (
           <Button type="button" variant="outline" disabled={saving} onClick={() => void save(true)}>
-            Guardar como campo nuevo
+            {tr("Guardar como campo nuevo", "Save as a new field")}
           </Button>
         )}
         <p role="status" className={cn("inline-flex items-center gap-1.5 font-semibold text-success", !savedAt && "sr-only")}>
           {savedAt && (
             <>
-              <CheckCircle2 aria-hidden className="size-5" /> Cambios guardados
+              <CheckCircle2 aria-hidden className="size-5" /> {tr("Cambios guardados", "Changes saved")}
             </>
           )}
         </p>
-        {s.point && !savedAt && <span className="text-sm text-muted-foreground">Ubicación: {num(s.point.lat, 4)}, {num(s.point.lon, 4)}</span>}
+        {s.point && !savedAt && <span className="text-sm text-muted-foreground">{tr("Ubicación", "Location")}: {num(s.point.lat, 4)}, {num(s.point.lon, 4)}</span>}
       </div>
 
       {progress && <SaveOverlay progress={progress} />}

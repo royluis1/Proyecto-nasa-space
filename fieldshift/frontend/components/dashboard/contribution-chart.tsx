@@ -5,6 +5,7 @@ import { CHART, ChartFrame } from "@/components/charts/chart-frame";
 import { contributions, type Weights } from "@/lib/dashboard";
 import { COMPONENTS, COMPONENT_ORDER, STRATEGY_LABELS, num } from "@/lib/format";
 import type { RotationEvaluation, ScoreComponentKey } from "@/types/api";
+import { tr } from "@/lib/i18n";
 
 /** Un color por componente; además cada tramo lleva su letra (A, S, R, I, E) y el aporte en puntos. */
 const COLORS: Record<ScoreComponentKey, string> = { A: CHART.agua, S: CHART.tierra, R: "#6b7c93", I: "#b8862b", E: CHART.cultivo };
@@ -20,10 +21,10 @@ export function ContributionChart({ evaluations, weights }: { evaluations: Rotat
   });
   return (
     <ChartFrame
-      title="Cuántos puntos aporta cada componente al total"
-      caption="Cada barra es el puntaje total de una rotación. Los tramos muestran cuánto aporta agua (A), suelo (S), riesgo (R), ingreso (I) y sostenibilidad (E), según el peso que le diste a cada uno."
+      title={tr("Cuántos puntos aporta cada componente al total", "How many points each component adds to the total")}
+      caption={tr("Cada barra es el puntaje total de una rotación. Los tramos muestran cuánto aporta agua (A), suelo (S), riesgo (R), ingreso (I) y sostenibilidad (E), según el peso que le diste a cada uno.", "Each bar is a rotation's total score. The segments show how much water (A), soil (S), risk (R), income (I) and sustainability (E) contribute, based on the weight you gave each one.")}
       height={Math.max(260, rows.length * 52 + 70)}
-      table={{ headers: ["Rotación", "Total", ...COMPONENT_ORDER.map((k) => `${k} ${COMPONENTS[k].short} (puntos)`)], rows: rows.map((r) => [String(r.name), num(Number(r.total), 1), ...COMPONENT_ORDER.map((k) => num(Number(r[k]), 1))]) }}
+      table={{ headers: [tr("Rotación", "Rotation"), "Total", ...COMPONENT_ORDER.map((k) => `${k} ${COMPONENTS[k].short} (${tr("puntos", "points")})`)], rows: rows.map((r) => [String(r.name), num(Number(r.total), 1), ...COMPONENT_ORDER.map((k) => num(Number(r[k]), 1))]) }}
     >
       <BarChart data={rows} layout="vertical" margin={{ top: 4, right: 36, bottom: 0, left: 8 }}>
         <CartesianGrid stroke="currentColor" strokeOpacity={0.15} horizontal={false} />

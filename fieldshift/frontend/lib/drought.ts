@@ -1,4 +1,5 @@
 import type { ClimateSummary } from "@/types/api";
+import { tr } from "./i18n";
 
 /**
  * Historial de sequía de la zona, año por año, con datos de NASA POWER.
@@ -52,12 +53,12 @@ export function droughtHistory(annual: ClimateSummary["annual"]): DroughtHistory
 
 /** Frase corta para mostrar arriba del gráfico. */
 export function droughtSentence(h: DroughtHistory, fmt: (v: number) => string): string {
-  if (h.mean == null) return "No hay años completos para armar el historial.";
+  if (h.mean == null) return tr("No hay años completos para armar el historial.", "There are no complete years to build the history.");
   const parts: string[] = [];
-  if (h.driest.length) parts.push(`Los años más secos fueron ${h.driest.join(" y ")}, con ${fmt(Math.max(...h.years.map((y) => y.deficit)))} mm de déficit en el peor.`);
-  else parts.push(`En promedio faltan ${fmt(h.mean)} mm de agua por año.`);
+  if (h.driest.length) parts.push(tr(`Los años más secos fueron ${h.driest.join(" y ")}, con ${fmt(Math.max(...h.years.map((y) => y.deficit)))} mm de déficit en el peor.`, `The driest years were ${h.driest.join(" and ")}, with a ${fmt(Math.max(...h.years.map((y) => y.deficit)))} mm deficit in the worst.`));
+  else parts.push(tr(`En promedio faltan ${fmt(h.mean)} mm de agua por año.`, `On average ${fmt(h.mean)} mm of water is missing per year.`));
   if (h.slopePerDecade != null && Math.abs(h.slopePerDecade) >= 25) {
-    parts.push(`La línea de tendencia ${h.slopePerDecade > 0 ? "sube" : "baja"}, pero con ${h.years.length} años es solo orientativa.`);
+    parts.push(tr(`La línea de tendencia ${h.slopePerDecade > 0 ? "sube" : "baja"}, pero con ${h.years.length} años es solo orientativa.`, `The trend line goes ${h.slopePerDecade > 0 ? "up" : "down"}, but with ${h.years.length} years it is only indicative.`));
   }
   return parts.join(" ");
 }

@@ -1,4 +1,5 @@
 import { getSupabase } from "@/lib/supabase/client";
+import { tr } from "@/lib/i18n";
 
 /** Un lote guardado por el usuario en Supabase (tabla public.lotes). */
 export interface LoteRow {
@@ -36,7 +37,7 @@ export type NuevoHistorial = Pick<HistorialRow, "lote_id"> &
 
 class SupabaseNotReady extends Error {
   constructor() {
-    super("Supabase no está configurado.");
+    super(tr("Supabase no está configurado.", "Supabase is not configured."));
   }
 }
 
@@ -58,7 +59,7 @@ export async function createLote(lote: NuevoLote): Promise<LoteRow> {
   const supabase = db();
   const { data: auth } = await supabase.auth.getUser();
   const userId = auth.user?.id;
-  if (!userId) throw new Error("Tenés que iniciar sesión para guardar un lote.");
+  if (!userId) throw new Error(tr("Tenés que iniciar sesión para guardar un lote.", "You need to sign in to save a field."));
   const { data, error } = await supabase
     .from("lotes")
     .insert({ ...lote, user_id: userId })
@@ -102,7 +103,7 @@ export async function addHistorial(registro: NuevoHistorial): Promise<HistorialR
   const supabase = db();
   const { data: auth } = await supabase.auth.getUser();
   const userId = auth.user?.id;
-  if (!userId) throw new Error("Tenés que iniciar sesión para guardar en el historial.");
+  if (!userId) throw new Error(tr("Tenés que iniciar sesión para guardar en el historial.", "You need to sign in to save to the history."));
   const { data, error } = await supabase
     .from("lote_historial")
     .insert({ ...registro, user_id: userId })

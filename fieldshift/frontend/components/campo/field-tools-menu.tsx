@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useProfile } from "@/hooks/use-profile";
 import { cn } from "@/lib/utils";
+import { L, localize } from "@/lib/i18n";
+import { useT } from "@/components/i18n/lang-provider";
 
 interface Tool {
   slug: string;
@@ -17,25 +19,26 @@ interface Tool {
   tone: string;
 }
 
-const AGRICULTOR: Tool[] = [
-  { slug: "diagnostico", label: "Diagnóstico", text: "Clima, humedad del suelo, verdor y relieve con datos de la NASA.", icon: CloudSun, tone: "bg-sky-soft text-sky" },
-  { slug: "alertas", label: "Alertas", text: "Heladas, calor, tormentas y falta de agua de los próximos días.", icon: BellRing, tone: "bg-warning-soft text-warning" },
-  { slug: "reporte", label: "Reporte", text: "El plan en PDF o CSV para llevarle a tu ingeniero agrónomo.", icon: FileText, tone: "bg-secondary text-primary" },
-];
+const AGRICULTOR: Tool[] = localize([
+  { slug: "diagnostico", label: L("Diagnóstico", "Diagnosis"), text: L("Clima, humedad del suelo, verdor y relieve con datos de la NASA.", "Weather, soil moisture, greenness and terrain from NASA data."), icon: CloudSun, tone: "bg-sky-soft text-sky" },
+  { slug: "alertas", label: L("Alertas", "Alerts"), text: L("Heladas, calor, tormentas y falta de agua de los próximos días.", "Frost, heat, storms and water shortage in the coming days."), icon: BellRing, tone: "bg-warning-soft text-warning" },
+  { slug: "reporte", label: L("Reporte", "Report"), text: L("El plan en PDF o CSV para llevarle a tu ingeniero agrónomo.", "The plan as PDF or CSV to take to your agronomist."), icon: FileText, tone: "bg-secondary text-primary" },
+]);
 
-const HUERTA: Tool[] = [
-  { slug: "diagnostico", label: "Clima y satélites", text: "Clima, humedad del suelo y verdor de tu zona con datos de la NASA.", icon: CloudSun, tone: "bg-sky-soft text-sky" },
-  { slug: "alertas", label: "Alertas", text: "Heladas, calor, tormentas y falta de agua de los próximos días.", icon: BellRing, tone: "bg-warning-soft text-warning" },
-];
+const HUERTA: Tool[] = localize([
+  { slug: "diagnostico", label: L("Clima y satélites", "Weather and satellites"), text: L("Clima, humedad del suelo y verdor de tu zona con datos de la NASA.", "Weather, soil moisture and greenness in your area from NASA data."), icon: CloudSun, tone: "bg-sky-soft text-sky" },
+  { slug: "alertas", label: L("Alertas", "Alerts"), text: L("Heladas, calor, tormentas y falta de agua de los próximos días.", "Frost, heat, storms and water shortage in the coming days."), icon: BellRing, tone: "bg-warning-soft text-warning" },
+]);
 
 /** Menú que se abre desde la derecha con Diagnóstico, Alertas y Reporte. Es el único lugar desde donde se llega a esas pantallas. */
 export function FieldToolsMenu({ fieldId, fieldName }: { fieldId: string; fieldName: string }) {
+  const t = useT();
   const pathname = usePathname();
   const profile = useProfile();
   const [open, setOpen] = useState(false);
   const tools = profile === "huerta" ? HUERTA : AGRICULTOR;
-  const inside = tools.some((t) => pathname === `/campo/${fieldId}/${t.slug}`);
-  const short = profile === "huerta" ? "Clima y alertas" : "Diagnóstico, alertas y reporte";
+  const inside = tools.some((tool) => pathname === `/campo/${fieldId}/${tool.slug}`);
+  const short = profile === "huerta" ? t("Clima y alertas", "Weather and alerts") : t("Diagnóstico, alertas y reporte", "Diagnosis, alerts and report");
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -43,15 +46,15 @@ export function FieldToolsMenu({ fieldId, fieldName }: { fieldId: string; fieldN
         <Button type="button" variant={inside ? "default" : "outline"} className="ml-auto">
           <PanelRightOpen aria-hidden />
           <span className="hidden sm:inline">{short}</span>
-          <span className="sm:hidden">Más</span>
+          <span className="sm:hidden">{t("Más", "More")}</span>
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="flex w-[22rem] max-w-[90vw] flex-col gap-6">
         <SheetHeader className="pr-8 text-left">
-          <SheetTitle className="font-display text-xl">Herramientas del campo</SheetTitle>
+          <SheetTitle className="font-display text-xl">{t("Herramientas del campo", "Field tools")}</SheetTitle>
           <SheetDescription>{fieldName}</SheetDescription>
         </SheetHeader>
-        <nav aria-label="Herramientas del campo">
+        <nav aria-label={t("Herramientas del campo", "Field tools")}>
           <ul className="space-y-2">
             {tools.map(({ slug, label, text, icon: Icon, tone }) => {
               const href = `/campo/${fieldId}/${slug}`;

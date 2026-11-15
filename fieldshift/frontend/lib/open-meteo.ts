@@ -4,10 +4,11 @@
  * Pide las mismas variables que el backend (app/services/forecast/open_meteo.py).
  */
 import type { Forecast } from "@/types/api";
+import { tr } from "./i18n";
 
 export const OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";
 const DAILY = ["temperature_2m_max", "temperature_2m_min", "precipitation_sum", "precipitation_probability_max", "et0_fao_evapotranspiration", "wind_speed_10m_max"];
-export const OPEN_METEO_NAME = "Open-Meteo (pronóstico; no es un dato de la NASA)";
+export const openMeteoName = () => tr("Open-Meteo (pronóstico; no es un dato de la NASA)", "Open-Meteo (forecast; not NASA data)");
 
 export function forecastUrl(lat: number, lon: number, days = 10): string {
   const q = new URLSearchParams({ latitude: lat.toFixed(4), longitude: lon.toFixed(4), daily: DAILY.join(","), timezone: "auto", forecast_days: String(days) });
@@ -20,7 +21,7 @@ type Daily = Record<string, (number | null)[] | string[]>;
 export function parseOpenMeteo(data: { latitude?: number; longitude?: number; timezone?: string; daily?: Daily }, retrievedAt = new Date()): Forecast {
   const daily = data.daily ?? {};
   const time = (daily.time as string[] | undefined) ?? [];
-  if (!time.length) throw new Error("Open-Meteo devolvió una respuesta sin datos diarios.");
+  if (!time.length) throw new Error(tr("Open-Meteo devolvió una respuesta sin datos diarios.", "Open-Meteo returned a response with no daily data."));
   const col = (k: string) => (daily[k] as (number | null)[] | undefined) ?? [];
   return {
     latitude: data.latitude ?? 0,
@@ -36,8 +37,8 @@ export function parseOpenMeteo(data: { latitude?: number; longitude?: number; ti
       wind_max_kmh: col("wind_speed_10m_max")[i] ?? null,
     })),
     source: {
-      name: OPEN_METEO_NAME, is_nasa: false, kind: "pronóstico", retrieved_at: retrievedAt.toISOString(),
-      origin: null, origin_label: null, detail: "Consultado directamente desde tu navegador.",
+      name: openMeteoName(), is_nasa: false, kind: "pronóstico", retrieved_at: retrievedAt.toISOString(),
+      origin: null, origin_label: null, detail: tr("Consultado directamente desde tu navegador.", "Queried directly from your browser."),
     },
   };
 }
@@ -45,6 +46,6 @@ export function parseOpenMeteo(data: { latitude?: number; longitude?: number; ti
 /** getForecast(lat, lon): fechas, lluvia y temperaturas de los próximos días. */
 export async function getForecast(lat: number, lon: number, days = 10, signal?: AbortSignal): Promise<Forecast> {
   const res = await fetch(forecastUrl(lat, lon, days), { signal });
-  if (!res.ok) throw new Error(`Open-Meteo respondió ${res.status}.`);
+  if (!res.ok) throw new Error(tr(`Open-Meteo respondió ${res.status}.`, `Open-Meteo responded ${res.status}.`));
   return parseOpenMeteo(await res.json());
 }

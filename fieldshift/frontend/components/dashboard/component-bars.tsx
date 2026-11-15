@@ -6,6 +6,7 @@ import { COMPONENTS, COMPONENT_ORDER, num } from "@/lib/format";
 import type { RotationEvaluation } from "@/types/api";
 import { PatternDefs, SERIES_STYLE, Swatch } from "./chart-patterns";
 import { rotationLabel } from "./contribution-chart";
+import { tr } from "@/lib/i18n";
 
 const tip = { contentStyle: { background: "oklch(var(--card))", border: "1px solid oklch(var(--border))", borderRadius: 8, color: "oklch(var(--foreground))" } };
 
@@ -20,10 +21,10 @@ export function ComponentBars({ evaluations }: { evaluations: RotationEvaluation
   return (
     <div className="space-y-3">
       <ChartFrame
-        title="Cada rotación, componente por componente"
-        caption="Puntaje de 0 a 100 en cada aspecto. Cada rotación tiene su propia trama, además del color."
+        title={tr("Cada rotación, componente por componente", "Each rotation, component by component")}
+        caption={tr("Puntaje de 0 a 100 en cada aspecto. Cada rotación tiene su propia trama, además del color.", "Score from 0 to 100 on each aspect. Each rotation has its own pattern, in addition to color.")}
         height={320}
-        table={{ headers: ["Componente", ...names], rows: rows.map((r) => [String(r.componente), ...names.map((n) => num(Number(r[n])))]) }}
+        table={{ headers: [tr("Componente", "Component"), ...names], rows: rows.map((r) => [String(r.componente), ...names.map((n) => num(Number(r[n])))]) }}
       >
         <BarChart data={rows} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
           <PatternDefs prefix="cb" />
@@ -36,7 +37,7 @@ export function ComponentBars({ evaluations }: { evaluations: RotationEvaluation
           ))}
         </BarChart>
       </ChartFrame>
-      <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label="Referencias del gráfico">
+      <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label={tr("Referencias del gráfico", "Chart legend")}>
         {names.map((n, i) => (
           <li key={n} className="flex items-center gap-2">
             <Swatch index={i} id={`sw-cb-${i}`} /> {n}

@@ -1,15 +1,16 @@
 import { CloudRain, Droplets, Info, OctagonAlert, Snowflake, Sprout, Thermometer, TriangleAlert, Wind, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Alert } from "@/types/api";
+import { L, localize, tr } from "@/lib/i18n";
 
 const KIND_ICON: Record<Alert["kind"], LucideIcon> = {
   helada: Snowflake, calor: Thermometer, lluvia_intensa: CloudRain, falta_de_agua: Droplets, suelo_seco: Sprout, viento: Wind,
 };
-const SEV: Record<Alert["severity"], { icon: LucideIcon; text: string; cls: string }> = {
-  alta: { icon: OctagonAlert, text: "Importante", cls: "border-destructive/60 bg-destructive/10" },
-  media: { icon: TriangleAlert, text: "Atención", cls: "border-warn/70 bg-warn/10" },
-  info: { icon: Info, text: "Para tener en cuenta", cls: "border-info/50 bg-info/10" },
-};
+const SEV: Record<Alert["severity"], { icon: LucideIcon; text: string; cls: string }> = localize({
+  alta: { icon: OctagonAlert, text: L("Importante", "Important"), cls: "border-destructive/60 bg-destructive/10" },
+  media: { icon: TriangleAlert, text: L("Atención", "Watch"), cls: "border-warn/70 bg-warn/10" },
+  info: { icon: Info, text: L("Para tener en cuenta", "Good to know"), cls: "border-info/50 bg-info/10" },
+});
 
 /** Alertas tempranas: cada una con ícono, gravedad en texto, qué hacer y de dónde sale. */
 export function AlertList({ alerts, empty }: { alerts: Alert[]; empty: string }) {
@@ -28,7 +29,7 @@ export function AlertList({ alerts, empty }: { alerts: Alert[]; empty: string })
               <p className="flex flex-wrap items-center gap-2 text-sm font-bold"><sev.icon aria-hidden className="size-4" /> {sev.text}</p>
               <p className="text-lg font-semibold">{a.title}</p>
               <p>{a.message}</p>
-              <p className="text-sm text-muted-foreground">Fuente: {a.source}</p>
+              <p className="text-sm text-muted-foreground">{tr("Fuente", "Source")}: {a.source}</p>
             </div>
           </li>
         );

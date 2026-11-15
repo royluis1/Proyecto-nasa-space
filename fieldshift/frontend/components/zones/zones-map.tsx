@@ -7,6 +7,7 @@ import { GeoJSON, MapContainer, TileLayer, useMap } from "react-leaflet";
 import { mapLabel, styleFor } from "@/lib/zones";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import type { Level } from "@/types/api";
+import { tr } from "@/lib/i18n";
 
 export interface ZonesMapProps {
   provinces: Feature[];
@@ -39,7 +40,7 @@ export default function ZonesMap({ provinces, selectedProvince, zones, cells, sh
   const selected = provinces.find((f) => (f.properties as { id: string }).id === selectedProvince) ?? null;
   return (
     <MapContainer bounds={ARGENTINA} scrollWheelZoom className="z-0 h-[460px] w-full sm:h-[560px]">
-      <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="© colaboradores de OpenStreetMap" maxZoom={12} opacity={0.6} />
+      <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" attribution={tr("© colaboradores de OpenStreetMap", "© OpenStreetMap contributors")} maxZoom={12} opacity={0.6} />
       <GeoJSON
         key={`prov-${selectedProvince}`}
         data={{ type: "FeatureCollection", features: provinces } as FeatureCollection}
@@ -50,7 +51,7 @@ export default function ZonesMap({ provinces, selectedProvince, zones, cells, sh
         }}
         onEachFeature={(f, layer) => {
           const p = f.properties as { id: string; name: string; has_zones: boolean };
-          layer.bindTooltip(`${p.name}${p.has_zones ? " · con zonas" : " · zonificación próximamente"}`, { sticky: true });
+          layer.bindTooltip(`${p.name}${p.has_zones ? tr(" · con zonas", " · with zones") : tr(" · zonificación próximamente", " · zoning coming soon")}`, { sticky: true });
           layer.on("click", () => onProvince(p.id));
         }}
       />

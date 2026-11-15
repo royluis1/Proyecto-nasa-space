@@ -1,3 +1,5 @@
+import { appLocale } from "./i18n";
+import { L, localize } from "./i18n";
 /**
  * Capas animadas de NASA GIBS: lluvia de GPM/IMERG y nubes de MODIS.
  *
@@ -30,12 +32,12 @@ export interface AnimatedLayer {
   limits: string;
 }
 
-export const ANIMATED_LAYERS: Record<AnimatedLayerId, AnimatedLayer> = {
+export const ANIMATED_LAYERS: Record<AnimatedLayerId, AnimatedLayer> = localize({
   lluvia: {
     id: "lluvia",
     layer: "IMERG_Precipitation_Rate_30min",
-    label: "Lluvia (satélite GPM)",
-    help: "Cuánta lluvia estima el satélite en cada momento, cada media hora.",
+    label: L("Lluvia (satélite GPM)", "Rain (GPM satellite)"),
+    help: L("Cuánta lluvia estima el satélite en cada momento, cada media hora.", "How much rain the satellite estimates at each moment, every half hour."),
     stepMinutes: 30,
     steps: 24, // 12 horas
     format: "png",
@@ -45,20 +47,20 @@ export const ANIMATED_LAYERS: Record<AnimatedLayerId, AnimatedLayer> = {
     attribution: "NASA GIBS / GPM IMERG",
     // Colores de la paleta de IMERG en GIBS, de menos a más lluvia.
     legend: [
-      { color: "#3cb44b", label: "Poca lluvia" },
-      { color: "#d7e02a", label: "Moderada" },
-      { color: "#f49a1e", label: "Fuerte" },
-      { color: "#e3271c", label: "Muy fuerte" },
+      { color: "#3cb44b", label: L("Poca lluvia", "Light rain") },
+      { color: "#d7e02a", label: L("Moderada", "Moderate") },
+      { color: "#f49a1e", label: L("Fuerte", "Heavy") },
+      { color: "#e3271c", label: L("Muy fuerte", "Very heavy") },
     ],
-    source: "NASA GIBS, capa IMERG_Precipitation_Rate_30min (misión GPM, NASA y JAXA)",
+    source: L("NASA GIBS, capa IMERG_Precipitation_Rate_30min (misión GPM, NASA y JAXA)", "NASA GIBS, layer IMERG_Precipitation_Rate_30min (GPM mission, NASA and JAXA)"),
     limits:
-      "Es una estimación desde el satélite, con píxeles de unos 10 km y varias horas de demora. No es un radar ni reemplaza a tu pluviómetro.",
+      L("Es una estimación desde el satélite, con píxeles de unos 10 km y varias horas de demora. No es un radar ni reemplaza a tu pluviómetro.", "It is a satellite estimate, with pixels about 10 km wide and several hours of delay. It is not radar and does not replace your rain gauge."),
   },
   nubes: {
     id: "nubes",
     layer: "MODIS_Terra_CorrectedReflectance_TrueColor",
-    label: "Nubes (MODIS, color real)",
-    help: "Cómo se vio la zona desde el espacio cada día.",
+    label: L("Nubes (MODIS, color real)", "Clouds (MODIS, true color)"),
+    help: L("Cómo se vio la zona desde el espacio cada día.", "How the area looked from space each day."),
     stepMinutes: 60 * 24,
     steps: 10,
     format: "jpg",
@@ -67,10 +69,10 @@ export const ANIMATED_LAYERS: Record<AnimatedLayerId, AnimatedLayer> = {
     latencyMinutes: 60 * 24,
     attribution: "NASA GIBS / MODIS Terra",
     legend: [],
-    source: "NASA GIBS, capa MODIS_Terra_CorrectedReflectance_TrueColor (satélite Terra)",
-    limits: "Una imagen por día, cuando el satélite pasa. Si hay nubes, tapan lo que hay abajo.",
+    source: L("NASA GIBS, capa MODIS_Terra_CorrectedReflectance_TrueColor (satélite Terra)", "NASA GIBS, layer MODIS_Terra_CorrectedReflectance_TrueColor (Terra satellite)"),
+    limits: L("Una imagen por día, cuando el satélite pasa. Si hay nubes, tapan lo que hay abajo.", "One image per day, when the satellite passes. Clouds hide what is below."),
   },
-};
+});
 
 /** Momento más reciente con imagen, redondeado hacia abajo al paso de la capa. */
 export function latestFrame(l: AnimatedLayer, now: Date = new Date()): Date {
@@ -102,5 +104,5 @@ export function frameLabel(l: AnimatedLayer, frame: Date): string {
     l.stepMinutes >= 60 * 24
       ? { day: "numeric", month: "long", timeZone: "America/Argentina/Buenos_Aires" }
       : { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "America/Argentina/Buenos_Aires" };
-  return new Intl.DateTimeFormat("es-AR", opts).format(frame);
+  return new Intl.DateTimeFormat(appLocale(), opts).format(frame);
 }

@@ -2,6 +2,7 @@ import * as React from "react";
 import { AlertTriangle, CheckCircle2, Info, OctagonAlert } from "lucide-react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
+import { L, localize } from "@/lib/i18n";
 
 const alertVariants = cva("relative flex gap-3 rounded-lg border p-4 text-base", {
   variants: {
@@ -17,7 +18,7 @@ const alertVariants = cva("relative flex gap-3 rounded-lg border p-4 text-base",
 
 // Cada tono lleva su propio ícono y un título en texto: no se distingue solo por color.
 const ICONS = { info: Info, warning: AlertTriangle, error: OctagonAlert, success: CheckCircle2 } as const;
-const TITLES = { info: "Información", warning: "Atención", error: "Error", success: "Listo" } as const;
+const TITLES: Record<keyof typeof ICONS, string> = localize({ info: L("Información", "Information"), warning: L("Atención", "Attention"), error: L("Error", "Error"), success: L("Listo", "Done") });
 
 export interface AlertProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title">, VariantProps<typeof alertVariants> {
   title?: React.ReactNode;

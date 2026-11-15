@@ -1,32 +1,37 @@
+"use client";
+
 import Image from "next/image";
 import { CloudSun, Droplets, MapPin, RefreshCcw, Satellite, Sprout } from "lucide-react";
 import { HeroAccount } from "@/components/home/hero-account";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useT } from "@/components/i18n/lang-provider";
+import type { T } from "@/lib/i18n";
 import campoAereo from "@/public/img/campo-aereo.jpg";
 
-const OBJETIVOS = [
+const OBJETIVOS = (t: T) => [
   {
     icon: Sprout,
-    title: "Recomendar cultivos",
-    text: "Sugerimos qué sembrar según la zona de tu campo y la temporada.",
+    title: t("Recomendar cultivos", "Recommend crops"),
+    text: t("Sugerimos qué sembrar según la zona de tu campo y la temporada.", "We suggest what to plant based on your field's area and the season."),
     tone: "bg-secondary text-primary",
   },
   {
     icon: RefreshCcw,
-    title: "Cuidar el suelo",
-    text: "Mejoramos la salud del suelo con planes de rotación de cultivos.",
+    title: t("Cuidar el suelo", "Care for the soil"),
+    text: t("Mejoramos la salud del suelo con planes de rotación de cultivos.", "We improve soil health with crop rotation plans."),
     tone: "bg-accent/50 text-accent-foreground",
   },
   {
     icon: Droplets,
-    title: "Adaptarse al clima",
-    text: "Ajustamos cada decisión al clima y al uso eficiente del agua.",
+    title: t("Adaptarse al clima", "Adapt to the climate"),
+    text: t("Ajustamos cada decisión al clima y al uso eficiente del agua.", "We fit every decision to the climate and efficient water use."),
     tone: "bg-sky-soft text-sky",
   },
 ];
 
 export default function HomePage() {
+  const t = useT();
   return (
     <div data-full-bleed>
       <section className="bg-hero">
@@ -37,24 +42,26 @@ export default function HomePage() {
               <MapPin aria-hidden className="size-3.5" /> San Luis, Argentina
             </span>
             <h1 className="text-4xl font-bold leading-[1.1] text-foreground sm:text-5xl">
-              Sembrá con datos, <span className="text-primary-glow">no con dudas.</span>
+              {t("Sembrá con datos,", "Plant with data,")} <span className="text-primary-glow">{t("no con dudas.", "not with doubts.")}</span>
             </h1>
             <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
-              AgroOrbit ayuda a productores de San Luis a decidir qué sembrar usando datos satelitales de la NASA, clima y rotación de
-              cultivos.
+              {t(
+                "AgroOrbit ayuda a productores de San Luis a decidir qué sembrar usando datos satelitales de la NASA, clima y rotación de cultivos.",
+                "AgroOrbit helps farmers in San Luis, Argentina, decide what to plant using NASA satellite data, weather and crop rotation.",
+              )}
             </p>
             <div className="relative overflow-hidden rounded-3xl shadow-lift">
               <Image
                 src={campoAereo}
-                alt="Vista aérea de campos con riego por pivote (imagen ilustrativa)"
+                alt={t("Vista aérea de campos con riego por pivote (imagen ilustrativa)", "Aerial view of fields with center-pivot irrigation (illustrative image)")}
                 className="aspect-[16/10] w-full object-cover"
                 sizes="(min-width: 1024px) 560px, 100vw"
                 priority
               />
               <div className="absolute inset-x-3 bottom-3 flex flex-wrap gap-2">
                 {[
-                  { icon: Satellite, label: "Imágenes satelitales" },
-                  { icon: CloudSun, label: "Pronóstico local" },
+                  { icon: Satellite, label: t("Imágenes satelitales", "Satellite imagery") },
+                  { icon: CloudSun, label: t("Pronóstico local", "Local forecast") },
                 ].map(({ icon: Icon, label }) => (
                   <span
                     key={label}
@@ -75,11 +82,11 @@ export default function HomePage() {
 
       <section className="container py-16 md:py-24" aria-labelledby="objetivos">
         <div className="mb-10 max-w-xl space-y-3">
-          <p className="text-sm font-semibold uppercase tracking-widest text-primary-glow">Nuestros objetivos</p>
-          <h2 id="objetivos" className="text-3xl font-bold sm:text-4xl">Decisiones simples para un campo más sano</h2>
+          <p className="text-sm font-semibold uppercase tracking-widest text-primary-glow">{t("Nuestros objetivos", "Our goals")}</p>
+          <h2 id="objetivos" className="text-3xl font-bold sm:text-4xl">{t("Decisiones simples para un campo más sano", "Simple decisions for a healthier field")}</h2>
         </div>
         <div className="grid gap-5 md:grid-cols-3">
-          {OBJETIVOS.map(({ icon: Icon, title, text, tone }, i) => (
+          {OBJETIVOS(t).map(({ icon: Icon, title, text, tone }, i) => (
             <Card key={title} className="transition-shadow hover:shadow-lift">
               <CardContent className="space-y-4 p-7">
                 <div className="flex items-center justify-between">

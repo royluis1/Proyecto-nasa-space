@@ -1,9 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { useT } from "@/components/i18n/lang-provider";
 
 /** Logo de AgroOrbit: una órbita con una hoja, en un recuadro con degradado. */
 export function Logo() {
+  const t = useT();
   return (
-    <Link href="/" className="flex items-center gap-2.5 rounded-lg" aria-label="AgroOrbit, inicio">
+    <Link href="/" className="flex items-center gap-2.5 rounded-lg" aria-label={t("AgroOrbit, inicio", "AgroOrbit, home")}>
       <span className="relative grid size-9 place-items-center rounded-xl bg-gradient-primary shadow-soft">
         <svg viewBox="0 0 24 24" className="size-5 text-primary-foreground" fill="none" aria-hidden>
           <ellipse cx="12" cy="12" rx="10" ry="4.2" stroke="currentColor" strokeWidth="1.6" transform="rotate(-25 12 12)" />

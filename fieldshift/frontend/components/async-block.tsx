@@ -5,6 +5,7 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AsyncState } from "@/hooks/use-async";
+import { useT } from "@/components/i18n/lang-provider";
 
 interface Props<T> {
   state: AsyncState<T>;
@@ -19,12 +20,13 @@ interface Props<T> {
 
 /** Estados de carga, error con reintento y vacío para un bloque de datos. */
 export function AsyncBlock<T>({ state, what, skeleton, isEmpty, emptyMessage, children }: Props<T>) {
+  const t = useT();
   if (state.error && !state.data) {
     return (
-      <Alert tone="error" title={`No pudimos cargar ${what}`}>
+      <Alert tone="error" title={t(`No pudimos cargar ${what}`, `We couldn't load ${what}`)}>
         <p>{state.error}</p>
         <Button size="sm" variant="outline" onClick={state.reload}>
-          <RefreshCw aria-hidden /> Reintentar
+          <RefreshCw aria-hidden /> {t("Reintentar", "Retry")}
         </Button>
       </Alert>
     );
@@ -32,7 +34,7 @@ export function AsyncBlock<T>({ state, what, skeleton, isEmpty, emptyMessage, ch
   if (!state.data) {
     return (
       <div role="status" aria-busy="true" aria-live="polite">
-        <span className="sr-only">Cargando {what}…</span>
+        <span className="sr-only">{t("Cargando", "Loading")} {what}…</span>
         {skeleton ?? (
           <div className="space-y-3">
             <Skeleton className="h-8 w-1/3" />
@@ -45,18 +47,18 @@ export function AsyncBlock<T>({ state, what, skeleton, isEmpty, emptyMessage, ch
   }
   if (isEmpty?.(state.data)) {
     return (
-      <Alert tone="info" title="Sin datos">
-        <p>{emptyMessage ?? `Todavía no hay ${what}.`}</p>
+      <Alert tone="info" title={t("Sin datos", "No data")}>
+        <p>{emptyMessage ?? t(`Todavía no hay ${what}.`, `There is no ${what} yet.`)}</p>
       </Alert>
     );
   }
   return (
     <div aria-busy={state.loading}>
       {state.error && (
-        <Alert tone="warning" title="No se pudo actualizar" className="mb-3">
-          <p>{state.error} Se muestran los últimos datos que se pudieron cargar.</p>
+        <Alert tone="warning" title={t("No se pudo actualizar", "Could not update")} className="mb-3">
+          <p>{state.error} {t("Se muestran los últimos datos que se pudieron cargar.", "Showing the last data that could be loaded.")}</p>
           <Button size="sm" variant="outline" onClick={state.reload}>
-            <RefreshCw aria-hidden /> Reintentar
+            <RefreshCw aria-hidden /> {t("Reintentar", "Retry")}
           </Button>
         </Alert>
       )}

@@ -3,9 +3,10 @@
 import * as React from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/components/i18n/lang-provider";
 
 interface DisclosureProps {
-  /** Texto del botón. Por defecto "Quiero más información". */
+  /** Texto del botón. Por defecto "Quiero más información" / "Tell me more". */
   label?: React.ReactNode;
   /** Texto cuando está abierto (si se quiere distinto). */
   openLabel?: React.ReactNode;
@@ -26,7 +27,7 @@ interface DisclosureProps {
  * El contenido se monta recién al abrir: los gráficos escondidos no se dibujan ni pesan.
  */
 export function Disclosure({
-  label = "Quiero más información",
+  label,
   openLabel,
   children,
   defaultOpen = false,
@@ -35,6 +36,8 @@ export function Disclosure({
   variant = "plain",
   id: anchor,
 }: DisclosureProps) {
+  const t = useT();
+  label ??= t("Quiero más información", "Tell me more");
   const [open, setOpen] = React.useState(defaultOpen);
   const id = React.useId();
   const regionId = `${id}-region`;

@@ -9,6 +9,7 @@ import { ANIMATED_LAYERS, frameLabel, frameUrl, frames, type AnimatedLayerId } f
 import { cn } from "@/lib/utils";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { tr } from "@/lib/i18n";
 
 const PIN = L.divIcon({
   className: "",
@@ -55,7 +56,7 @@ export function WeatherAnimation({ lat, lon, layerId = "lluvia" }: { lat: number
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Qué mostrar en el mapa">
+      <div className="flex flex-wrap gap-2" role="group" aria-label={tr("Qué mostrar en el mapa", "What to show on the map")}>
         {(Object.keys(ANIMATED_LAYERS) as AnimatedLayerId[]).map((k) => (
           <Button key={k} type="button" size="sm" variant={k === id ? "default" : "outline"} aria-pressed={k === id} onClick={() => setId(k)}>
             {ANIMATED_LAYERS[k].label}
@@ -85,10 +86,10 @@ export function WeatherAnimation({ lat, lon, layerId = "lluvia" }: { lat: number
 
       <div className="flex flex-wrap items-center gap-3">
         <Button type="button" size="sm" variant="outline" onClick={() => setPlaying((p) => !p)} aria-pressed={playing}>
-          {playing ? <><Pause aria-hidden /> Pausar</> : <><Play aria-hidden /> Reproducir</>}
+          {playing ? <><Pause aria-hidden /> {tr("Pausar", "Pause")}</> : <><Play aria-hidden /> {tr("Reproducir", "Play")}</>}
         </Button>
         <div className="flex min-w-48 flex-1 items-center gap-2">
-          <Label htmlFor="momento" className="sr-only">Momento de la animación</Label>
+          <Label htmlFor="momento" className="sr-only">{tr("Momento de la animación", "Animation moment")}</Label>
           <input
             id="momento"
             type="range"
@@ -107,7 +108,7 @@ export function WeatherAnimation({ lat, lon, layerId = "lluvia" }: { lat: number
       </div>
 
       {layer.legend.length > 0 && (
-        <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm" aria-label="Referencias de color">
+        <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm" aria-label={tr("Referencias de color", "Color legend")}>
           {layer.legend.map((l) => (
             <li key={l.label} className="flex items-center gap-1.5">
               <span aria-hidden className={cn("inline-block size-4 rounded border")} style={{ backgroundColor: l.color }} />

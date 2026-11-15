@@ -10,11 +10,20 @@ import { BackendBanner } from "@/components/layout/backend-banner";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { ThemeProvider } from "@/components/layout/theme-provider";
+import { LangProvider } from "@/components/i18n/lang-provider";
+import { locale } from "@/lib/i18n";
+import { getLang, getT } from "@/lib/i18n-server";
 
-export const metadata: Metadata = {
-  title: { default: "AgroOrbit — Qué sembrar en San Luis", template: "%s — AgroOrbit" },
-  description: "AgroOrbit ayuda a productores de San Luis a decidir qué sembrar con datos satelitales de la NASA, clima y rotación de cultivos.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: { default: t("AgroOrbit — Qué sembrar en San Luis", "AgroOrbit — What to plant in San Luis"), template: "%s — AgroOrbit" },
+    description: t(
+      "AgroOrbit ayuda a productores de San Luis a decidir qué sembrar con datos satelitales de la NASA, clima y rotación de cultivos.",
+      "AgroOrbit helps San Luis (Argentina) farmers decide what to plant using NASA satellite data, weather and crop rotation.",
+    ),
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -22,14 +31,17 @@ export const viewport: Viewport = {
   themeColor: [{ media: "(prefers-color-scheme: light)", color: "#fbfbf8" }, { media: "(prefers-color-scheme: dark)", color: "#0f1a14" }],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const lang = await getLang();
+  const t = await getT();
   return (
-    <html lang="es-AR" suppressHydrationWarning className={`${sans.variable} ${display.variable}`}>
+    <html lang={locale(lang)} suppressHydrationWarning className={`${sans.variable} ${display.variable}`}>
       <body className="min-h-screen font-sans">
         <ThemeProvider>
+          <LangProvider initialLang={lang}>
           <AuthProvider>
             <a href="#contenido" className="sr-only z-50 rounded-md bg-primary px-4 py-2 text-primary-foreground focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
-              Saltar al contenido
+              {t("Saltar al contenido", "Skip to content")}
             </a>
             <SiteHeader />
             <BackendBanner />
@@ -38,6 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </main>
             <SiteFooter />
           </AuthProvider>
+          </LangProvider>
         </ThemeProvider>
       </body>
     </html>

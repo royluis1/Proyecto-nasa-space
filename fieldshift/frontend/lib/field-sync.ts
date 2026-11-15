@@ -70,7 +70,8 @@ export function soilForSave<T extends SoilFields>(s: T, auto: SoilAutoFlags): T 
 /** Al editar un campo guardado: lo que el backend completó solo sigue marcado como automático. */
 export function initialSoilAuto(applied: readonly string[] | null | undefined): SoilAutoFlags {
   const a = applied ?? [];
-  return { texture: a.includes("textura"), organic_matter: a.includes("materia orgánica") };
+  // El backend lo escribe en el idioma del pedido: se aceptan los dos.
+  return { texture: a.includes("textura") || a.includes("texture"), organic_matter: a.includes("materia orgánica") || a.includes("organic matter") };
 }
 
 /** El nombre del campo acompaña a la ciudad elegida mientras el productor no haya escrito uno propio. */

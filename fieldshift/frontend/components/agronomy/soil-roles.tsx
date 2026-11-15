@@ -7,6 +7,7 @@ import { useAsync } from "@/hooks/use-async";
 import { api } from "@/lib/api";
 import { ROLE_INFO, ROLE_ORDER, missingRoles, rolesInRotation, type SoilRole } from "@/lib/agronomy";
 import type { Crop } from "@/types/api";
+import { tr } from "@/lib/i18n";
 
 const ROLE_ICON: Record<SoilRole, LucideIcon> = {
   fija_nitrogeno: Sprout,
@@ -20,8 +21,8 @@ function RoleWhy({ role }: { role: SoilRole }) {
   return (
     <div className="space-y-2 text-sm">
       <ul className="list-disc space-y-1 pl-5">{info.why.map((w) => <li key={w}>{w}</li>)}</ul>
-      <p><strong>Ojo:</strong> {info.caveat}</p>
-      <p className="text-muted-foreground">Fuente: {info.source}.</p>
+      <p><strong>{tr("Ojo:", "Note:")}</strong> {info.caveat}</p>
+      <p className="text-muted-foreground">{tr("Fuente", "Source")}: {info.source}.</p>
     </div>
   );
 }
@@ -36,8 +37,8 @@ export function SoilRoles({ cropIds }: { cropIds: string[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle as="h2">Qué le hace al suelo a largo plazo</CardTitle>
-        <CardDescription>El papel de cada cultivo de esta rotación.</CardDescription>
+        <CardTitle as="h2">{tr("Qué le hace al suelo a largo plazo", "What it does to the soil in the long run")}</CardTitle>
+        <CardDescription>{tr("El papel de cada cultivo de esta rotación.", "The role of each crop in this rotation.")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         <ul className="grid items-start gap-3 sm:grid-cols-2">
@@ -47,15 +48,15 @@ export function SoilRoles({ cropIds }: { cropIds: string[] }) {
               <li key={role} className="rounded-lg border p-4">
                 <p className="flex items-center gap-2 font-semibold"><Icon aria-hidden className="size-5 text-primary" /> {ROLE_INFO[role].label}: {names.join(", ")}</p>
                 <p className="mt-1 text-sm text-muted-foreground">{ROLE_INFO[role].short}</p>
-                <Disclosure label="Por qué ayuda al suelo" className="mt-1"><RoleWhy role={role} /></Disclosure>
+                <Disclosure label={tr("Por qué ayuda al suelo", "Why it helps the soil")} className="mt-1"><RoleWhy role={role} /></Disclosure>
               </li>
             );
           })}
         </ul>
         {missing.length > 0 && (
           <p className="text-sm">
-            <strong>No tiene:</strong> {missing.map((r) => ROLE_INFO[r].label.toLowerCase()).join(", ")}.{" "}
-            <span className="text-muted-foreground">Sumar un cultivo con ese papel puede mejorar el suelo; evalualo con tu ingeniero agrónomo.</span>
+            <strong>{tr("No tiene:", "Missing:")}</strong> {missing.map((r) => ROLE_INFO[r].label.toLowerCase()).join(", ")}.{" "}
+            <span className="text-muted-foreground">{tr("Sumar un cultivo con ese papel puede mejorar el suelo; evalualo con tu ingeniero agrónomo.", "Adding a crop with that role can improve the soil; evaluate it with your agronomist.")}</span>
           </p>
         )}
       </CardContent>
@@ -73,7 +74,7 @@ export function SoilRolesGuide() {
           <div key={role} className="rounded-lg border bg-card p-4">
             <p className="flex items-center gap-2 font-semibold"><Icon aria-hidden className="size-5 text-primary" /> {ROLE_INFO[role].label}</p>
             <p className="mt-1 text-sm text-muted-foreground">{ROLE_INFO[role].short}</p>
-            <Disclosure label="Por qué ayuda al suelo" className="mt-1"><RoleWhy role={role} /></Disclosure>
+            <Disclosure label={tr("Por qué ayuda al suelo", "Why it helps the soil")} className="mt-1"><RoleWhy role={role} /></Disclosure>
           </div>
         );
       })}

@@ -1,5 +1,6 @@
-import { COMPONENTS, COMPONENT_ORDER, band, num } from "@/lib/format";
+import { COMPONENTS, COMPONENT_ORDER, LEVEL_LABELS, band, num } from "@/lib/format";
 import type { ScoreComponent } from "@/types/api";
+import { tr } from "@/lib/i18n";
 
 /** Los 5 componentes del puntaje con su valor escrito y una barra. */
 export function ScoreBars({ components, showWeights = false }: { components: ScoreComponent[]; showWeights?: boolean }) {
@@ -19,8 +20,8 @@ export function ScoreBars({ components, showWeights = false }: { components: Sco
               <span className="block h-full rounded-full bg-primary" style={{ width: `${v}%` }} />
             </span>
             <span className="text-right tabular-nums">
-              <strong>{num(c.value)}</strong>/100 <span className="text-muted-foreground">{band(v)}</span>
-              {showWeights && <span className="block text-xs text-muted-foreground">peso {num(c.weight * 100)} %</span>}
+              <strong>{num(c.value)}</strong>/100 <span className="text-muted-foreground">{LEVEL_LABELS[band(v)].toLowerCase()}</span>
+              {showWeights && <span className="block text-xs text-muted-foreground">{tr("peso", "weight")} {num(c.weight * 100)} %</span>}
             </span>
           </li>
         );

@@ -2,6 +2,7 @@
 import type { DataLabel, Level, RotationEvaluation, ScenarioInput, ScoreComponentKey } from "@/types/api";
 import { COMPONENT_ORDER, COMPONENTS, LEVEL_LABELS, num } from "./format";
 import { isBaseline, scenarioParts } from "./scenarios";
+import { tr, L, localize } from "./i18n";
 
 export type Weights = Record<ScoreComponentKey, number>;
 
@@ -83,7 +84,7 @@ export function favorAndPenalty(ev: RotationEvaluation, baseline: RotationEvalua
     const delta = (a?.weighted ?? 0) - (b?.weighted ?? 0);
     if (Math.abs(delta) < MIN_IMPACT) continue;
     const src = a ?? b!;
-    impacts.push({ component: src.component, factor: src.factor, delta, detail: a ? src.detail : `${src.detail} (en tu rotación actual)`, label: src.label });
+    impacts.push({ component: src.component, factor: src.factor, delta, detail: a ? src.detail : tr(`${src.detail} (en tu rotación actual)`, `${src.detail} (in your current rotation)`), label: src.label });
   }
   impacts.sort((x, y) => y.delta - x.delta);
   return {
@@ -114,33 +115,33 @@ const score = (key: ScoreComponentKey) => (ev: RotationEvaluation) => ev.score.c
 const LEVEL_VALUE: Record<Level, number> = { bajo: 0, medio: 1, alto: 2 };
 const flags = (sev: string) => (ev: RotationEvaluation) => ev.risk_flags.filter((f) => f.severity === sev).length;
 
-export const GROUP_LABELS: Record<IndicatorGroup, string> = {
-  total: "Puntaje",
-  agua: "Agua",
-  suelo: "Suelo",
-  riesgo: "Riesgo",
-  ingreso: "Ingreso relativo",
-  sostenibilidad: "Sostenibilidad",
-};
+export const GROUP_LABELS: Record<IndicatorGroup, string> = localize({
+  total: L("Puntaje", "Score"),
+  agua: L("Agua", "Water"),
+  suelo: L("Suelo", "Soil"),
+  riesgo: L("Riesgo", "Risk"),
+  ingreso: L("Ingreso relativo", "Relative income"),
+  sostenibilidad: L("Sostenibilidad", "Sustainability"),
+});
 
-export const INDICATORS: Indicator[] = [
-  { id: "total", group: "total", label: "Puntaje total", hint: "De 0 a 100, con tus prioridades.", better: "high", tolerance: 0.5, value: (e) => e.score.total, format: (v) => `${num(v, 1)} / 100` },
-  { id: "demanda", group: "agua", label: "Agua que necesitan los cultivos", hint: "Demanda estimada por año (Kc × evapotranspiración).", better: "low", tolerance: 15, value: (e) => e.profile.water_demand_mm_year, format: (v) => `${num(v)} mm/año` },
-  { id: "cobertura", group: "agua", label: "Parte de esa agua que cubren la lluvia y el suelo", hint: "El resto sería falta de agua (estrés hídrico).", better: "high", tolerance: 1, value: (e) => e.profile.rain_coverage_pct, format: (v) => `${num(v)} %` },
-  { id: "deficit", group: "agua", label: "Agua que falta cubrir", hint: "Antes de regar.", better: "low", tolerance: 15, value: (e) => e.profile.deficit_mm_year, format: (v) => `${num(v)} mm/año` },
-  { id: "riego", group: "agua", label: "Riego necesario", hint: "Solo si el lote tiene riego.", better: "low", tolerance: 15, value: (e) => e.profile.irrigation_mm_year ?? 0, format: (v) => (v === 0 ? "sin riego" : `${num(v)} mm/año`) },
-  { id: "A", group: "agua", label: "Resiliencia hídrica (A)", hint: "Qué tan bien resiste la falta de agua.", better: "high", tolerance: 0.5, value: score("A"), format: (v) => `${num(v)} / 100` },
-  { id: "cubierto", group: "suelo", label: "Tiempo con cultivo vivo", hint: "Porcentaje de los meses con algo creciendo.", better: "high", tolerance: 1, value: (e) => e.profile.covered_months_pct, format: (v) => `${num(v)} %` },
-  { id: "desnudo", group: "suelo", label: "Meses con el suelo sin cultivo", hint: "Por año. Más meses, más exposición al viento.", better: "low", tolerance: 0.2, value: (e) => e.profile.bare_months_per_year, format: (v) => `${num(v, 1)} meses/año` },
-  { id: "S", group: "suelo", label: "Salud del suelo (S)", hint: "Cobertura, materia orgánica, leguminosas y erosión.", better: "high", tolerance: 0.5, value: score("S"), format: (v) => `${num(v)} / 100` },
-  { id: "R", group: "riesgo", label: "Resiliencia climática (R)", hint: "Qué tan expuesto queda a sequía, calor y heladas.", better: "high", tolerance: 0.5, value: score("R"), format: (v) => `${num(v)} / 100` },
-  { id: "alertas-altas", group: "riesgo", label: "Alertas serias", hint: "Riesgos marcados como alerta.", better: "low", tolerance: 0, value: flags("alta"), format: (v) => `${num(v)}` },
-  { id: "alertas-media", group: "riesgo", label: "Alertas de atención", hint: "Riesgos para tener presentes.", better: "low", tolerance: 0, value: flags("media"), format: (v) => `${num(v)}` },
-  { id: "I", group: "ingreso", label: "Ingreso relativo (I)", hint: "Índice cualitativo: no son precios ni márgenes.", better: "high", tolerance: 0.5, value: score("I"), format: (v) => `${num(v)} / 100` },
-  { id: "ingreso-nivel", group: "ingreso", label: "Nivel de ingreso estimado", hint: "Bajo, medio o alto.", better: "high", tolerance: 0, value: (e) => LEVEL_VALUE[e.profile.relative_income], format: (v) => LEVEL_LABELS[(["bajo", "medio", "alto"] as Level[])[Math.round(v)]] },
-  { id: "cultivos", group: "sostenibilidad", label: "Cultivos distintos", hint: "Más variedad corta ciclos de plagas.", better: "high", tolerance: 0, value: (e) => e.profile.distinct_crops, format: (v) => `${num(v)}` },
-  { id: "E", group: "sostenibilidad", label: "Sostenibilidad y diversificación (E)", hint: "Diversidad, leguminosas, coberturas y repeticiones.", better: "high", tolerance: 0.5, value: score("E"), format: (v) => `${num(v)} / 100` },
-];
+export const INDICATORS: Indicator[] = localize([
+  { id: "total", group: "total", label: L("Puntaje total", "Total score"), hint: L("De 0 a 100, con tus prioridades.", "From 0 to 100, with your priorities."), better: "high", tolerance: 0.5, value: (e) => e.score.total, format: (v) => `${num(v, 1)} / 100` },
+  { id: "demanda", group: "agua", label: L("Agua que necesitan los cultivos", "Water the crops need"), hint: L("Demanda estimada por año (Kc × evapotranspiración).", "Estimated demand per year (Kc × evapotranspiration)."), better: "low", tolerance: 15, value: (e) => e.profile.water_demand_mm_year, format: (v) => `${num(v)} ${tr("mm/año", "mm/yr")}` },
+  { id: "cobertura", group: "agua", label: L("Parte de esa agua que cubren la lluvia y el suelo", "Share of that water covered by rain and soil"), hint: L("El resto sería falta de agua (estrés hídrico).", "The rest would be a water shortage (water stress)."), better: "high", tolerance: 1, value: (e) => e.profile.rain_coverage_pct, format: (v) => `${num(v)} %` },
+  { id: "deficit", group: "agua", label: L("Agua que falta cubrir", "Water still to cover"), hint: L("Antes de regar.", "Before irrigation."), better: "low", tolerance: 15, value: (e) => e.profile.deficit_mm_year, format: (v) => `${num(v)} ${tr("mm/año", "mm/yr")}` },
+  { id: "riego", group: "agua", label: L("Riego necesario", "Irrigation needed"), hint: L("Solo si el lote tiene riego.", "Only if the plot is irrigated."), better: "low", tolerance: 15, value: (e) => e.profile.irrigation_mm_year ?? 0, format: (v) => (v === 0 ? tr("sin riego", "no irrigation") : `${num(v)} ${tr("mm/año", "mm/yr")}`) },
+  { id: "A", group: "agua", label: L("Resiliencia hídrica (A)", "Water resilience (A)"), hint: L("Qué tan bien resiste la falta de agua.", "How well it withstands water shortage."), better: "high", tolerance: 0.5, value: score("A"), format: (v) => `${num(v)} / 100` },
+  { id: "cubierto", group: "suelo", label: L("Tiempo con cultivo vivo", "Time with a living crop"), hint: L("Porcentaje de los meses con algo creciendo.", "Share of months with something growing."), better: "high", tolerance: 1, value: (e) => e.profile.covered_months_pct, format: (v) => `${num(v)} %` },
+  { id: "desnudo", group: "suelo", label: L("Meses con el suelo sin cultivo", "Months with no crop on the soil"), hint: L("Por año. Más meses, más exposición al viento.", "Per year. More months, more wind exposure."), better: "low", tolerance: 0.2, value: (e) => e.profile.bare_months_per_year, format: (v) => `${num(v, 1)} ${tr("meses/año", "months/yr")}` },
+  { id: "S", group: "suelo", label: L("Salud del suelo (S)", "Soil health (S)"), hint: L("Cobertura, materia orgánica, leguminosas y erosión.", "Cover, organic matter, legumes and erosion."), better: "high", tolerance: 0.5, value: score("S"), format: (v) => `${num(v)} / 100` },
+  { id: "R", group: "riesgo", label: L("Resiliencia climática (R)", "Climate resilience (R)"), hint: L("Qué tan expuesto queda a sequía, calor y heladas.", "How exposed it is to drought, heat and frost."), better: "high", tolerance: 0.5, value: score("R"), format: (v) => `${num(v)} / 100` },
+  { id: "alertas-altas", group: "riesgo", label: L("Alertas serias", "Serious alerts"), hint: L("Riesgos marcados como alerta.", "Risks flagged as alerts."), better: "low", tolerance: 0, value: flags("alta"), format: (v) => `${num(v)}` },
+  { id: "alertas-media", group: "riesgo", label: L("Alertas de atención", "Watch alerts"), hint: L("Riesgos para tener presentes.", "Risks to keep in mind."), better: "low", tolerance: 0, value: flags("media"), format: (v) => `${num(v)}` },
+  { id: "I", group: "ingreso", label: L("Ingreso relativo (I)", "Relative income (I)"), hint: L("Índice cualitativo: no son precios ni márgenes.", "Qualitative index: not prices or margins."), better: "high", tolerance: 0.5, value: score("I"), format: (v) => `${num(v)} / 100` },
+  { id: "ingreso-nivel", group: "ingreso", label: L("Nivel de ingreso estimado", "Estimated income level"), hint: L("Bajo, medio o alto.", "Low, medium or high."), better: "high", tolerance: 0, value: (e) => LEVEL_VALUE[e.profile.relative_income], format: (v) => LEVEL_LABELS[(["bajo", "medio", "alto"] as Level[])[Math.round(v)]] },
+  { id: "cultivos", group: "sostenibilidad", label: L("Cultivos distintos", "Distinct crops"), hint: L("Más variedad corta ciclos de plagas.", "More variety breaks pest cycles."), better: "high", tolerance: 0, value: (e) => e.profile.distinct_crops, format: (v) => `${num(v)}` },
+  { id: "E", group: "sostenibilidad", label: L("Sostenibilidad y diversificación (E)", "Sustainability and diversification (E)"), hint: L("Diversidad, leguminosas, coberturas y repeticiones.", "Diversity, legumes, cover crops and repetitions."), better: "high", tolerance: 0.5, value: score("E"), format: (v) => `${num(v)} / 100` },
+]);
 
 export type Verdict = "mejor" | "peor" | "igual" | "sin_dato";
 
@@ -152,7 +153,7 @@ export function judge(value: number | null, base: number | null, better: Better,
   return (diff > 0) === (better === "high") ? "mejor" : "peor";
 }
 
-export const VERDICT_TEXT: Record<Verdict, string> = { mejor: "Mejor", peor: "Peor", igual: "Igual", sin_dato: "Sin dato" };
+export const VERDICT_TEXT: Record<Verdict, string> = localize({ mejor: L("Mejor", "Better"), peor: L("Peor", "Worse"), igual: L("Igual", "Same"), sin_dato: L("Sin dato", "No data") });
 
 /* ----------------------------- escenario y riego ----------------------------- */
 
@@ -161,6 +162,6 @@ export const VERDICT_TEXT: Record<Verdict, string> = { mejor: "Mejor", peor: "Pe
 export function describeScenario(s: ScenarioInput | null | undefined, baseline: { rainMm: number; scenarioRainMm: number }): string | null {
   if (!s || isBaseline(s)) return null;
   const parts = scenarioParts(s);
-  const rain = Math.round(baseline.scenarioRainMm) !== Math.round(baseline.rainMm) ? ` (${num(baseline.scenarioRainMm)} mm de lluvia al año en vez de ${num(baseline.rainMm)})` : "";
+  const rain = Math.round(baseline.scenarioRainMm) !== Math.round(baseline.rainMm) ? tr(` (${num(baseline.scenarioRainMm)} mm de lluvia al año en vez de ${num(baseline.rainMm)})`, ` (${num(baseline.scenarioRainMm)} mm of rain per year instead of ${num(baseline.rainMm)})`) : "";
   return `${parts.join(", ")}${rain}`;
 }

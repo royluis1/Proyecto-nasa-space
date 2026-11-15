@@ -4,10 +4,12 @@
  */
 import { buildAlerts, weeklyWithForecast } from "./alerts";
 import { getForecast } from "./open-meteo";
+import { tr } from "./i18n";
 import type { AlertsResult, ApiResult, Forecast, HuertaPanel } from "@/types/api";
 
-const NOTE = "Pronóstico consultado desde tu navegador (Open-Meteo, no es NASA): las alertas del pronóstico se calcularon acá.";
-const isForecastWarning = (w: string) => /pron[oó]stico/i.test(w) && /(no est[aá] disponible|no disponible)/i.test(w);
+const note = () => tr("Pronóstico consultado desde tu navegador (Open-Meteo, no es NASA): las alertas del pronóstico se calcularon acá.", "Forecast queried from your browser (Open-Meteo, not NASA): forecast alerts were calculated here.");
+const isForecastWarning = (w: string) =>
+  (/pron[oó]stico/i.test(w) && /(no est[aá] disponible|no disponible)/i.test(w)) || (/forecast/i.test(w) && /not available|unavailable/i.test(w));
 const HOT_C = 35;
 
 type Fetch = (lat: number, lon: number) => Promise<Forecast>;
@@ -51,7 +53,7 @@ export async function withBrowserForecast<T extends HuertaPanel | AlertsResult>(
   if (r.data.forecast || typeof fetch === "undefined") return r;
   try {
     const fc = await fetchForecast(r.data.latitude, r.data.longitude);
-    return { ...r, data: enrich(r.data, fc), meta: { ...r.meta, warnings: [...r.meta.warnings.filter((w) => !isForecastWarning(w)), NOTE] } };
+    return { ...r, data: enrich(r.data, fc), meta: { ...r.meta, warnings: [...r.meta.warnings.filter((w) => !isForecastWarning(w)), note()] } };
   } catch {
     return r;
   }

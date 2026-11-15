@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { LocalityOut } from "@/types/api";
+import { tr } from "@/lib/i18n";
 
 /**
  * Buscador de ciudad o pueblo: se escribe el nombre y se elige de una lista.
@@ -14,8 +15,8 @@ import type { LocalityOut } from "@/types/api";
  * Accesible: combobox con lista, flechas para moverse, Enter para elegir y Escape para cerrar.
  */
 export function LocalitySearch({
-  label = "¿En qué ciudad o pueblo estás?",
-  help = "Escribí el nombre y elegí de la lista. Con eso ubicamos tu huerta.",
+  label = tr("¿En qué ciudad o pueblo estás?", "Which city or town are you in?"),
+  help = tr("Escribí el nombre y elegí de la lista. Con eso ubicamos tu huerta.", "Type the name and pick from the list. That's how we locate your garden."),
   onSelect,
   id = "localidad",
   clearSignal = 0,
@@ -69,11 +70,11 @@ export function LocalitySearch({
         setResults(r.results);
         setActive(0);
         setOpen(true);
-        setError(r.results.length ? null : "No encontramos esa ciudad o pueblo. Probá con otro nombre.");
+        setError(r.results.length ? null : tr("No encontramos esa ciudad o pueblo. Probá con otro nombre.", "We couldn't find that city or town. Try another name."));
       } catch (e) {
         if ((e as Error).name !== "AbortError") {
           setResults([]);
-          setError("No pudimos buscar ciudades ahora. Probá de nuevo en un momento.");
+          setError(tr("No pudimos buscar ciudades ahora. Probá de nuevo en un momento.", "We couldn't search for cities right now. Try again in a moment."));
         }
       } finally {
         setLoading(false);
@@ -133,7 +134,7 @@ export function LocalitySearch({
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={onKeyDown}
           onFocus={() => results.length > 0 && setOpen(true)}
-          placeholder="Por ejemplo: Justo Daract"
+          placeholder={tr("Por ejemplo: Justo Daract", "For example: Justo Daract")}
           autoComplete="off"
           role="combobox"
           aria-expanded={listOpen}
@@ -143,7 +144,7 @@ export function LocalitySearch({
           aria-activedescendant={listOpen ? `${id}-op-${active}` : undefined}
         />
         {listOpen && (
-          <ul id={listId} role="listbox" aria-label="Ciudades encontradas" className="absolute z-30 mt-1 max-h-72 w-full overflow-auto rounded-lg border bg-card shadow-lg">
+          <ul id={listId} role="listbox" aria-label={tr("Ciudades encontradas", "Cities found")} className="absolute z-30 mt-1 max-h-72 w-full overflow-auto rounded-lg border bg-card shadow-lg">
             {results.map((loc, i) => (
               <li
                 key={`${loc.nombre}-${loc.provincia}-${loc.departamento}`}
@@ -166,7 +167,7 @@ export function LocalitySearch({
         )}
       </div>
       <p aria-live="polite" className="min-h-5 text-sm text-muted-foreground">
-        {loading ? "Buscando…" : error ?? ""}
+        {loading ? tr("Buscando…", "Searching…") : error ?? ""}
       </p>
     </div>
   );

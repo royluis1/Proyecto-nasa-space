@@ -7,6 +7,7 @@ import { droughtHistory, droughtSentence } from "@/lib/drought";
 import { MONTHS, num } from "@/lib/format";
 import type { ClimateSummary, SoilMoistureSummary, VegetationSummary } from "@/types/api";
 import { CHART, ChartFrame } from "./chart-frame";
+import { tr } from "@/lib/i18n";
 
 const grid = <CartesianGrid stroke="currentColor" strokeOpacity={0.15} vertical={false} />;
 const tick = { fill: "currentColor", fontSize: 12 };
@@ -18,9 +19,9 @@ export function MonthlyClimateChart({ climate }: { climate: ClimateSummary }) {
   const data = climate.monthly_climatology.map((m) => ({ mes: MONTHS[m.month - 1], lluvia: m.precip_mm, et0: m.et0_mm }));
   return (
     <ChartFrame
-      title="Lluvia y demanda de agua de la atmósfera, mes por mes"
-      caption="Donde la línea (ET₀) queda por encima de las barras (lluvia), la atmósfera pide más agua de la que llueve."
-      table={{ headers: ["Mes", "Lluvia (mm)", "ET₀ (mm)"], rows: data.map((d) => [d.mes, num(d.lluvia), num(d.et0)]) }}
+      title={tr("Lluvia y demanda de agua de la atmósfera, mes por mes", "Rain and atmospheric water demand, month by month")}
+      caption={tr("Donde la línea (ET₀) queda por encima de las barras (lluvia), la atmósfera pide más agua de la que llueve.", "Where the line (ET₀) is above the bars (rain), the atmosphere demands more water than it rains.")}
+      table={{ headers: [tr("Mes", "Month"), tr("Lluvia (mm)", "Rain (mm)"), "ET₀ (mm)"], rows: data.map((d) => [d.mes, num(d.lluvia), num(d.et0)]) }}
     >
       <ComposedChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
         {grid}
@@ -28,8 +29,8 @@ export function MonthlyClimateChart({ climate }: { climate: ClimateSummary }) {
         <YAxis tick={tick} width={44} unit=" mm" />
         <Tooltip {...tip} formatter={fmt(0)} />
         <Legend />
-        <Bar isAnimationActive={false} dataKey="lluvia" name="Lluvia (barras)" fill={CHART.agua} radius={[3, 3, 0, 0]} />
-        <Line isAnimationActive={false} dataKey="et0" name="ET₀ (línea con puntos)" stroke={CHART.tierra} strokeWidth={3} dot={{ r: 4, fill: CHART.tierra }} />
+        <Bar isAnimationActive={false} dataKey="lluvia" name={tr("Lluvia (barras)", "Rain (bars)")} fill={CHART.agua} radius={[3, 3, 0, 0]} />
+        <Line isAnimationActive={false} dataKey="et0" name={tr("ET₀ (línea con puntos)", "ET₀ (line with dots)")} stroke={CHART.tierra} strokeWidth={3} dot={{ r: 4, fill: CHART.tierra }} />
       </ComposedChart>
     </ChartFrame>
   );
@@ -40,19 +41,20 @@ export function AnnualRainChart({ climate }: { climate: ClimateSummary }) {
   const data = climate.annual
     .filter((a) => a.precip_mm != null)
     .map((a) => ({ año: String(a.year), lluvia: a.precip_mm as number, clase: a.classification ?? "normal", completo: a.complete }));
-  const label = (clase: string) => (clase === "seco" ? "▼ seco" : clase === "húmedo" ? "▲ húmedo" : "");
+  const label = (clase: string) => (clase === "seco" ? tr("▼ seco", "▼ dry") : clase === "húmedo" ? tr("▲ húmedo", "▲ wet") : "");
+  const claseText = (clase: string) => (clase === "seco" ? tr("seco", "dry") : clase === "húmedo" ? tr("húmedo", "wet") : clase === "normal" ? tr("normal", "normal") : clase);
   return (
     <ChartFrame
-      title="Lluvia de cada año"
-      caption="Los años marcados como secos o húmedos se comparan con el promedio de este mismo período."
-      table={{ headers: ["Año", "Lluvia (mm)", "Clasificación", "Año completo"], rows: data.map((d) => [d.año, num(d.lluvia), d.clase, d.completo ? "sí" : "no"]) }}
+      title={tr("Lluvia de cada año", "Rain each year")}
+      caption={tr("Los años marcados como secos o húmedos se comparan con el promedio de este mismo período.", "Years marked dry or wet are compared with the average of this same period.")}
+      table={{ headers: [tr("Año", "Year"), tr("Lluvia (mm)", "Rain (mm)"), tr("Clasificación", "Classification"), tr("Año completo", "Complete year")], rows: data.map((d) => [d.año, num(d.lluvia), claseText(d.clase), d.completo ? tr("sí", "yes") : "no"]) }}
     >
       <BarChart data={data} margin={{ top: 22, right: 12, bottom: 0, left: 0 }}>
         {grid}
         <XAxis dataKey="año" tick={tick} />
         <YAxis tick={tick} width={44} unit=" mm" />
         <Tooltip {...tip} formatter={fmt(0)} />
-        <Bar isAnimationActive={false} dataKey="lluvia" name="Lluvia anual" fill={CHART.agua} radius={[3, 3, 0, 0]}>
+        <Bar isAnimationActive={false} dataKey="lluvia" name={tr("Lluvia anual", "Annual rain")} fill={CHART.agua} radius={[3, 3, 0, 0]}>
           <LabelList dataKey="clase" position="top" formatter={(v: unknown) => label(String(v))} fill="currentColor" fontSize={12} />
         </Bar>
       </BarChart>
@@ -78,10 +80,10 @@ export function DroughtHistoryChart({ climate }: { climate: ClimateSummary }) {
     <div className="space-y-2">
       <p>{droughtSentence(h, (v) => num(v))}</p>
       <ChartFrame
-        title="Agua que faltó cada año"
-        caption="Suma de los meses en que la atmósfera pidió más agua de la que llovió (NASA POWER, ET₀ FAO-56). Más alto = año más seco para los cultivos. La línea es una tendencia orientativa: con unos 10 años no alcanza para afirmar un cambio."
+        title={tr("Agua que faltó cada año", "Water missing each year")}
+        caption={tr("Suma de los meses en que la atmósfera pidió más agua de la que llovió (NASA POWER, ET₀ FAO-56). Más alto = año más seco para los cultivos. La línea es una tendencia orientativa: con unos 10 años no alcanza para afirmar un cambio.", "Sum of the months in which the atmosphere demanded more water than it rained (NASA POWER, ET₀ FAO-56). Higher = drier year for crops. The line is an indicative trend: about 10 years is not enough to claim a change.")}
         table={{
-          headers: ["Año", "Déficit (mm)", "Lluvia (mm)", "ET₀ (mm)"],
+          headers: [tr("Año", "Year"), tr("Déficit (mm)", "Deficit (mm)"), tr("Lluvia (mm)", "Rain (mm)"), "ET₀ (mm)"],
           rows: h.years.map((y) => [String(y.year), num(y.deficit), y.rain == null ? "—" : num(y.rain), y.et0 == null ? "—" : num(y.et0)]),
         }}
       >
@@ -91,12 +93,12 @@ export function DroughtHistoryChart({ climate }: { climate: ClimateSummary }) {
           <YAxis tick={tick} width={48} unit=" mm" />
           <Tooltip {...tip} formatter={fmt(0)} />
           <Legend />
-          {h.mean != null && <ReferenceLine y={h.mean} stroke="currentColor" strokeDasharray="4 4" label={{ value: "promedio", position: "insideTopRight", fill: "currentColor", fontSize: 12 }} />}
-          <Bar isAnimationActive={false} dataKey="deficit" name="Agua que faltó (barras)" fill={CHART.tierra} radius={[3, 3, 0, 0]}>
+          {h.mean != null && <ReferenceLine y={h.mean} stroke="currentColor" strokeDasharray="4 4" label={{ value: tr("promedio", "average"), position: "insideTopRight", fill: "currentColor", fontSize: 12 }} />}
+          <Bar isAnimationActive={false} dataKey="deficit" name={tr("Agua que faltó (barras)", "Missing water (bars)")} fill={CHART.tierra} radius={[3, 3, 0, 0]}>
             <LabelList dataKey="marca" position="top" fill="currentColor" fontSize={12} />
           </Bar>
           {h.slopePerDecade != null && (
-            <Line isAnimationActive={false} dataKey="tendencia" name="Tendencia orientativa (línea)" stroke={CHART.agua} strokeWidth={2.5} dot={false} />
+            <Line isAnimationActive={false} dataKey="tendencia" name={tr("Tendencia orientativa (línea)", "Indicative trend (line)")} stroke={CHART.agua} strokeWidth={2.5} dot={false} />
           )}
         </ComposedChart>
       </ChartFrame>
@@ -109,17 +111,17 @@ export function HeatChart({ climate }: { climate: ClimateSummary }) {
   const data = climate.heat.frequency_pct_by_month.map((v, i) => ({ mes: MONTHS[i], pct: v ?? 0 }));
   return (
     <ChartFrame
-      title={`Días calurosos (más de ${num(climate.heat.threshold_c)} °C), por mes`}
-      caption="Porcentaje de los días de cada mes que superaron el umbral en los últimos años."
+      title={tr(`Días calurosos (más de ${num(climate.heat.threshold_c)} °C), por mes`, `Hot days (above ${num(climate.heat.threshold_c)} °C), by month`)}
+      caption={tr("Porcentaje de los días de cada mes que superaron el umbral en los últimos años.", "Share of days each month that exceeded the threshold in recent years.")}
       height={220}
-      table={{ headers: ["Mes", "% de días"], rows: data.map((d) => [d.mes, num(d.pct, 1)]) }}
+      table={{ headers: [tr("Mes", "Month"), tr("% de días", "% of days")], rows: data.map((d) => [d.mes, num(d.pct, 1)]) }}
     >
       <BarChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
         {grid}
         <XAxis dataKey="mes" tick={tick} />
         <YAxis tick={tick} width={44} unit=" %" />
         <Tooltip {...tip} formatter={fmt(1)} />
-        <Bar isAnimationActive={false} dataKey="pct" name="% de días calurosos" fill={CHART.tierra} radius={[3, 3, 0, 0]} />
+        <Bar isAnimationActive={false} dataKey="pct" name={tr("% de días calurosos", "% of hot days")} fill={CHART.tierra} radius={[3, 3, 0, 0]} />
       </BarChart>
     </ChartFrame>
   );
@@ -134,18 +136,18 @@ export function SoilMoistureClimatologyChart({ sm }: { sm: SoilMoistureSummary }
   }));
   return (
     <ChartFrame
-      title="Humedad típica del suelo, mes por mes"
-      caption="La línea es el promedio y la franja sombreada muestra cuánto varía de un año a otro."
+      title={tr("Humedad típica del suelo, mes por mes", "Typical soil moisture, month by month")}
+      caption={tr("La línea es el promedio y la franja sombreada muestra cuánto varía de un año a otro.", "The line is the average and the shaded band shows how much it varies from year to year.")}
       height={240}
-      table={{ headers: ["Mes", `Humedad media (${sm.units})`], rows: data.map((d) => [d.mes, d.media == null ? "—" : num(d.media, 3)]) }}
+      table={{ headers: [tr("Mes", "Month"), tr(`Humedad media (${sm.units})`, `Mean moisture (${sm.units})`)], rows: data.map((d) => [d.mes, d.media == null ? "—" : num(d.media, 3)]) }}
     >
       <ComposedChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
         {grid}
         <XAxis dataKey="mes" tick={tick} />
         <YAxis tick={tick} width={52} domain={["auto", "auto"]} tickFormatter={(v: number) => num(v, 2)} />
-        <Tooltip {...tip} formatter={(v: unknown) => (Array.isArray(v) ? `${num(v[0], 3)} a ${num(v[1], 3)}` : fmt(3)(v))} />
-        <Area isAnimationActive={false} dataKey="banda" name="Variación entre años" stroke="none" fill={CHART.agua} fillOpacity={0.2} />
-        <Line isAnimationActive={false} dataKey="media" name="Promedio" stroke={CHART.agua} strokeWidth={3} dot={{ r: 3 }} />
+        <Tooltip {...tip} formatter={(v: unknown) => (Array.isArray(v) ? `${num(v[0], 3)} ${tr("a", "to")} ${num(v[1], 3)}` : fmt(3)(v))} />
+        <Area isAnimationActive={false} dataKey="banda" name={tr("Variación entre años", "Variation between years")} stroke="none" fill={CHART.agua} fillOpacity={0.2} />
+        <Line isAnimationActive={false} dataKey="media" name={tr("Promedio", "Average")} stroke={CHART.agua} strokeWidth={3} dot={{ r: 3 }} />
       </ComposedChart>
     </ChartFrame>
   );
@@ -157,10 +159,10 @@ export function SoilMoistureAnomalyChart({ sm }: { sm: SoilMoistureSummary }) {
   const data = rows.map((m) => ({ mes: `${m.year}-${String(m.month).padStart(2, "0")}`, z: m.anomaly_z as number, sequia: m.drought }));
   return (
     <ChartFrame
-      title="Meses más secos o más húmedos de lo normal (últimos 5 años)"
-      caption="Barras hacia abajo = más seco que lo normal para ese mes. Por debajo de la línea punteada (−1) es una sequía de humedad de suelo."
+      title={tr("Meses más secos o más húmedos de lo normal (últimos 5 años)", "Months drier or wetter than normal (last 5 years)")}
+      caption={tr("Barras hacia abajo = más seco que lo normal para ese mes. Por debajo de la línea punteada (−1) es una sequía de humedad de suelo.", "Bars pointing down = drier than normal for that month. Below the dotted line (−1) is a soil-moisture drought.")}
       height={240}
-      table={{ headers: ["Mes", "Anomalía (z)", "¿Sequía?"], rows: data.map((d) => [d.mes, num(d.z, 2), d.sequia ? "sí" : "no"]) }}
+      table={{ headers: [tr("Mes", "Month"), tr("Anomalía (z)", "Anomaly (z)"), tr("¿Sequía?", "Drought?")], rows: data.map((d) => [d.mes, num(d.z, 2), d.sequia ? tr("sí", "yes") : "no"]) }}
     >
       <BarChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
         {grid}
@@ -168,8 +170,8 @@ export function SoilMoistureAnomalyChart({ sm }: { sm: SoilMoistureSummary }) {
         <YAxis tick={tick} width={36} />
         <Tooltip {...tip} formatter={fmt(2)} />
         <ReferenceLine y={0} stroke="currentColor" strokeOpacity={0.6} />
-        <ReferenceLine y={-1} stroke={CHART.alerta} strokeDasharray="5 4" label={{ value: "Sequía (−1)", position: "insideBottomRight", fill: "currentColor", fontSize: 12 }} />
-        <Bar isAnimationActive={false} dataKey="z" name="Anomalía" fill={CHART.agua} />
+        <ReferenceLine y={-1} stroke={CHART.alerta} strokeDasharray="5 4" label={{ value: tr("Sequía (−1)", "Drought (−1)"), position: "insideBottomRight", fill: "currentColor", fontSize: 12 }} />
+        <Bar isAnimationActive={false} dataKey="z" name={tr("Anomalía", "Anomaly")} fill={CHART.agua} />
       </BarChart>
     </ChartFrame>
   );
@@ -180,18 +182,18 @@ export function NdviClimatologyChart({ v }: { v: VegetationSummary }) {
   const data = Array.from({ length: 12 }, (_, i) => ({ mes: MONTHS[i], ndvi: v.monthly_climatology[String(i + 1) as unknown as number] ?? null }));
   return (
     <ChartFrame
-      title="Verdor típico de cada mes (NDVI)"
-      caption={`Por debajo de la línea punteada (${num(v.bare_threshold, 2)}) el lote está en barbecho o con el suelo casi desnudo.`}
+      title={tr("Verdor típico de cada mes (NDVI)", "Typical greenness each month (NDVI)")}
+      caption={tr(`Por debajo de la línea punteada (${num(v.bare_threshold, 2)}) el lote está en barbecho o con el suelo casi desnudo.`, `Below the dotted line (${num(v.bare_threshold, 2)}) the plot is fallow or the soil is almost bare.`)}
       height={240}
-      table={{ headers: ["Mes", "NDVI medio"], rows: data.map((d) => [d.mes, d.ndvi == null ? "—" : num(d.ndvi, 2)]) }}
+      table={{ headers: [tr("Mes", "Month"), tr(tr("NDVI medio", "Mean NDVI"), "Mean NDVI")], rows: data.map((d) => [d.mes, d.ndvi == null ? "—" : num(d.ndvi, 2)]) }}
     >
       <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
         {grid}
         <XAxis dataKey="mes" tick={tick} />
         <YAxis tick={tick} width={36} domain={[0, 1]} tickFormatter={(x: number) => num(x, 1)} />
         <Tooltip {...tip} formatter={fmt(2)} />
-        <ReferenceLine y={v.bare_threshold} stroke={CHART.tierra} strokeDasharray="5 4" label={{ value: "Barbecho", position: "insideTopRight", fill: "currentColor", fontSize: 12 }} />
-        <Line isAnimationActive={false} dataKey="ndvi" name="NDVI medio" stroke={CHART.cultivo} strokeWidth={3} dot={{ r: 4, fill: CHART.cultivo }} connectNulls />
+        <ReferenceLine y={v.bare_threshold} stroke={CHART.tierra} strokeDasharray="5 4" label={{ value: tr("Barbecho", "Fallow"), position: "insideTopRight", fill: "currentColor", fontSize: 12 }} />
+        <Line isAnimationActive={false} dataKey="ndvi" name={tr("NDVI medio", "Mean NDVI")} stroke={CHART.cultivo} strokeWidth={3} dot={{ r: 4, fill: CHART.cultivo }} connectNulls />
       </LineChart>
     </ChartFrame>
   );
@@ -203,17 +205,17 @@ export function CampaignsChart({ v }: { v: VegetationSummary }) {
   const label = (a: unknown) => (typeof a === "number" ? `${a > 0 ? "▲+" : a < 0 ? "▼" : ""}${num(a)}%` : "");
   return (
     <ChartFrame
-      title="Biomasa producida en cada campaña"
-      caption="Cuánto verde acumuló el lote entre julio y junio. Arriba de cada barra, la diferencia con el promedio."
+      title={tr("Biomasa producida en cada campaña", "Biomass produced each season")}
+      caption={tr("Cuánto verde acumuló el lote entre julio y junio. Arriba de cada barra, la diferencia con el promedio.", "How much green the plot accumulated from July to June. Above each bar, the difference from the average.")}
       height={260}
-      table={{ headers: ["Campaña", "NDVI integrado", "Diferencia con el promedio (%)", "Ciclos de crecimiento"], rows: v.campaigns.filter((c) => c.complete).map((c) => [c.campaign, num(c.integrated_ndvi, 1), c.anomaly_pct == null ? "—" : num(c.anomaly_pct, 1), c.growth_cycles]) }}
+      table={{ headers: [tr("Campaña", "Season"), tr(tr("NDVI integrado", "Integrated NDVI"), "Integrated NDVI"), tr("Diferencia con el promedio (%)", "Difference from average (%)"), tr("Ciclos de crecimiento", "Growth cycles")], rows: v.campaigns.filter((c) => c.complete).map((c) => [c.campaign, num(c.integrated_ndvi, 1), c.anomaly_pct == null ? "—" : num(c.anomaly_pct, 1), c.growth_cycles]) }}
     >
       <BarChart data={data} margin={{ top: 22, right: 12, bottom: 0, left: 0 }}>
         {grid}
         <XAxis dataKey="campaña" tick={tick} />
         <YAxis tick={tick} width={40} />
         <Tooltip {...tip} formatter={fmt(1)} />
-        <Bar isAnimationActive={false} dataKey="biomasa" name="NDVI integrado" fill={CHART.cultivo} radius={[3, 3, 0, 0]}>
+        <Bar isAnimationActive={false} dataKey="biomasa" name={tr("NDVI integrado", "Integrated NDVI")} fill={CHART.cultivo} radius={[3, 3, 0, 0]}>
           <LabelList dataKey="anom" position="top" formatter={label} fill="currentColor" fontSize={11} />
         </Bar>
       </BarChart>

@@ -41,8 +41,9 @@ import * as demo from "./demo";
 import { enrichAlerts, enrichHuerta, withBrowserForecast } from "./live-forecast";
 import { toRequest } from "./scenarios";
 import { deleteLocalField, getLocalField, isLocalId, listLocalFields, newLocalId, saveLocalField } from "./local-fields";
-import { DEMO_NOTICE } from "./content";
+import { demoNotice } from "./content";
 import { ORIGIN_LABELS } from "./format";
+import { currentLang, tr } from "./i18n";
 
 /* ------------------------------ errores ------------------------------ */
 
@@ -91,7 +92,8 @@ async function once<T>(path: string, opts: RequestOptions): Promise<ApiEnvelope<
   try {
     const res = await fetch(`${API_URL}${path}`, {
       method: opts.method ?? "GET",
-      headers: opts.body === undefined ? undefined : { "Content-Type": "application/json" },
+      // Accept-Language es un encabezado "simple": no agrega una consulta previa de CORS.
+      headers: opts.body === undefined ? { "Accept-Language": currentLang() } : { "Content-Type": "application/json", "Accept-Language": currentLang() },
       body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
       signal: controller.signal,
     });
@@ -100,8 +102,8 @@ async function once<T>(path: string, opts: RequestOptions): Promise<ApiEnvelope<
   } catch (e) {
     if (e instanceof ApiError) throw e;
     if (opts.signal?.aborted) throw e; // cancelado por quien llamó: no es un error del servidor
-    if (timedOut) throw new ApiError("El servidor tardó demasiado en responder.", 0, "TIMEOUT");
-    throw new ApiError("No se pudo conectar con el servidor de AgroOrbit.", 0, "NETWORK");
+    if (timedOut) throw new ApiError(tr("El servidor tardó demasiado en responder.", "The server took too long to respond."), 0, "TIMEOUT");
+    throw new ApiError(tr("No se pudo conectar con el servidor de AgroOrbit.", "Could not connect to the AgroOrbit server."), 0, "NETWORK");
   } finally {
     clearTimeout(timer);
     opts.signal?.removeEventListener("abort", onAbort);
@@ -116,7 +118,7 @@ async function toApiError(res: Response): Promise<ApiError> {
     /* respuesta sin JSON (por ejemplo, un proxy) */
   }
   const e = body?.error;
-  return new ApiError(e?.message ?? `El servidor respondió con un error (${res.status}).`, res.status, e?.code ?? `HTTP_${res.status}`, e?.details, e?.request_id);
+  return new ApiError(e?.message ?? tr(`El servidor respondió con un error (${res.status}).`, `The server returned an error (${res.status}).`), res.status, e?.code ?? `HTTP_${res.status}`, e?.details, e?.request_id);
 }
 
 export async function request<T>(path: string, opts: RequestOptions = {}): Promise<ApiEnvelope<T>> {
@@ -134,15 +136,15 @@ export async function request<T>(path: string, opts: RequestOptions = {}): Promi
 /** Mensaje claro para el productor (sin códigos ni rastros técnicos). */
 export function describeError(e: unknown): string {
   if (e instanceof ApiError) {
-    if (e.isNetwork) return `${e.message} Revisá tu conexión y volvé a intentar.`;
+    if (e.isNetwork) return `${e.message} ${tr("Revisá tu conexión y volvé a intentar.", "Check your connection and try again.")}`;
     if (e.code === "NO_DATA_AVAILABLE") return `${e.message}`;
     if (e.code === "VALIDATION_ERROR" && Array.isArray(e.details)) {
       const first = e.details[0] as { campo?: string; mensaje?: string } | undefined;
-      return first?.mensaje ? `Revisá los datos: ${first.campo ? `${first.campo}: ` : ""}${first.mensaje}` : e.message;
+      return first?.mensaje ? `${tr("Revisá los datos", "Check the data")}: ${first.campo ? `${first.campo}: ` : ""}${first.mensaje}` : e.message;
     }
     return e.message;
   }
-  return e instanceof Error ? e.message : "Ocurrió un error inesperado.";
+  return e instanceof Error ? e.message : tr("Ocurrió un error inesperado.", "An unexpected error occurred.");
 }
 
 /* ------------------------ estado del servidor ------------------------ */
@@ -168,7 +170,7 @@ export const resetBackendState = () => setBackend({ demo: false, lastError: null
 const shouldFallback = (e: unknown): boolean =>
   DEMO_FALLBACK && e instanceof ApiError && (e.status === 0 || (e.status >= 500 && e.code !== "NO_DATA_AVAILABLE"));
 
-const demoMeta = (meta: ResponseMeta): ResponseMeta => ({ ...meta, origin_label: ORIGIN_LABELS.demo, warnings: meta.warnings.includes(DEMO_NOTICE) ? meta.warnings : [DEMO_NOTICE, ...meta.warnings] });
+const demoMeta = (meta: ResponseMeta): ResponseMeta => ({ ...meta, origin_label: ORIGIN_LABELS.demo, warnings: meta.warnings.includes(demoNotice()) ? meta.warnings : [demoNotice(), ...meta.warnings] });
 
 /** Llama al servidor; si no responde, usa los datos de ejemplo (con aviso). */
 export async function call<T>(real: () => Promise<ApiEnvelope<T>>, fallback: (() => Promise<ApiEnvelope<T>>) | null): Promise<ApiResult<T>> {
@@ -213,12 +215,12 @@ export const api = {
   async field(id: string, o: Opts = {}): Promise<ApiResult<FieldOut>> {
     if (isLocalId(id)) {
       const d = await demo.demoField(id);
-      if (!d) throw new ApiError("Ese campo no existe en este navegador.", 404, "FIELD_NOT_FOUND");
+      if (!d) throw new ApiError(tr("Ese campo no existe en este navegador.", "That field does not exist in this browser."), 404, "FIELD_NOT_FOUND");
       return { ...d, demo: true };
     }
     return call(() => request<FieldOut>(`/fields/${encodeURIComponent(id)}`, o), async () => {
       const d = await demo.demoField(id);
-      if (!d) throw new ApiError("No existe ese campo de ejemplo.", 404, "FIELD_NOT_FOUND");
+      if (!d) throw new ApiError(tr("No existe ese campo de ejemplo.", "That example field does not exist."), 404, "FIELD_NOT_FOUND");
       return d;
     });
   },
@@ -228,7 +230,7 @@ export const api = {
     return call(() => request<FieldOut>("/fields", { method: "POST", body, retries: 1 }), async () => {
       const field = { ...body, id: newLocalId(), current_rotation_id: null, sample_note: null } as FieldOut;
       saveLocalField(field);
-      return { data: field, meta: { data_status: "sample", warnings: ["El campo se guardó solo en este navegador."], disclaimer: "" } };
+      return { data: field, meta: { data_status: "sample", warnings: [tr("El campo se guardó solo en este navegador.", "The field was saved only in this browser.")], disclaimer: "" } };
     });
   },
 
@@ -236,7 +238,7 @@ export const api = {
     if (isLocalId(id)) {
       const field = { ...(getLocalField(id) as FieldOut), ...body, id } as FieldOut;
       saveLocalField(field);
-      return { data: field, meta: { data_status: "sample", warnings: ["Cambios guardados solo en este navegador."], disclaimer: "" }, demo: true };
+      return { data: field, meta: { data_status: "sample", warnings: [tr("Cambios guardados solo en este navegador.", "Changes saved only in this browser.")], disclaimer: "" }, demo: true };
     }
     return call(() => request<FieldOut>(`/fields/${encodeURIComponent(id)}`, { method: "PUT", body, retries: 1 }), null);
   },

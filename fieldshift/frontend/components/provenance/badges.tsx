@@ -6,6 +6,7 @@ import {
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { CONFIDENCE_LABELS, LABEL_INFO, LEVEL_LABELS, ORIGIN_HELP, ORIGIN_LABELS, SEVERITY_LABELS } from "@/lib/format";
 import type { Confidence, DataLabel, Level, OriginStatus, Severity } from "@/types/api";
+import { tr } from "@/lib/i18n";
 
 const ORIGIN_ICON: Record<OriginStatus, LucideIcon> = {
   live: Satellite, cached: Database, sample: FlaskConical, uploaded: Upload, mock: Shapes, demo: WifiOff,
@@ -43,13 +44,13 @@ const RISK_ICON: Record<Level, LucideIcon> = { bajo: ShieldCheck, medio: AlertTr
 const RISK_TONE: Record<Level, BadgeProps["variant"]> = { bajo: "cultivo", medio: "tierra", alto: "alerta" };
 
 /** Nivel de riesgo: ícono distinto por nivel y la palabra escrita. Nunca solo color. */
-export function RiskLevelBadge({ level, prefix = "Riesgo" }: { level: Level | null | undefined; prefix?: string }) {
+export function RiskLevelBadge({ level, prefix = tr("Riesgo", "Risk") }: { level: Level | null | undefined; prefix?: string }) {
   if (!level) return null;
   const Icon = RISK_ICON[level];
   return (
     <Badge variant={RISK_TONE[level]}>
       <Icon aria-hidden />
-      {prefix} {LEVEL_LABELS[level].toLowerCase()}
+      {tr(`${prefix} ${LEVEL_LABELS[level].toLowerCase()}`, `${LEVEL_LABELS[level]} ${prefix.toLowerCase()}`)}
     </Badge>
   );
 }
@@ -59,7 +60,7 @@ const CONF_ICON: Record<Confidence, LucideIcon> = { alta: BatteryFull, media: Ba
 export function ConfidenceBadge({ level }: { level: Confidence }) {
   const Icon = CONF_ICON[level];
   return (
-    <Badge variant="outline" title="Qué tan confiable es el resultado según la calidad de los datos disponibles.">
+    <Badge variant="outline" title={tr("Qué tan confiable es el resultado según la calidad de los datos disponibles.", "How reliable the result is given the quality of the available data.")}>
       <Icon aria-hidden />
       {CONFIDENCE_LABELS[level]}
     </Badge>

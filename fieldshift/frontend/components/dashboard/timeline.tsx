@@ -1,6 +1,7 @@
 import { CalendarLegend, RotationCalendar } from "@/components/score/rotation-calendar";
 import { STRATEGY_LABELS, rotationTitle } from "@/lib/format";
 import type { Crop, CropGroup, RotationEvaluation } from "@/types/api";
+import { tr } from "@/lib/i18n";
 
 /** Línea de tiempo: el calendario de cada rotación elegida, una debajo de la otra, para ver qué cambia mes a mes. */
 export function Timeline({ evaluations, crops }: { evaluations: RotationEvaluation[]; crops: Record<string, Crop> }) {
@@ -9,10 +10,10 @@ export function Timeline({ evaluations, crops }: { evaluations: RotationEvaluati
     <div className="space-y-5">
       <CalendarLegend groups={groups} />
       {evaluations.map((ev) => (
-        <section key={ev.rotation.id} aria-label={`Calendario de ${ev.rotation.name}`}>
+        <section key={ev.rotation.id} aria-label={tr(`Calendario de ${ev.rotation.name}`, `Calendar of ${ev.rotation.name}`)}>
           <h3 className="mb-1 text-base font-semibold">
             {ev.score.rank}. {STRATEGY_LABELS[ev.rotation.strategy]}
-            <span className="ml-2 font-normal text-muted-foreground">{rotationTitle(ev.rotation)} · ciclo de {ev.rotation.duration_years} {ev.rotation.duration_years === 1 ? "año" : "años"}</span>
+            <span className="ml-2 font-normal text-muted-foreground">{rotationTitle(ev.rotation)} · {tr("ciclo de", "cycle of")} {ev.rotation.duration_years} {ev.rotation.duration_years === 1 ? tr("año", "year") : tr("años", "years")}</span>
           </h3>
           <RotationCalendar rotation={ev.rotation} crops={crops} compact />
         </section>
