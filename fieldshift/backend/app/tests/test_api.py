@@ -147,7 +147,7 @@ def test_comparar_solo_algunas_estrategias(client):
 def test_comparar_errores(client):
     pocas = {"field_id": "campo-este", "strategies": ["agua"]}
     assert_error(client.post("/rotations/compare", json=pocas), 400, "INVALID_INPUT")
-    historial = {"field_id": "campo-este", "history": ["papa"]}
+    historial = {"field_id": "campo-este", "history": ["cultivo_inexistente"]}
     assert_error(client.post("/rotations/compare", json=historial), 400, "INVALID_INPUT")
     ajena = {"field_id": "campo-este", "rotation_ids": ["campo-centro-actual"]}
     assert_error(client.post("/rotations/compare", json=ajena), 400, "INVALID_INPUT")
@@ -213,7 +213,7 @@ def test_crear_lote_completo_y_compararlo(client):
 
 def test_crear_lote_invalido(client):
     base = {"name": "X", "location": {"lat": -33.7, "lon": -65.4}, "area_ha": 10}
-    assert_error(client.post("/fields", json={**base, "crop_history": ["papa"]}), 400, "INVALID_INPUT")
+    assert_error(client.post("/fields", json={**base, "crop_history": ["cultivo_inexistente"]}), 400, "INVALID_INPUT")
     abierto = {"type": "Polygon", "coordinates": [[[-65.41, -33.69], [-65.39, -33.69], [-65.39, -33.71], [-65.40, -33.70]]]}
     assert_error(client.post("/fields", json={**base, "boundary": abierto}), 422, "VALIDATION_ERROR")
 
@@ -230,7 +230,7 @@ def test_actualizar_lote(client):
     assert data["area_ha"] == 640 and data["irrigated"] is True and data["current_rotation_id"] == "campo-este-actual"
     assert client.get("/fields/campo-este").json()["data"]["name"] == "Campo Este (editado)"
     assert_error(client.put("/fields/nada", json=cambios), 404, "FIELD_NOT_FOUND")
-    assert_error(client.put("/fields/campo-este", json={**cambios, "current_crop": "papa"}), 400, "INVALID_INPUT")
+    assert_error(client.put("/fields/campo-este", json={**cambios, "current_crop": "cultivo_inexistente"}), 400, "INVALID_INPUT")
     assert_error(client.put("/fields/campo-este", json={**cambios, "area_ha": -1}), 422, "VALIDATION_ERROR")
 
 

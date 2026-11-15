@@ -143,7 +143,7 @@ def test_historial_con_monocultivo_avisa(repo):
 
 def test_historial_con_cultivo_desconocido_es_error(repo):
     with pytest.raises(InvalidInputError, match="desconocido"):
-        engine(repo, history=["papa"])
+        engine(repo, history=["cultivo_inexistente"])
 
 
 def test_sin_rotacion_actual_usa_el_historial(repo):

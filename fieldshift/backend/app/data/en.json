@@ -1,451 +1,634 @@
 {
- "_note": "Traducción al inglés de los textos de crops.json, rotation_templates.json, rotations.json y fields.json. Las claves con punto indican un campo anidado.",
- "crops": {
-  "soja": {
-   "name": "Soybean",
-   "sowing_window": "November to December (first crop); December after a winter cereal (second crop).",
-   "main_use": [
-    "grain",
-    "oil",
-    "protein meal"
-   ],
-   "rotation.notes": "Repeating it increases late-season diseases and stink bugs; it shares pathogens with peanut.",
-   "agronomic_notes": "It fixes nitrogen, but exports a lot in the grain: the net N balance is close to zero. It leaves little residue that breaks down quickly, so the wind-erosion risk is high. The critical period is grain filling (R3-R6).",
-   "sources": [
-    "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-    "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle",
-    "FAO Ecocrop: tolerance ranges per species (to be verified)",
-    "INTA EEA San Luis: regional crop information (to be verified)"
-   ],
-   "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-   "ky_source": "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle"
+  "_note": "Traducción al inglés de los textos de crops.json, rotation_templates.json, rotations.json y fields.json. Las claves con punto indican un campo anidado.",
+  "crops": {
+    "soja": {
+      "name": "Soybean",
+      "sowing_window": "November to December (first crop); December after a winter cereal (second crop).",
+      "main_use": [
+        "grain",
+        "oil",
+        "protein meal"
+      ],
+      "rotation.notes": "Repeating it increases late-season diseases and stink bugs; it shares pathogens with peanut.",
+      "agronomic_notes": "It fixes nitrogen, but exports a lot in the grain: the net N balance is close to zero. It leaves little residue that breaks down quickly, so the wind-erosion risk is high. The critical period is grain filling (R3-R6).",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)",
+        "INTA EEA San Luis: regional crop information (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+      "ky_source": "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle"
+    },
+    "maiz": {
+      "name": "Corn",
+      "sowing_window": "Early: September to October. Late: December (more common in rainfed fields, to avoid drought at flowering).",
+      "main_use": [
+        "grain",
+        "silage",
+        "residue for grazing"
+      ],
+      "rotation.notes": "Repeating it increases pests (fall armyworm, stem borer) and the corn leafhopper that spreads corn stunt.",
+      "agronomic_notes": "It uses the most water in the catalog and is very sensitive to drought at flowering. It leaves a lot of residue: it protects the soil and adds carbon. Its rainfed yield in San Luis depends heavily on water stored at planting.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)",
+        "INTA EEA San Luis: regional crop information (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+      "ky_source": "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle"
+    },
+    "trigo": {
+      "name": "Wheat",
+      "sowing_window": "May to July.",
+      "main_use": [
+        "grain",
+        "dual purpose (grazing and grain)"
+      ],
+      "rotation.notes": "It shares diseases with barley; avoid wheat after wheat.",
+      "agronomic_notes": "San Luis gets little rain in winter: rainfed wheat depends on water stored in the soil profile, so its relative yield is low. Sensitive to heat waves during grain filling. It allows second-crop soybean if water is left over.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)",
+        "INTA EEA San Luis: regional crop information (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+      "ky_source": "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle (winter wheat)"
+    },
+    "cebada": {
+      "name": "Barley",
+      "sowing_window": "May to July; somewhat shorter than wheat.",
+      "main_use": [
+        "malting grain",
+        "feed grain"
+      ],
+      "rotation.notes": "It shares diseases with wheat.",
+      "agronomic_notes": "Shorter cycle than wheat: it frees the plot earlier for a second crop. Malting barley usually needs a contract with maltsters, which are not in San Luis.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "Assumption: the species is not listed in FAO-33; it is treated like a similar crop",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)",
+        "INTA EEA San Luis: regional crop information (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+      "ky_source": "Assumption: the species is not listed in FAO-33; it is treated like a similar crop (winter wheat)"
+    },
+    "sorgo": {
+      "name": "Sorghum",
+      "sowing_window": "October to December, with warm soil.",
+      "main_use": [
+        "grain",
+        "silage",
+        "deferred grazing"
+      ],
+      "rotation.notes": "It shares pests with corn (aphids, stem borer).",
+      "agronomic_notes": "More drought- and heat-tolerant than corn: it can pause growth and resume with rain. It leaves a lot of residue. Widely used for silage and grazing in mixed farms in San Luis.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)",
+        "INTA EEA San Luis: regional crop information (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc (range 1.00-1.10; the midpoint is used)",
+      "ky_source": "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle"
+    },
+    "girasol": {
+      "name": "Sunflower",
+      "sowing_window": "September to December.",
+      "main_use": [
+        "oil",
+        "confectionery"
+      ],
+      "rotation.notes": "Sclerotinia and Verticillium wilt mean it should not be repeated within 3 or 4 years; rapeseed shares Sclerotinia.",
+      "agronomic_notes": "Deep roots: it uses water from deep layers and tolerates drought. It leaves little residue: high erosion risk. Birds cause damage.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)",
+        "INTA EEA San Luis: regional crop information (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc (range 1.00-1.15; the midpoint is used)",
+      "ky_source": "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle"
+    },
+    "mani": {
+      "name": "Peanut",
+      "sowing_window": "October to November; includes lifting and drying in the field.",
+      "main_use": [
+        "confectionery grain",
+        "oil"
+      ],
+      "rotation.notes": "Peanut smut requires long rotations; it shares pathogens with soybean.",
+      "agronomic_notes": "It suits the sandy soils of eastern San Luis. Lifting leaves the soil very loose and bare: it is the crop with the highest wind-erosion risk. It is usually sold under contract to processing plants.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)",
+        "INTA EEA San Luis: regional crop information (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+      "ky_source": "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle"
+    },
+    "alfalfa": {
+      "name": "Alfalfa",
+      "sowing_window": "Autumn (March-April) or spring (September).",
+      "main_use": [
+        "hay",
+        "grazing",
+        "seed"
+      ],
+      "rotation.notes": "Autotoxicity: do not reseed alfalfa after alfalfa without several years in between.",
+      "agronomic_notes": "Very deep roots: it uses water from layers other crops cannot reach, but it uses a lot over the year. It fixes nitrogen and improves soil structure. The basis of mixed crop-livestock systems.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)",
+        "INTA EEA San Luis: regional crop information (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc (average value including cutting effect)",
+      "ky_source": "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle"
+    },
+    "vicia": {
+      "name": "Vetch",
+      "sowing_window": "March to May.",
+      "main_use": [
+        "cover crop",
+        "green manure",
+        "forage"
+      ],
+      "rotation.notes": null,
+      "agronomic_notes": "A winter cover crop that fixes nitrogen for the next crop (especially corn or sorghum). It must be terminated in time so it does not use the fallow's water.",
+      "sources": [
+        "Assumption: the species is not listed in FAO-56 Table 12; it is treated like a similar crop",
+        "INTA: cover crops in the semi-arid Pampas region (to be verified)",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)"
+      ],
+      "kc_source": "Assumption: the species is not listed in FAO-56 Table 12; it is treated like a similar crop (winter legume; terminated before peak water use)",
+      "ky_source": null
+    },
+    "avena": {
+      "name": "Oats",
+      "sowing_window": "February to May (winter green forage).",
+      "main_use": [
+        "green forage for grazing",
+        "grain",
+        "cover crop"
+      ],
+      "rotation.notes": "It shares leaf diseases with other winter cereals.",
+      "agronomic_notes": "Classic winter green forage in livestock systems: income comes from meat, not grain. It protects the soil in winter.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "Assumption: the species is not listed in FAO-33; it is treated like a similar crop",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)",
+        "INTA EEA San Luis: regional crop information (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+      "ky_source": "Assumption: the species is not listed in FAO-33; it is treated like a similar crop (winter wheat)"
+    },
+    "centeno": {
+      "name": "Rye",
+      "sowing_window": "February to May.",
+      "main_use": [
+        "cover crop",
+        "green forage",
+        "grain"
+      ],
+      "rotation.notes": null,
+      "agronomic_notes": "The hardiest and most water-efficient winter cereal. Widely used on sandy soils in San Luis to stop wind erosion. Lots of roots and residue.",
+      "sources": [
+        "Assumption: the species is not listed in FAO-56 Table 12; it is treated like a similar crop",
+        "Assumption: the species is not listed in FAO-33; it is treated like a similar crop",
+        "INTA: cover crops in the semi-arid Pampas region (to be verified)",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)"
+      ],
+      "kc_source": "Assumption: the species is not listed in FAO-56 Table 12; it is treated like a similar crop (treated like winter cereals)",
+      "ky_source": "Assumption: the species is not listed in FAO-33; it is treated like a similar crop (hardy winter cereal)"
+    },
+    "mijo": {
+      "name": "Millet",
+      "sowing_window": "November to January; very short cycle.",
+      "main_use": [
+        "bird-seed grain",
+        "forage"
+      ],
+      "rotation.notes": null,
+      "agronomic_notes": "Very short cycle and low water use: useful as a replacement or late-planted crop. Small, not very transparent market.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "Assumption: the species is not listed in FAO-33; it is treated like a similar crop",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+      "ky_source": "Assumption: the species is not listed in FAO-33; it is treated like a similar crop (sorghum)"
+    },
+    "colza": {
+      "name": "Rapeseed",
+      "sowing_window": "April to May.",
+      "main_use": [
+        "oil",
+        "biodiesel"
+      ],
+      "rotation.notes": "It shares Sclerotinia with sunflower.",
+      "agronomic_notes": "The only brassica in the catalog: it breaks cereal disease cycles. Its rainfed yield in San Luis is uncertain. It needs a sales contract; local storage is limited.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "Assumption: the species is not listed in FAO-33; it is treated like a similar crop",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc (range 1.00-1.15; the midpoint is used)",
+      "ky_source": "Assumption: the species is not listed in FAO-33; it is treated like a similar crop"
+    },
+    "pastura_perenne": {
+      "name": "Perennial pasture",
+      "sowing_window": "Autumn for mixes with alfalfa; spring-summer for warm-season grasses (weeping lovegrass, digitaria).",
+      "main_use": [
+        "grazing",
+        "hay",
+        "soil recovery"
+      ],
+      "rotation.notes": "When the pasture is broken up, a summer cereal is best to use the released nitrogen.",
+      "agronomic_notes": "Warm-season grasses (weeping lovegrass, digitaria) are central to livestock farming in semi-arid San Luis: they cover the soil year-round and rebuild organic matter. If the mix includes alfalfa or another legume, it also adds nitrogen (not counted by default).",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "Assumption: the species is not listed in FAO-33; it is treated like a similar crop",
+        "INTA EEA San Luis: regional crop information (to be verified)",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc (pasture under rotational grazing, range 0.85-1.05)",
+      "ky_source": "Assumption: the species is not listed in FAO-33; it is treated like a similar crop (perennial forage)"
+    },
+    "cobertura_leguminosas": {
+      "name": "Legume cover crop",
+      "sowing_window": "March to May; terminated in August-September.",
+      "main_use": [
+        "cover crop",
+        "green manure"
+      ],
+      "rotation.notes": null,
+      "agronomic_notes": "It adds nitrogen and winter cover. In semi-arid areas it must be terminated early (end of winter) so the soil profile recharges before the summer crop.",
+      "sources": [
+        "Assumption: the species is not listed in FAO-56 Table 12; it is treated like a similar crop",
+        "INTA: cover crops in the semi-arid Pampas region (to be verified)"
+      ],
+      "kc_source": "Assumption: the species is not listed in FAO-56 Table 12; it is treated like a similar crop (winter legume; terminated before peak water use)",
+      "ky_source": null
+    },
+    "cobertura_gramineas": {
+      "name": "Grass cover crop",
+      "sowing_window": "March to May; terminated in August-September.",
+      "main_use": [
+        "cover crop",
+        "wind-erosion control",
+        "weed control"
+      ],
+      "rotation.notes": "Before a summer cereal it can tie up nitrogen: better before soybean, sunflower or peanut.",
+      "agronomic_notes": "The most widely used tool against wind erosion on sandy soils. Lots of biomass and roots. It uses fallow water: termination timing is the key decision.",
+      "sources": [
+        "Assumption: the species is not listed in FAO-56 Table 12; it is treated like a similar crop",
+        "INTA: cover crops in the semi-arid Pampas region (to be verified)"
+      ],
+      "kc_source": "Assumption: the species is not listed in FAO-56 Table 12; it is treated like a similar crop (winter grass; terminated before peak water use)",
+      "ky_source": null
+    },
+    "tomate": {
+      "name": "Tomato",
+      "sowing_window": "Sow following the INTA Pro-Huerta garden calendar (verify locally).",
+      "main_use": [
+        "fresh produce",
+        "preserves"
+      ],
+      "rotation.notes": "Rotate by botanical family: do not repeat the same family in the same bed (INTA Pro-Huerta).",
+      "agronomic_notes": "Garden vegetable (a few m²). Tolerances are qualitative and to be verified with INTA Pro-Huerta; the Kc, when present, comes from FAO-56. Low confidence: it does not replace a local agronomist's judgment.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "INTA Pro-Huerta: family-garden calendar and guide (to be verified)",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc"
+    },
+    "pimiento": {
+      "name": "Pepper",
+      "sowing_window": "Sow following the INTA Pro-Huerta garden calendar (verify locally).",
+      "main_use": [
+        "fresh produce",
+        "preserves"
+      ],
+      "rotation.notes": "Rotate by botanical family: do not repeat the same family in the same bed (INTA Pro-Huerta).",
+      "agronomic_notes": "Garden vegetable (a few m²). Tolerances are qualitative and to be verified with INTA Pro-Huerta; the Kc, when present, comes from FAO-56. Low confidence: it does not replace a local agronomist's judgment.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "INTA Pro-Huerta: family-garden calendar and guide (to be verified)",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc"
+    },
+    "zapallito": {
+      "name": "Zucchini",
+      "sowing_window": "Sow following the INTA Pro-Huerta garden calendar (verify locally).",
+      "main_use": [
+        "fresh produce"
+      ],
+      "rotation.notes": "Rotate by botanical family: do not repeat the same family in the same bed (INTA Pro-Huerta).",
+      "agronomic_notes": "Garden vegetable (a few m²). Tolerances are qualitative and to be verified with INTA Pro-Huerta; the Kc, when present, comes from FAO-56. Low confidence: it does not replace a local agronomist's judgment.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "INTA Pro-Huerta: family-garden calendar and guide (to be verified)",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc"
+    },
+    "lechuga": {
+      "name": "Lettuce",
+      "sowing_window": "Sow following the INTA Pro-Huerta garden calendar (verify locally).",
+      "main_use": [
+        "fresh produce"
+      ],
+      "rotation.notes": "Rotate by botanical family: do not repeat the same family in the same bed (INTA Pro-Huerta).",
+      "agronomic_notes": "Garden vegetable (a few m²). Tolerances are qualitative and to be verified with INTA Pro-Huerta; the Kc, when present, comes from FAO-56. Low confidence: it does not replace a local agronomist's judgment.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "INTA Pro-Huerta: family-garden calendar and guide (to be verified)",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc"
+    },
+    "acelga": {
+      "name": "Chard",
+      "sowing_window": "Sow following the INTA Pro-Huerta garden calendar (verify locally).",
+      "main_use": [
+        "fresh produce"
+      ],
+      "rotation.notes": "Rotate by botanical family: do not repeat the same family in the same bed (INTA Pro-Huerta).",
+      "agronomic_notes": "Garden vegetable (a few m²). Tolerances are qualitative and to be verified with INTA Pro-Huerta; the Kc, when present, comes from FAO-56. Low confidence: it does not replace a local agronomist's judgment.",
+      "sources": [
+        "INTA Pro-Huerta: family-garden calendar and guide (to be verified)",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)"
+      ]
+    },
+    "espinaca": {
+      "name": "Spinach",
+      "sowing_window": "Sow following the INTA Pro-Huerta garden calendar (verify locally).",
+      "main_use": [
+        "fresh produce"
+      ],
+      "rotation.notes": "Rotate by botanical family: do not repeat the same family in the same bed (INTA Pro-Huerta).",
+      "agronomic_notes": "Garden vegetable (a few m²). Tolerances are qualitative and to be verified with INTA Pro-Huerta; the Kc, when present, comes from FAO-56. Low confidence: it does not replace a local agronomist's judgment.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "INTA Pro-Huerta: family-garden calendar and guide (to be verified)",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc"
+    },
+    "zanahoria": {
+      "name": "Carrot",
+      "sowing_window": "Sow following the INTA Pro-Huerta garden calendar (verify locally).",
+      "main_use": [
+        "fresh produce"
+      ],
+      "rotation.notes": "Rotate by botanical family: do not repeat the same family in the same bed (INTA Pro-Huerta).",
+      "agronomic_notes": "Garden vegetable (a few m²). Tolerances are qualitative and to be verified with INTA Pro-Huerta; the Kc, when present, comes from FAO-56. Low confidence: it does not replace a local agronomist's judgment.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "INTA Pro-Huerta: family-garden calendar and guide (to be verified)",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc"
+    },
+    "cebolla": {
+      "name": "Onion",
+      "sowing_window": "Sow following the INTA Pro-Huerta garden calendar (verify locally).",
+      "main_use": [
+        "fresh produce",
+        "preserves"
+      ],
+      "rotation.notes": "Rotate by botanical family: do not repeat the same family in the same bed (INTA Pro-Huerta).",
+      "agronomic_notes": "Garden vegetable (a few m²). Tolerances are qualitative and to be verified with INTA Pro-Huerta; the Kc, when present, comes from FAO-56. Low confidence: it does not replace a local agronomist's judgment.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "INTA Pro-Huerta: family-garden calendar and guide (to be verified)",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc"
+    },
+    "ajo": {
+      "name": "Garlic",
+      "sowing_window": "Sow following the INTA Pro-Huerta garden calendar (verify locally).",
+      "main_use": [
+        "fresh produce",
+        "preserves"
+      ],
+      "rotation.notes": "Rotate by botanical family: do not repeat the same family in the same bed (INTA Pro-Huerta).",
+      "agronomic_notes": "Garden vegetable (a few m²). Tolerances are qualitative and to be verified with INTA Pro-Huerta; the Kc, when present, comes from FAO-56. Low confidence: it does not replace a local agronomist's judgment.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "INTA Pro-Huerta: family-garden calendar and guide (to be verified)",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc"
+    },
+    "papa": {
+      "name": "Potato",
+      "sowing_window": "Sow following the INTA Pro-Huerta garden calendar (verify locally).",
+      "main_use": [
+        "fresh produce"
+      ],
+      "rotation.notes": "Rotate by botanical family: do not repeat the same family in the same bed (INTA Pro-Huerta).",
+      "agronomic_notes": "Garden vegetable (a few m²). Tolerances are qualitative and to be verified with INTA Pro-Huerta; the Kc, when present, comes from FAO-56. Low confidence: it does not replace a local agronomist's judgment.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "INTA Pro-Huerta: family-garden calendar and guide (to be verified)",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc"
+    },
+    "arveja": {
+      "name": "Pea",
+      "sowing_window": "Sow following the INTA Pro-Huerta garden calendar (verify locally).",
+      "main_use": [
+        "fresh produce"
+      ],
+      "rotation.notes": "Rotate by botanical family: do not repeat the same family in the same bed (INTA Pro-Huerta).",
+      "agronomic_notes": "Garden vegetable (a few m²). Tolerances are qualitative and to be verified with INTA Pro-Huerta; the Kc, when present, comes from FAO-56. Low confidence: it does not replace a local agronomist's judgment.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "INTA Pro-Huerta: family-garden calendar and guide (to be verified)",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc"
+    },
+    "poroto": {
+      "name": "Bean",
+      "sowing_window": "Sow following the INTA Pro-Huerta garden calendar (verify locally).",
+      "main_use": [
+        "fresh produce",
+        "dry grain"
+      ],
+      "rotation.notes": "Rotate by botanical family: do not repeat the same family in the same bed (INTA Pro-Huerta).",
+      "agronomic_notes": "Garden vegetable (a few m²). Tolerances are qualitative and to be verified with INTA Pro-Huerta; the Kc, when present, comes from FAO-56. Low confidence: it does not replace a local agronomist's judgment.",
+      "sources": [
+        "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
+        "INTA Pro-Huerta: family-garden calendar and guide (to be verified)",
+        "FAO Ecocrop: tolerance ranges per species (to be verified)"
+      ],
+      "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc"
+    }
   },
-  "maiz": {
-   "name": "Corn",
-   "sowing_window": "Early: September to October. Late: December (more common in rainfed fields, to avoid drought at flowering).",
-   "main_use": [
-    "grain",
-    "silage",
-    "residue for grazing"
-   ],
-   "rotation.notes": "Repeating it increases pests (fall armyworm, stem borer) and the corn leafhopper that spreads corn stunt.",
-   "agronomic_notes": "It uses the most water in the catalog and is very sensitive to drought at flowering. It leaves a lot of residue: it protects the soil and adds carbon. Its rainfed yield in San Luis depends heavily on water stored at planting.",
-   "sources": [
-    "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-    "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle",
-    "FAO Ecocrop: tolerance ranges per species (to be verified)",
-    "INTA EEA San Luis: regional crop information (to be verified)"
-   ],
-   "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-   "ky_source": "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle"
+  "rotation_templates": {
+    "agua-riego": {
+      "name": "Sorghum – wheat with supplemental irrigation",
+      "rationale": "With irrigation, it replaces corn with sorghum (lower demand) and uses a winter cereal that consumes water when ET0 is lowest, to cut irrigation volume.",
+      "management": [
+        "adjust the irrigation depth to sorghum, which needs less water than corn"
+      ]
+    },
+    "agua-semiarido": {
+      "name": "Sorghum – sunflower – millet with long fallows",
+      "rationale": "It uses the catalog's most drought-tolerant summer crops, one with a very short cycle, and leaves long fallows to store water in the soil profile.",
+      "management": [
+        "control weeds during the fallow so they don't use the stored water"
+      ]
+    },
+    "agua-subhumedo": {
+      "name": "Sorghum – sunflower – soybean",
+      "rationale": "It replaces corn with sorghum and adds sunflower (deep roots) to lower water demand while still producing grain.",
+      "management": [
+        "control weeds during the fallows so they don't use the stored water"
+      ]
+    },
+    "suelo-semiarido": {
+      "name": "Perennial pasture (3 years) – cover crop – sorghum",
+      "rationale": "Crop-livestock rotation: the perennial pasture covers the soil year-round and rebuilds organic matter; when it is broken up, sorghum uses the released nitrogen.",
+      "management": [
+        "own livestock or forage sales so the pasture generates income",
+        "terminate the cover crop in time (August-September) so the soil profile recharges before the summer crop"
+      ]
+    },
+    "suelo-general": {
+      "name": "Cover crop – soybean – vetch – corn",
+      "rationale": "It covers the soil in both winters: the grass before soybean (stops erosion) and the legume before corn (adds nitrogen).",
+      "management": [
+        "terminate the cover crop in time (August-September) so the soil profile recharges before the summer crop",
+        "obtain cover-crop seed and budget for planting and termination costs"
+      ]
+    },
+    "div-semiarido": {
+      "name": "Sorghum – oats – sunflower – vetch – millet",
+      "rationale": "Five crops from three families, with short, drought-tolerant cycles; the oat green forage brings in livestock.",
+      "management": [
+        "plan five different crops (planting, inputs and machinery)"
+      ]
+    },
+    "div-general": {
+      "name": "Soybean – wheat – vetch – sunflower – corn",
+      "rationale": "Five crops from three families, alternating summer and winter; it keeps sunflower 4 years apart and precedes corn with a deep-rooted crop.",
+      "management": [
+        "plan a four-year sequence",
+        "terminate the cover crop in time (August-September) so the soil profile recharges before the summer crop"
+      ]
+    },
+    "rent-riego": {
+      "name": "Corn – peanut – wheat/second-crop soybean",
+      "rationale": "With irrigation, it prioritizes the crops with the highest relative income and includes a wheat/soybean double crop.",
+      "management": [
+        "secure a sales contract for the peanut",
+        "plant the second-crop soybean as soon as the wheat is harvested"
+      ]
+    },
+    "rent-semiarido": {
+      "name": "Peanut – late corn – sunflower",
+      "rationale": "It prioritizes high relative-income crops adapted to sandy soils (peanut) and plants corn late to avoid drought at flowering.",
+      "management": [
+        "secure a sales contract for the peanut",
+        "cover the soil after peanut lifting, which leaves it very exposed to erosion"
+      ]
+    },
+    "rent-subhumedo": {
+      "name": "Soybean – wheat/second-crop soybean – corn",
+      "rationale": "A high-income cropping sequence with a wheat/soybean double crop.",
+      "management": [
+        "check soil-profile water at wheat planting: the double crop only pays off if water is stored"
+      ]
+    },
+    "mixta-sa-1": {
+      "name": "Sorghum – vetch – sunflower – soybean",
+      "rationale": "It combines a drought-tolerant crop, a short legume cover and a deep-rooted crop.",
+      "management": [
+        "terminate the cover crop in time (August-September) so the soil profile recharges before the summer crop"
+      ]
+    },
+    "mixta-sa-2": {
+      "name": "Cover crop – sunflower – vetch – sorghum – millet",
+      "rationale": "Cover in both winters with drought-tolerant summer crops.",
+      "management": [
+        "terminate the cover crop in time (August-September) so the soil profile recharges before the summer crop",
+        "obtain cover-crop seed and budget for planting and termination costs"
+      ]
+    },
+    "mixta-sa-3": {
+      "name": "Oat green forage – sorghum – sunflower – soybean",
+      "rationale": "It brings in livestock with a winter green forage and two drought-tolerant summer crops.",
+      "management": [
+        "have livestock to make use of the green forage"
+      ]
+    },
+    "mixta-sh-1": {
+      "name": "Cover crop – soybean – vetch – sorghum",
+      "rationale": "Short winter cover crops and sorghum instead of corn to lower water demand.",
+      "management": [
+        "terminate the cover crop in time (August-September) so the soil profile recharges before the summer crop",
+        "obtain cover-crop seed and budget for planting and termination costs"
+      ]
+    },
+    "mixta-sh-2": {
+      "name": "Wheat/second-crop soybean – vetch – corn",
+      "rationale": "A double crop for income and a legume before corn to add nitrogen.",
+      "management": [
+        "terminate the cover crop in time (August-September) so the soil profile recharges before the summer crop",
+        "check soil-profile water at wheat planting: the double crop only pays off if water is stored"
+      ]
+    },
+    "mixta-sh-3": {
+      "name": "Soybean – cover crop – sunflower – vetch – corn",
+      "rationale": "Three cash crops from three families with cover in two of the three winters.",
+      "management": [
+        "terminate the cover crop in time (August-September) so the soil profile recharges before the summer crop"
+      ]
+    }
   },
-  "trigo": {
-   "name": "Wheat",
-   "sowing_window": "May to July.",
-   "main_use": [
-    "grain",
-    "dual purpose (grazing and grain)"
-   ],
-   "rotation.notes": "It shares diseases with barley; avoid wheat after wheat.",
-   "agronomic_notes": "San Luis gets little rain in winter: rainfed wheat depends on water stored in the soil profile, so its relative yield is low. Sensitive to heat waves during grain filling. It allows second-crop soybean if water is left over.",
-   "sources": [
-    "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-    "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle",
-    "FAO Ecocrop: tolerance ranges per species (to be verified)",
-    "INTA EEA San Luis: regional crop information (to be verified)"
-   ],
-   "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-   "ky_source": "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle (winter wheat)"
+  "rotations": {
+    "campo-este-actual": {
+      "name": "Soybean – corn with winter fallow",
+      "description": "Declared current rotation (illustrative)."
+    },
+    "campo-centro-actual": {
+      "name": "Sorghum – oat green forage – sunflower",
+      "description": "Declared current rotation (illustrative)."
+    },
+    "campo-conlara-actual": {
+      "name": "Corn – wheat – second-crop soybean",
+      "description": "Declared current rotation (illustrative)."
+    }
   },
-  "cebada": {
-   "name": "Barley",
-   "sowing_window": "May to July; somewhat shorter than wheat.",
-   "main_use": [
-    "malting grain",
-    "feed grain"
-   ],
-   "rotation.notes": "It shares diseases with wheat.",
-   "agronomic_notes": "Shorter cycle than wheat: it frees the plot earlier for a second crop. Malting barley usually needs a contract with maltsters, which are not in San Luis.",
-   "sources": [
-    "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-    "Assumption: the species is not listed in FAO-33; it is treated like a similar crop",
-    "FAO Ecocrop: tolerance ranges per species (to be verified)",
-    "INTA EEA San Luis: regional crop information (to be verified)"
-   ],
-   "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-   "ky_source": "Assumption: the species is not listed in FAO-33; it is treated like a similar crop (winter wheat)"
-  },
-  "sorgo": {
-   "name": "Sorghum",
-   "sowing_window": "October to December, with warm soil.",
-   "main_use": [
-    "grain",
-    "silage",
-    "deferred grazing"
-   ],
-   "rotation.notes": "It shares pests with corn (aphids, stem borer).",
-   "agronomic_notes": "More drought- and heat-tolerant than corn: it can pause growth and resume with rain. It leaves a lot of residue. Widely used for silage and grazing in mixed farms in San Luis.",
-   "sources": [
-    "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-    "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle",
-    "FAO Ecocrop: tolerance ranges per species (to be verified)",
-    "INTA EEA San Luis: regional crop information (to be verified)"
-   ],
-   "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc (range 1.00-1.10; the midpoint is used)",
-   "ky_source": "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle"
-  },
-  "girasol": {
-   "name": "Sunflower",
-   "sowing_window": "September to December.",
-   "main_use": [
-    "oil",
-    "confectionery"
-   ],
-   "rotation.notes": "Sclerotinia and Verticillium wilt mean it should not be repeated within 3 or 4 years; rapeseed shares Sclerotinia.",
-   "agronomic_notes": "Deep roots: it uses water from deep layers and tolerates drought. It leaves little residue: high erosion risk. Birds cause damage.",
-   "sources": [
-    "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-    "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle",
-    "FAO Ecocrop: tolerance ranges per species (to be verified)",
-    "INTA EEA San Luis: regional crop information (to be verified)"
-   ],
-   "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc (range 1.00-1.15; the midpoint is used)",
-   "ky_source": "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle"
-  },
-  "mani": {
-   "name": "Peanut",
-   "sowing_window": "October to November; includes lifting and drying in the field.",
-   "main_use": [
-    "confectionery grain",
-    "oil"
-   ],
-   "rotation.notes": "Peanut smut requires long rotations; it shares pathogens with soybean.",
-   "agronomic_notes": "It suits the sandy soils of eastern San Luis. Lifting leaves the soil very loose and bare: it is the crop with the highest wind-erosion risk. It is usually sold under contract to processing plants.",
-   "sources": [
-    "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-    "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle",
-    "FAO Ecocrop: tolerance ranges per species (to be verified)",
-    "INTA EEA San Luis: regional crop information (to be verified)"
-   ],
-   "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-   "ky_source": "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle"
-  },
-  "alfalfa": {
-   "name": "Alfalfa",
-   "sowing_window": "Autumn (March-April) or spring (September).",
-   "main_use": [
-    "hay",
-    "grazing",
-    "seed"
-   ],
-   "rotation.notes": "Autotoxicity: do not reseed alfalfa after alfalfa without several years in between.",
-   "agronomic_notes": "Very deep roots: it uses water from layers other crops cannot reach, but it uses a lot over the year. It fixes nitrogen and improves soil structure. The basis of mixed crop-livestock systems.",
-   "sources": [
-    "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-    "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle",
-    "FAO Ecocrop: tolerance ranges per species (to be verified)",
-    "INTA EEA San Luis: regional crop information (to be verified)"
-   ],
-   "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc (average value including cutting effect)",
-   "ky_source": "FAO-33 (Doorenbos and Kassam, 1979): yield response factor to water Ky, full cycle"
-  },
-  "vicia": {
-   "name": "Vetch",
-   "sowing_window": "March to May.",
-   "main_use": [
-    "cover crop",
-    "green manure",
-    "forage"
-   ],
-   "rotation.notes": null,
-   "agronomic_notes": "A winter cover crop that fixes nitrogen for the next crop (especially corn or sorghum). It must be terminated in time so it does not use the fallow's water.",
-   "sources": [
-    "Assumption: the species is not listed in FAO-56 Table 12; it is treated like a similar crop",
-    "INTA: cover crops in the semi-arid Pampas region (to be verified)",
-    "FAO Ecocrop: tolerance ranges per species (to be verified)"
-   ],
-   "kc_source": "Assumption: the species is not listed in FAO-56 Table 12; it is treated like a similar crop (winter legume; terminated before peak water use)",
-   "ky_source": null
-  },
-  "avena": {
-   "name": "Oats",
-   "sowing_window": "February to May (winter green forage).",
-   "main_use": [
-    "green forage for grazing",
-    "grain",
-    "cover crop"
-   ],
-   "rotation.notes": "It shares leaf diseases with other winter cereals.",
-   "agronomic_notes": "Classic winter green forage in livestock systems: income comes from meat, not grain. It protects the soil in winter.",
-   "sources": [
-    "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-    "Assumption: the species is not listed in FAO-33; it is treated like a similar crop",
-    "FAO Ecocrop: tolerance ranges per species (to be verified)",
-    "INTA EEA San Luis: regional crop information (to be verified)"
-   ],
-   "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-   "ky_source": "Assumption: the species is not listed in FAO-33; it is treated like a similar crop (winter wheat)"
-  },
-  "centeno": {
-   "name": "Rye",
-   "sowing_window": "February to May.",
-   "main_use": [
-    "cover crop",
-    "green forage",
-    "grain"
-   ],
-   "rotation.notes": null,
-   "agronomic_notes": "The hardiest and most water-efficient winter cereal. Widely used on sandy soils in San Luis to stop wind erosion. Lots of roots and residue.",
-   "sources": [
-    "Assumption: the species is not listed in FAO-56 Table 12; it is treated like a similar crop",
-    "Assumption: the species is not listed in FAO-33; it is treated like a similar crop",
-    "INTA: cover crops in the semi-arid Pampas region (to be verified)",
-    "FAO Ecocrop: tolerance ranges per species (to be verified)"
-   ],
-   "kc_source": "Assumption: the species is not listed in FAO-56 Table 12; it is treated like a similar crop (treated like winter cereals)",
-   "ky_source": "Assumption: the species is not listed in FAO-33; it is treated like a similar crop (hardy winter cereal)"
-  },
-  "mijo": {
-   "name": "Millet",
-   "sowing_window": "November to January; very short cycle.",
-   "main_use": [
-    "bird-seed grain",
-    "forage"
-   ],
-   "rotation.notes": null,
-   "agronomic_notes": "Very short cycle and low water use: useful as a replacement or late-planted crop. Small, not very transparent market.",
-   "sources": [
-    "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-    "Assumption: the species is not listed in FAO-33; it is treated like a similar crop",
-    "FAO Ecocrop: tolerance ranges per species (to be verified)"
-   ],
-   "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-   "ky_source": "Assumption: the species is not listed in FAO-33; it is treated like a similar crop (sorghum)"
-  },
-  "colza": {
-   "name": "Rapeseed",
-   "sowing_window": "April to May.",
-   "main_use": [
-    "oil",
-    "biodiesel"
-   ],
-   "rotation.notes": "It shares Sclerotinia with sunflower.",
-   "agronomic_notes": "The only brassica in the catalog: it breaks cereal disease cycles. Its rainfed yield in San Luis is uncertain. It needs a sales contract; local storage is limited.",
-   "sources": [
-    "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-    "Assumption: the species is not listed in FAO-33; it is treated like a similar crop",
-    "FAO Ecocrop: tolerance ranges per species (to be verified)"
-   ],
-   "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc (range 1.00-1.15; the midpoint is used)",
-   "ky_source": "Assumption: the species is not listed in FAO-33; it is treated like a similar crop"
-  },
-  "pastura_perenne": {
-   "name": "Perennial pasture",
-   "sowing_window": "Autumn for mixes with alfalfa; spring-summer for warm-season grasses (weeping lovegrass, digitaria).",
-   "main_use": [
-    "grazing",
-    "hay",
-    "soil recovery"
-   ],
-   "rotation.notes": "When the pasture is broken up, a summer cereal is best to use the released nitrogen.",
-   "agronomic_notes": "Warm-season grasses (weeping lovegrass, digitaria) are central to livestock farming in semi-arid San Luis: they cover the soil year-round and rebuild organic matter. If the mix includes alfalfa or another legume, it also adds nitrogen (not counted by default).",
-   "sources": [
-    "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc",
-    "Assumption: the species is not listed in FAO-33; it is treated like a similar crop",
-    "INTA EEA San Luis: regional crop information (to be verified)",
-    "FAO Ecocrop: tolerance ranges per species (to be verified)"
-   ],
-   "kc_source": "FAO-56 (Allen et al., 1998), Table 12: crop coefficients Kc (pasture under rotational grazing, range 0.85-1.05)",
-   "ky_source": "Assumption: the species is not listed in FAO-33; it is treated like a similar crop (perennial forage)"
-  },
-  "cobertura_leguminosas": {
-   "name": "Legume cover crop",
-   "sowing_window": "March to May; terminated in August-September.",
-   "main_use": [
-    "cover crop",
-    "green manure"
-   ],
-   "rotation.notes": null,
-   "agronomic_notes": "It adds nitrogen and winter cover. In semi-arid areas it must be terminated early (end of winter) so the soil profile recharges before the summer crop.",
-   "sources": [
-    "Assumption: the species is not listed in FAO-56 Table 12; it is treated like a similar crop",
-    "INTA: cover crops in the semi-arid Pampas region (to be verified)"
-   ],
-   "kc_source": "Assumption: the species is not listed in FAO-56 Table 12; it is treated like a similar crop (winter legume; terminated before peak water use)",
-   "ky_source": null
-  },
-  "cobertura_gramineas": {
-   "name": "Grass cover crop",
-   "sowing_window": "March to May; terminated in August-September.",
-   "main_use": [
-    "cover crop",
-    "wind-erosion control",
-    "weed control"
-   ],
-   "rotation.notes": "Before a summer cereal it can tie up nitrogen: better before soybean, sunflower or peanut.",
-   "agronomic_notes": "The most widely used tool against wind erosion on sandy soils. Lots of biomass and roots. It uses fallow water: termination timing is the key decision.",
-   "sources": [
-    "Assumption: the species is not listed in FAO-56 Table 12; it is treated like a similar crop",
-    "INTA: cover crops in the semi-arid Pampas region (to be verified)"
-   ],
-   "kc_source": "Assumption: the species is not listed in FAO-56 Table 12; it is treated like a similar crop (winter grass; terminated before peak water use)",
-   "ky_source": null
+  "fields": {
+    "campo-este": {
+      "name": "East Field (Justo Daract area)",
+      "farm_name": "Example 1",
+      "soil_profile.provenance.note": "Illustrative texture; check against the INTA Soil Map or your own lab test.",
+      "sample_note": "Approximate coordinates and ILLUSTRATIVE soil and management data. See docs/data_sources.md."
+    },
+    "campo-centro": {
+      "name": "Central semi-arid field",
+      "farm_name": "Example 2",
+      "soil_profile.provenance.note": "Illustrative texture; check against the INTA Soil Map or your own lab test.",
+      "sample_note": "Approximate coordinates and ILLUSTRATIVE soil and management data. See docs/data_sources.md."
+    },
+    "campo-conlara": {
+      "name": "Conlara Valley field (irrigated)",
+      "farm_name": "Example 3",
+      "soil_profile.provenance.note": "Illustrative texture; check against the INTA Soil Map or your own lab test.",
+      "sample_note": "Approximate coordinates and ILLUSTRATIVE soil and management data. See docs/data_sources.md."
+    }
   }
- },
- "rotation_templates": {
-  "agua-riego": {
-   "name": "Sorghum – wheat with supplemental irrigation",
-   "rationale": "With irrigation, it replaces corn with sorghum (lower demand) and uses a winter cereal that consumes water when ET0 is lowest, to cut irrigation volume.",
-   "management": [
-    "adjust the irrigation depth to sorghum, which needs less water than corn"
-   ]
-  },
-  "agua-semiarido": {
-   "name": "Sorghum – sunflower – millet with long fallows",
-   "rationale": "It uses the catalog's most drought-tolerant summer crops, one with a very short cycle, and leaves long fallows to store water in the soil profile.",
-   "management": [
-    "control weeds during the fallow so they don't use the stored water"
-   ]
-  },
-  "agua-subhumedo": {
-   "name": "Sorghum – sunflower – soybean",
-   "rationale": "It replaces corn with sorghum and adds sunflower (deep roots) to lower water demand while still producing grain.",
-   "management": [
-    "control weeds during the fallows so they don't use the stored water"
-   ]
-  },
-  "suelo-semiarido": {
-   "name": "Perennial pasture (3 years) – cover crop – sorghum",
-   "rationale": "Crop-livestock rotation: the perennial pasture covers the soil year-round and rebuilds organic matter; when it is broken up, sorghum uses the released nitrogen.",
-   "management": [
-    "own livestock or forage sales so the pasture generates income",
-    "terminate the cover crop in time (August-September) so the soil profile recharges before the summer crop"
-   ]
-  },
-  "suelo-general": {
-   "name": "Cover crop – soybean – vetch – corn",
-   "rationale": "It covers the soil in both winters: the grass before soybean (stops erosion) and the legume before corn (adds nitrogen).",
-   "management": [
-    "terminate the cover crop in time (August-September) so the soil profile recharges before the summer crop",
-    "obtain cover-crop seed and budget for planting and termination costs"
-   ]
-  },
-  "div-semiarido": {
-   "name": "Sorghum – oats – sunflower – vetch – millet",
-   "rationale": "Five crops from three families, with short, drought-tolerant cycles; the oat green forage brings in livestock.",
-   "management": [
-    "plan five different crops (planting, inputs and machinery)"
-   ]
-  },
-  "div-general": {
-   "name": "Soybean – wheat – vetch – sunflower – corn",
-   "rationale": "Five crops from three families, alternating summer and winter; it keeps sunflower 4 years apart and precedes corn with a deep-rooted crop.",
-   "management": [
-    "plan a four-year sequence",
-    "terminate the cover crop in time (August-September) so the soil profile recharges before the summer crop"
-   ]
-  },
-  "rent-riego": {
-   "name": "Corn – peanut – wheat/second-crop soybean",
-   "rationale": "With irrigation, it prioritizes the crops with the highest relative income and includes a wheat/soybean double crop.",
-   "management": [
-    "secure a sales contract for the peanut",
-    "plant the second-crop soybean as soon as the wheat is harvested"
-   ]
-  },
-  "rent-semiarido": {
-   "name": "Peanut – late corn – sunflower",
-   "rationale": "It prioritizes high relative-income crops adapted to sandy soils (peanut) and plants corn late to avoid drought at flowering.",
-   "management": [
-    "secure a sales contract for the peanut",
-    "cover the soil after peanut lifting, which leaves it very exposed to erosion"
-   ]
-  },
-  "rent-subhumedo": {
-   "name": "Soybean – wheat/second-crop soybean – corn",
-   "rationale": "A high-income cropping sequence with a wheat/soybean double crop.",
-   "management": [
-    "check soil-profile water at wheat planting: the double crop only pays off if water is stored"
-   ]
-  },
-  "mixta-sa-1": {
-   "name": "Sorghum – vetch – sunflower – soybean",
-   "rationale": "It combines a drought-tolerant crop, a short legume cover and a deep-rooted crop.",
-   "management": [
-    "terminate the cover crop in time (August-September) so the soil profile recharges before the summer crop"
-   ]
-  },
-  "mixta-sa-2": {
-   "name": "Cover crop – sunflower – vetch – sorghum – millet",
-   "rationale": "Cover in both winters with drought-tolerant summer crops.",
-   "management": [
-    "terminate the cover crop in time (August-September) so the soil profile recharges before the summer crop",
-    "obtain cover-crop seed and budget for planting and termination costs"
-   ]
-  },
-  "mixta-sa-3": {
-   "name": "Oat green forage – sorghum – sunflower – soybean",
-   "rationale": "It brings in livestock with a winter green forage and two drought-tolerant summer crops.",
-   "management": [
-    "have livestock to make use of the green forage"
-   ]
-  },
-  "mixta-sh-1": {
-   "name": "Cover crop – soybean – vetch – sorghum",
-   "rationale": "Short winter cover crops and sorghum instead of corn to lower water demand.",
-   "management": [
-    "terminate the cover crop in time (August-September) so the soil profile recharges before the summer crop",
-    "obtain cover-crop seed and budget for planting and termination costs"
-   ]
-  },
-  "mixta-sh-2": {
-   "name": "Wheat/second-crop soybean – vetch – corn",
-   "rationale": "A double crop for income and a legume before corn to add nitrogen.",
-   "management": [
-    "terminate the cover crop in time (August-September) so the soil profile recharges before the summer crop",
-    "check soil-profile water at wheat planting: the double crop only pays off if water is stored"
-   ]
-  },
-  "mixta-sh-3": {
-   "name": "Soybean – cover crop – sunflower – vetch – corn",
-   "rationale": "Three cash crops from three families with cover in two of the three winters.",
-   "management": [
-    "terminate the cover crop in time (August-September) so the soil profile recharges before the summer crop"
-   ]
-  }
- },
- "rotations": {
-  "campo-este-actual": {
-   "name": "Soybean – corn with winter fallow",
-   "description": "Declared current rotation (illustrative)."
-  },
-  "campo-centro-actual": {
-   "name": "Sorghum – oat green forage – sunflower",
-   "description": "Declared current rotation (illustrative)."
-  },
-  "campo-conlara-actual": {
-   "name": "Corn – wheat – second-crop soybean",
-   "description": "Declared current rotation (illustrative)."
-  }
- },
- "fields": {
-  "campo-este": {
-   "name": "East Field (Justo Daract area)",
-   "farm_name": "Example 1",
-   "soil_profile.provenance.note": "Illustrative texture; check against the INTA Soil Map or your own lab test.",
-   "sample_note": "Approximate coordinates and ILLUSTRATIVE soil and management data. See docs/data_sources.md."
-  },
-  "campo-centro": {
-   "name": "Central semi-arid field",
-   "farm_name": "Example 2",
-   "soil_profile.provenance.note": "Illustrative texture; check against the INTA Soil Map or your own lab test.",
-   "sample_note": "Approximate coordinates and ILLUSTRATIVE soil and management data. See docs/data_sources.md."
-  },
-  "campo-conlara": {
-   "name": "Conlara Valley field (irrigated)",
-   "farm_name": "Example 3",
-   "soil_profile.provenance.note": "Illustrative texture; check against the INTA Soil Map or your own lab test.",
-   "sample_note": "Approximate coordinates and ILLUSTRATIVE soil and management data. See docs/data_sources.md."
-  }
- }
 }

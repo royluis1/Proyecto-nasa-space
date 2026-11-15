@@ -77,7 +77,8 @@
       "FAO Ecocrop: rangos de tolerancia por especie (a verificar)",
       "INTA EEA San Luis: información regional de cultivos (a verificar)"
     ],
-    "confidence": "media"
+    "confidence": "media",
+    "scale": "campo"
   },
   {
     "id": "maiz",
@@ -157,7 +158,8 @@
       "FAO Ecocrop: rangos de tolerancia por especie (a verificar)",
       "INTA EEA San Luis: información regional de cultivos (a verificar)"
     ],
-    "confidence": "media"
+    "confidence": "media",
+    "scale": "campo"
   },
   {
     "id": "trigo",
@@ -235,7 +237,8 @@
       "FAO Ecocrop: rangos de tolerancia por especie (a verificar)",
       "INTA EEA San Luis: información regional de cultivos (a verificar)"
     ],
-    "confidence": "media"
+    "confidence": "media",
+    "scale": "campo"
   },
   {
     "id": "cebada",
@@ -312,7 +315,8 @@
       "FAO Ecocrop: rangos de tolerancia por especie (a verificar)",
       "INTA EEA San Luis: información regional de cultivos (a verificar)"
     ],
-    "confidence": "baja"
+    "confidence": "baja",
+    "scale": "campo"
   },
   {
     "id": "sorgo",
@@ -391,7 +395,8 @@
       "FAO Ecocrop: rangos de tolerancia por especie (a verificar)",
       "INTA EEA San Luis: información regional de cultivos (a verificar)"
     ],
-    "confidence": "media"
+    "confidence": "media",
+    "scale": "campo"
   },
   {
     "id": "girasol",
@@ -470,7 +475,8 @@
       "FAO Ecocrop: rangos de tolerancia por especie (a verificar)",
       "INTA EEA San Luis: información regional de cultivos (a verificar)"
     ],
-    "confidence": "media"
+    "confidence": "media",
+    "scale": "campo"
   },
   {
     "id": "mani",
@@ -546,7 +552,8 @@
       "FAO Ecocrop: rangos de tolerancia por especie (a verificar)",
       "INTA EEA San Luis: información regional de cultivos (a verificar)"
     ],
-    "confidence": "media"
+    "confidence": "media",
+    "scale": "campo"
   },
   {
     "id": "alfalfa",
@@ -624,7 +631,8 @@
       "FAO Ecocrop: rangos de tolerancia por especie (a verificar)",
       "INTA EEA San Luis: información regional de cultivos (a verificar)"
     ],
-    "confidence": "media"
+    "confidence": "media",
+    "scale": "campo"
   },
   {
     "id": "vicia",
@@ -702,7 +710,8 @@
       "INTA: cultivos de cobertura en la región semiárida pampeana (a verificar)",
       "FAO Ecocrop: rangos de tolerancia por especie (a verificar)"
     ],
-    "confidence": "baja"
+    "confidence": "baja",
+    "scale": "campo"
   },
   {
     "id": "avena",
@@ -782,7 +791,8 @@
       "FAO Ecocrop: rangos de tolerancia por especie (a verificar)",
       "INTA EEA San Luis: información regional de cultivos (a verificar)"
     ],
-    "confidence": "media"
+    "confidence": "media",
+    "scale": "campo"
   },
   {
     "id": "centeno",
@@ -863,7 +873,8 @@
       "INTA: cultivos de cobertura en la región semiárida pampeana (a verificar)",
       "FAO Ecocrop: rangos de tolerancia por especie (a verificar)"
     ],
-    "confidence": "media"
+    "confidence": "media",
+    "scale": "campo"
   },
   {
     "id": "mijo",
@@ -939,7 +950,8 @@
       "Supuesto: la especie no figura en FAO-33; se asimila a un cultivo similar",
       "FAO Ecocrop: rangos de tolerancia por especie (a verificar)"
     ],
-    "confidence": "baja"
+    "confidence": "baja",
+    "scale": "campo"
   },
   {
     "id": "colza",
@@ -1014,7 +1026,8 @@
       "Supuesto: la especie no figura en FAO-33; se asimila a un cultivo similar",
       "FAO Ecocrop: rangos de tolerancia por especie (a verificar)"
     ],
-    "confidence": "baja"
+    "confidence": "baja",
+    "scale": "campo"
   },
   {
     "id": "pastura_perenne",
@@ -1095,7 +1108,8 @@
       "INTA EEA San Luis: información regional de cultivos (a verificar)",
       "FAO Ecocrop: rangos de tolerancia por especie (a verificar)"
     ],
-    "confidence": "baja"
+    "confidence": "baja",
+    "scale": "campo"
   },
   {
     "id": "cobertura_leguminosas",
@@ -1171,7 +1185,8 @@
       "Supuesto: la especie no figura en FAO-56 Tabla 12; se asimila a un cultivo similar",
       "INTA: cultivos de cobertura en la región semiárida pampeana (a verificar)"
     ],
-    "confidence": "baja"
+    "confidence": "baja",
+    "scale": "campo"
   },
   {
     "id": "cobertura_gramineas",
@@ -1246,6 +1261,821 @@
       "Supuesto: la especie no figura en FAO-56 Tabla 12; se asimila a un cultivo similar",
       "INTA: cultivos de cobertura en la región semiárida pampeana (a verificar)"
     ],
-    "confidence": "media"
+    "confidence": "media",
+    "scale": "campo"
+  },
+  {
+    "id": "tomate",
+    "scale": "huerta",
+    "name": "Tomate",
+    "scientific_name": "Solanum lycopersicum",
+    "group": "hortaliza",
+    "family": "solanacea",
+    "cycle": "estival",
+    "cycle_months": {
+      "min": 3,
+      "max": 5,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      8,
+      9
+    ],
+    "sowing_window": "Siembra según el calendario de huerta de INTA Pro-Huerta (a validar localmente).",
+    "default_calendar": {
+      "start_month": 9,
+      "end_month": 11
+    },
+    "water_requirement": "alto",
+    "drought_tolerance": "medio",
+    "heat_tolerance": "alto",
+    "frost_tolerance": "bajo",
+    "root_depth": "medio",
+    "organic_matter_contribution": "bajo",
+    "soil_cover": "bajo",
+    "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
+    "erosion_risk": "bajo",
+    "forage_value": "bajo",
+    "main_use": [
+      "consumo fresco",
+      "conserva"
+    ],
+    "relative_yield": null,
+    "relative_income": null,
+    "local_market": null,
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [],
+      "avoid_predecessors": [],
+      "return_interval_years": {
+        "min": 3,
+        "max": 4,
+        "unit": "años"
+      },
+      "notes": "Rotar por familia botánica: no repetir la misma familia en el mismo cantero (INTA Pro-Huerta)."
+    },
+    "kc": {
+      "ini": 0.6,
+      "mid": 1.15,
+      "end": 0.8
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+    "ky": null,
+    "ky_source": null,
+    "agronomic_notes": "Hortaliza de huerta (pocos m²). Las tolerancias son cualitativas y están a validar con INTA Pro-Huerta; el Kc, cuando figura, proviene de FAO-56. Confianza baja: no reemplaza el criterio de un agrónomo local.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "INTA Pro-Huerta: calendario y guía de la huerta familiar (a validar)",
+      "FAO Ecocrop: rangos de tolerancia por especie (a validar)"
+    ],
+    "confidence": "baja"
+  },
+  {
+    "id": "pimiento",
+    "scale": "huerta",
+    "name": "Pimiento",
+    "scientific_name": "Capsicum annuum",
+    "group": "hortaliza",
+    "family": "solanacea",
+    "cycle": "estival",
+    "cycle_months": {
+      "min": 4,
+      "max": 6,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      8,
+      9
+    ],
+    "sowing_window": "Siembra según el calendario de huerta de INTA Pro-Huerta (a validar localmente).",
+    "default_calendar": {
+      "start_month": 9,
+      "end_month": 12
+    },
+    "water_requirement": "alto",
+    "drought_tolerance": "medio",
+    "heat_tolerance": "alto",
+    "frost_tolerance": "bajo",
+    "root_depth": "medio",
+    "organic_matter_contribution": "bajo",
+    "soil_cover": "bajo",
+    "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
+    "erosion_risk": "bajo",
+    "forage_value": "bajo",
+    "main_use": [
+      "consumo fresco",
+      "conserva"
+    ],
+    "relative_yield": null,
+    "relative_income": null,
+    "local_market": null,
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [],
+      "avoid_predecessors": [],
+      "return_interval_years": {
+        "min": 3,
+        "max": 4,
+        "unit": "años"
+      },
+      "notes": "Rotar por familia botánica: no repetir la misma familia en el mismo cantero (INTA Pro-Huerta)."
+    },
+    "kc": {
+      "ini": 0.6,
+      "mid": 1.05,
+      "end": 0.9
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+    "ky": null,
+    "ky_source": null,
+    "agronomic_notes": "Hortaliza de huerta (pocos m²). Las tolerancias son cualitativas y están a validar con INTA Pro-Huerta; el Kc, cuando figura, proviene de FAO-56. Confianza baja: no reemplaza el criterio de un agrónomo local.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "INTA Pro-Huerta: calendario y guía de la huerta familiar (a validar)",
+      "FAO Ecocrop: rangos de tolerancia por especie (a validar)"
+    ],
+    "confidence": "baja"
+  },
+  {
+    "id": "zapallito",
+    "scale": "huerta",
+    "name": "Zapallito",
+    "scientific_name": "Cucurbita maxima",
+    "group": "hortaliza",
+    "family": "cucurbitacea",
+    "cycle": "estival",
+    "cycle_months": {
+      "min": 2,
+      "max": 3,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      9,
+      10,
+      11
+    ],
+    "sowing_window": "Siembra según el calendario de huerta de INTA Pro-Huerta (a validar localmente).",
+    "default_calendar": {
+      "start_month": 10,
+      "end_month": 11
+    },
+    "water_requirement": "alto",
+    "drought_tolerance": "medio",
+    "heat_tolerance": "alto",
+    "frost_tolerance": "bajo",
+    "root_depth": "medio",
+    "organic_matter_contribution": "bajo",
+    "soil_cover": "medio",
+    "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
+    "erosion_risk": "bajo",
+    "forage_value": "bajo",
+    "main_use": [
+      "consumo fresco"
+    ],
+    "relative_yield": null,
+    "relative_income": null,
+    "local_market": null,
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [],
+      "avoid_predecessors": [],
+      "return_interval_years": {
+        "min": 2,
+        "max": 3,
+        "unit": "años"
+      },
+      "notes": "Rotar por familia botánica: no repetir la misma familia en el mismo cantero (INTA Pro-Huerta)."
+    },
+    "kc": {
+      "ini": 0.5,
+      "mid": 0.95,
+      "end": 0.75
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+    "ky": null,
+    "ky_source": null,
+    "agronomic_notes": "Hortaliza de huerta (pocos m²). Las tolerancias son cualitativas y están a validar con INTA Pro-Huerta; el Kc, cuando figura, proviene de FAO-56. Confianza baja: no reemplaza el criterio de un agrónomo local.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "INTA Pro-Huerta: calendario y guía de la huerta familiar (a validar)",
+      "FAO Ecocrop: rangos de tolerancia por especie (a validar)"
+    ],
+    "confidence": "baja"
+  },
+  {
+    "id": "lechuga",
+    "scale": "huerta",
+    "name": "Lechuga",
+    "scientific_name": "Lactuca sativa",
+    "group": "hortaliza",
+    "family": "asteracea",
+    "cycle": "invernal",
+    "cycle_months": {
+      "min": 2,
+      "max": 3,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      2,
+      3,
+      8,
+      9
+    ],
+    "sowing_window": "Siembra según el calendario de huerta de INTA Pro-Huerta (a validar localmente).",
+    "default_calendar": {
+      "start_month": 3,
+      "end_month": 4
+    },
+    "water_requirement": "alto",
+    "drought_tolerance": "bajo",
+    "heat_tolerance": "bajo",
+    "frost_tolerance": "medio",
+    "root_depth": "bajo",
+    "organic_matter_contribution": "bajo",
+    "soil_cover": "medio",
+    "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
+    "erosion_risk": "bajo",
+    "forage_value": "bajo",
+    "main_use": [
+      "consumo fresco"
+    ],
+    "relative_yield": null,
+    "relative_income": null,
+    "local_market": null,
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [],
+      "avoid_predecessors": [],
+      "return_interval_years": {
+        "min": 1,
+        "max": 2,
+        "unit": "años"
+      },
+      "notes": "Rotar por familia botánica: no repetir la misma familia en el mismo cantero (INTA Pro-Huerta)."
+    },
+    "kc": {
+      "ini": 0.7,
+      "mid": 1.0,
+      "end": 0.95
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+    "ky": null,
+    "ky_source": null,
+    "agronomic_notes": "Hortaliza de huerta (pocos m²). Las tolerancias son cualitativas y están a validar con INTA Pro-Huerta; el Kc, cuando figura, proviene de FAO-56. Confianza baja: no reemplaza el criterio de un agrónomo local.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "INTA Pro-Huerta: calendario y guía de la huerta familiar (a validar)",
+      "FAO Ecocrop: rangos de tolerancia por especie (a validar)"
+    ],
+    "confidence": "baja"
+  },
+  {
+    "id": "acelga",
+    "scale": "huerta",
+    "name": "Acelga",
+    "scientific_name": "Beta vulgaris var. cicla",
+    "group": "hortaliza",
+    "family": "amarantacea",
+    "cycle": "invernal",
+    "cycle_months": {
+      "min": 2,
+      "max": 4,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      2,
+      3,
+      8,
+      9
+    ],
+    "sowing_window": "Siembra según el calendario de huerta de INTA Pro-Huerta (a validar localmente).",
+    "default_calendar": {
+      "start_month": 3,
+      "end_month": 4
+    },
+    "water_requirement": "medio",
+    "drought_tolerance": "medio",
+    "heat_tolerance": "medio",
+    "frost_tolerance": "alto",
+    "root_depth": "medio",
+    "organic_matter_contribution": "bajo",
+    "soil_cover": "medio",
+    "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
+    "erosion_risk": "bajo",
+    "forage_value": "bajo",
+    "main_use": [
+      "consumo fresco"
+    ],
+    "relative_yield": null,
+    "relative_income": null,
+    "local_market": null,
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [],
+      "avoid_predecessors": [],
+      "return_interval_years": {
+        "min": 1,
+        "max": 2,
+        "unit": "años"
+      },
+      "notes": "Rotar por familia botánica: no repetir la misma familia en el mismo cantero (INTA Pro-Huerta)."
+    },
+    "kc": null,
+    "kc_source": null,
+    "ky": null,
+    "ky_source": null,
+    "agronomic_notes": "Hortaliza de huerta (pocos m²). Las tolerancias son cualitativas y están a validar con INTA Pro-Huerta; el Kc, cuando figura, proviene de FAO-56. Confianza baja: no reemplaza el criterio de un agrónomo local.",
+    "sources": [
+      "INTA Pro-Huerta: calendario y guía de la huerta familiar (a validar)",
+      "FAO Ecocrop: rangos de tolerancia por especie (a validar)"
+    ],
+    "confidence": "baja"
+  },
+  {
+    "id": "espinaca",
+    "scale": "huerta",
+    "name": "Espinaca",
+    "scientific_name": "Spinacia oleracea",
+    "group": "hortaliza",
+    "family": "amarantacea",
+    "cycle": "invernal",
+    "cycle_months": {
+      "min": 2,
+      "max": 3,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      3,
+      4,
+      8
+    ],
+    "sowing_window": "Siembra según el calendario de huerta de INTA Pro-Huerta (a validar localmente).",
+    "default_calendar": {
+      "start_month": 4,
+      "end_month": 5
+    },
+    "water_requirement": "medio",
+    "drought_tolerance": "bajo",
+    "heat_tolerance": "bajo",
+    "frost_tolerance": "alto",
+    "root_depth": "bajo",
+    "organic_matter_contribution": "bajo",
+    "soil_cover": "medio",
+    "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
+    "erosion_risk": "bajo",
+    "forage_value": "bajo",
+    "main_use": [
+      "consumo fresco"
+    ],
+    "relative_yield": null,
+    "relative_income": null,
+    "local_market": null,
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [],
+      "avoid_predecessors": [],
+      "return_interval_years": {
+        "min": 1,
+        "max": 2,
+        "unit": "años"
+      },
+      "notes": "Rotar por familia botánica: no repetir la misma familia en el mismo cantero (INTA Pro-Huerta)."
+    },
+    "kc": {
+      "ini": 0.7,
+      "mid": 1.0,
+      "end": 0.95
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+    "ky": null,
+    "ky_source": null,
+    "agronomic_notes": "Hortaliza de huerta (pocos m²). Las tolerancias son cualitativas y están a validar con INTA Pro-Huerta; el Kc, cuando figura, proviene de FAO-56. Confianza baja: no reemplaza el criterio de un agrónomo local.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "INTA Pro-Huerta: calendario y guía de la huerta familiar (a validar)",
+      "FAO Ecocrop: rangos de tolerancia por especie (a validar)"
+    ],
+    "confidence": "baja"
+  },
+  {
+    "id": "zanahoria",
+    "scale": "huerta",
+    "name": "Zanahoria",
+    "scientific_name": "Daucus carota",
+    "group": "hortaliza",
+    "family": "apiacea",
+    "cycle": "invernal",
+    "cycle_months": {
+      "min": 3,
+      "max": 4,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      2,
+      3,
+      8,
+      9
+    ],
+    "sowing_window": "Siembra según el calendario de huerta de INTA Pro-Huerta (a validar localmente).",
+    "default_calendar": {
+      "start_month": 3,
+      "end_month": 5
+    },
+    "water_requirement": "medio",
+    "drought_tolerance": "medio",
+    "heat_tolerance": "medio",
+    "frost_tolerance": "alto",
+    "root_depth": "alto",
+    "organic_matter_contribution": "bajo",
+    "soil_cover": "bajo",
+    "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
+    "erosion_risk": "bajo",
+    "forage_value": "bajo",
+    "main_use": [
+      "consumo fresco"
+    ],
+    "relative_yield": null,
+    "relative_income": null,
+    "local_market": null,
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [],
+      "avoid_predecessors": [],
+      "return_interval_years": {
+        "min": 2,
+        "max": 3,
+        "unit": "años"
+      },
+      "notes": "Rotar por familia botánica: no repetir la misma familia en el mismo cantero (INTA Pro-Huerta)."
+    },
+    "kc": {
+      "ini": 0.7,
+      "mid": 1.05,
+      "end": 0.95
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+    "ky": null,
+    "ky_source": null,
+    "agronomic_notes": "Hortaliza de huerta (pocos m²). Las tolerancias son cualitativas y están a validar con INTA Pro-Huerta; el Kc, cuando figura, proviene de FAO-56. Confianza baja: no reemplaza el criterio de un agrónomo local.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "INTA Pro-Huerta: calendario y guía de la huerta familiar (a validar)",
+      "FAO Ecocrop: rangos de tolerancia por especie (a validar)"
+    ],
+    "confidence": "baja"
+  },
+  {
+    "id": "cebolla",
+    "scale": "huerta",
+    "name": "Cebolla",
+    "scientific_name": "Allium cepa",
+    "group": "hortaliza",
+    "family": "aliacea",
+    "cycle": "invernal",
+    "cycle_months": {
+      "min": 5,
+      "max": 7,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      5,
+      6
+    ],
+    "sowing_window": "Siembra según el calendario de huerta de INTA Pro-Huerta (a validar localmente).",
+    "default_calendar": {
+      "start_month": 5,
+      "end_month": 9
+    },
+    "water_requirement": "medio",
+    "drought_tolerance": "medio",
+    "heat_tolerance": "medio",
+    "frost_tolerance": "alto",
+    "root_depth": "bajo",
+    "organic_matter_contribution": "bajo",
+    "soil_cover": "bajo",
+    "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
+    "erosion_risk": "bajo",
+    "forage_value": "bajo",
+    "main_use": [
+      "consumo fresco",
+      "conserva"
+    ],
+    "relative_yield": null,
+    "relative_income": null,
+    "local_market": null,
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [],
+      "avoid_predecessors": [],
+      "return_interval_years": {
+        "min": 2,
+        "max": 3,
+        "unit": "años"
+      },
+      "notes": "Rotar por familia botánica: no repetir la misma familia en el mismo cantero (INTA Pro-Huerta)."
+    },
+    "kc": {
+      "ini": 0.7,
+      "mid": 1.05,
+      "end": 0.75
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+    "ky": null,
+    "ky_source": null,
+    "agronomic_notes": "Hortaliza de huerta (pocos m²). Las tolerancias son cualitativas y están a validar con INTA Pro-Huerta; el Kc, cuando figura, proviene de FAO-56. Confianza baja: no reemplaza el criterio de un agrónomo local.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "INTA Pro-Huerta: calendario y guía de la huerta familiar (a validar)",
+      "FAO Ecocrop: rangos de tolerancia por especie (a validar)"
+    ],
+    "confidence": "baja"
+  },
+  {
+    "id": "ajo",
+    "scale": "huerta",
+    "name": "Ajo",
+    "scientific_name": "Allium sativum",
+    "group": "hortaliza",
+    "family": "aliacea",
+    "cycle": "invernal",
+    "cycle_months": {
+      "min": 6,
+      "max": 8,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      3,
+      4
+    ],
+    "sowing_window": "Siembra según el calendario de huerta de INTA Pro-Huerta (a validar localmente).",
+    "default_calendar": {
+      "start_month": 4,
+      "end_month": 9
+    },
+    "water_requirement": "medio",
+    "drought_tolerance": "medio",
+    "heat_tolerance": "medio",
+    "frost_tolerance": "alto",
+    "root_depth": "bajo",
+    "organic_matter_contribution": "bajo",
+    "soil_cover": "bajo",
+    "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
+    "erosion_risk": "bajo",
+    "forage_value": "bajo",
+    "main_use": [
+      "consumo fresco",
+      "conserva"
+    ],
+    "relative_yield": null,
+    "relative_income": null,
+    "local_market": null,
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [],
+      "avoid_predecessors": [],
+      "return_interval_years": {
+        "min": 2,
+        "max": 3,
+        "unit": "años"
+      },
+      "notes": "Rotar por familia botánica: no repetir la misma familia en el mismo cantero (INTA Pro-Huerta)."
+    },
+    "kc": {
+      "ini": 0.7,
+      "mid": 1.0,
+      "end": 0.7
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+    "ky": null,
+    "ky_source": null,
+    "agronomic_notes": "Hortaliza de huerta (pocos m²). Las tolerancias son cualitativas y están a validar con INTA Pro-Huerta; el Kc, cuando figura, proviene de FAO-56. Confianza baja: no reemplaza el criterio de un agrónomo local.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "INTA Pro-Huerta: calendario y guía de la huerta familiar (a validar)",
+      "FAO Ecocrop: rangos de tolerancia por especie (a validar)"
+    ],
+    "confidence": "baja"
+  },
+  {
+    "id": "papa",
+    "scale": "huerta",
+    "name": "Papa",
+    "scientific_name": "Solanum tuberosum",
+    "group": "hortaliza",
+    "family": "solanacea",
+    "cycle": "estival",
+    "cycle_months": {
+      "min": 3,
+      "max": 5,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      8,
+      9
+    ],
+    "sowing_window": "Siembra según el calendario de huerta de INTA Pro-Huerta (a validar localmente).",
+    "default_calendar": {
+      "start_month": 9,
+      "end_month": 11
+    },
+    "water_requirement": "alto",
+    "drought_tolerance": "bajo",
+    "heat_tolerance": "medio",
+    "frost_tolerance": "bajo",
+    "root_depth": "medio",
+    "organic_matter_contribution": "bajo",
+    "soil_cover": "medio",
+    "fixes_nitrogen": false,
+    "nitrogen_fixation": null,
+    "erosion_risk": "bajo",
+    "forage_value": "bajo",
+    "main_use": [
+      "consumo fresco"
+    ],
+    "relative_yield": null,
+    "relative_income": null,
+    "local_market": null,
+    "pest_risk": "alto",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [],
+      "avoid_predecessors": [],
+      "return_interval_years": {
+        "min": 3,
+        "max": 4,
+        "unit": "años"
+      },
+      "notes": "Rotar por familia botánica: no repetir la misma familia en el mismo cantero (INTA Pro-Huerta)."
+    },
+    "kc": {
+      "ini": 0.5,
+      "mid": 1.15,
+      "end": 0.75
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+    "ky": null,
+    "ky_source": null,
+    "agronomic_notes": "Hortaliza de huerta (pocos m²). Las tolerancias son cualitativas y están a validar con INTA Pro-Huerta; el Kc, cuando figura, proviene de FAO-56. Confianza baja: no reemplaza el criterio de un agrónomo local.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "INTA Pro-Huerta: calendario y guía de la huerta familiar (a validar)",
+      "FAO Ecocrop: rangos de tolerancia por especie (a validar)"
+    ],
+    "confidence": "baja"
+  },
+  {
+    "id": "arveja",
+    "scale": "huerta",
+    "name": "Arveja",
+    "scientific_name": "Pisum sativum",
+    "group": "hortaliza",
+    "family": "leguminosa",
+    "cycle": "invernal",
+    "cycle_months": {
+      "min": 3,
+      "max": 4,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      4,
+      5,
+      6
+    ],
+    "sowing_window": "Siembra según el calendario de huerta de INTA Pro-Huerta (a validar localmente).",
+    "default_calendar": {
+      "start_month": 5,
+      "end_month": 7
+    },
+    "water_requirement": "medio",
+    "drought_tolerance": "medio",
+    "heat_tolerance": "bajo",
+    "frost_tolerance": "alto",
+    "root_depth": "medio",
+    "organic_matter_contribution": "medio",
+    "soil_cover": "medio",
+    "fixes_nitrogen": true,
+    "nitrogen_fixation": "bajo",
+    "erosion_risk": "bajo",
+    "forage_value": "bajo",
+    "main_use": [
+      "consumo fresco"
+    ],
+    "relative_yield": null,
+    "relative_income": null,
+    "local_market": null,
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [],
+      "avoid_predecessors": [],
+      "return_interval_years": {
+        "min": 2,
+        "max": 3,
+        "unit": "años"
+      },
+      "notes": "Rotar por familia botánica: no repetir la misma familia en el mismo cantero (INTA Pro-Huerta)."
+    },
+    "kc": {
+      "ini": 0.5,
+      "mid": 1.15,
+      "end": 1.1
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+    "ky": null,
+    "ky_source": null,
+    "agronomic_notes": "Hortaliza de huerta (pocos m²). Las tolerancias son cualitativas y están a validar con INTA Pro-Huerta; el Kc, cuando figura, proviene de FAO-56. Confianza baja: no reemplaza el criterio de un agrónomo local.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "INTA Pro-Huerta: calendario y guía de la huerta familiar (a validar)",
+      "FAO Ecocrop: rangos de tolerancia por especie (a validar)"
+    ],
+    "confidence": "baja"
+  },
+  {
+    "id": "poroto",
+    "scale": "huerta",
+    "name": "Poroto",
+    "scientific_name": "Phaseolus vulgaris",
+    "group": "hortaliza",
+    "family": "leguminosa",
+    "cycle": "estival",
+    "cycle_months": {
+      "min": 3,
+      "max": 4,
+      "unit": "meses"
+    },
+    "sowing_months": [
+      10,
+      11,
+      12
+    ],
+    "sowing_window": "Siembra según el calendario de huerta de INTA Pro-Huerta (a validar localmente).",
+    "default_calendar": {
+      "start_month": 11,
+      "end_month": 1
+    },
+    "water_requirement": "alto",
+    "drought_tolerance": "medio",
+    "heat_tolerance": "alto",
+    "frost_tolerance": "bajo",
+    "root_depth": "medio",
+    "organic_matter_contribution": "medio",
+    "soil_cover": "medio",
+    "fixes_nitrogen": true,
+    "nitrogen_fixation": "bajo",
+    "erosion_risk": "bajo",
+    "forage_value": "bajo",
+    "main_use": [
+      "consumo fresco",
+      "grano seco"
+    ],
+    "relative_yield": null,
+    "relative_income": null,
+    "local_market": null,
+    "pest_risk": "medio",
+    "is_cover_crop": false,
+    "rotation": {
+      "good_predecessors": [],
+      "avoid_predecessors": [],
+      "return_interval_years": {
+        "min": 2,
+        "max": 3,
+        "unit": "años"
+      },
+      "notes": "Rotar por familia botánica: no repetir la misma familia en el mismo cantero (INTA Pro-Huerta)."
+    },
+    "kc": {
+      "ini": 0.5,
+      "mid": 1.05,
+      "end": 0.9
+    },
+    "kc_source": "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+    "ky": null,
+    "ky_source": null,
+    "agronomic_notes": "Hortaliza de huerta (pocos m²). Las tolerancias son cualitativas y están a validar con INTA Pro-Huerta; el Kc, cuando figura, proviene de FAO-56. Confianza baja: no reemplaza el criterio de un agrónomo local.",
+    "sources": [
+      "FAO-56 (Allen et al., 1998), Tabla 12: coeficientes de cultivo Kc",
+      "INTA Pro-Huerta: calendario y guía de la huerta familiar (a validar)",
+      "FAO Ecocrop: rangos de tolerancia por especie (a validar)"
+    ],
+    "confidence": "baja"
   }
 ]

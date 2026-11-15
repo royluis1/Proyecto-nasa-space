@@ -79,22 +79,35 @@ class RotationStrategy(StrEnum):
     MIXTA = "mixta"
 
 
+class CropScale(StrEnum):
+    """A qué perfil pertenece el cultivo según la escala del dato NASA que le sirve."""
+
+    HUERTA = "huerta"  # pocos m²: solo NASA POWER (clima puntual regional)
+    CAMPO = "campo"  # hectáreas: todo el stack satelital
+
+
 class CropGroup(StrEnum):
     CEREAL = "cereal"
     OLEAGINOSA = "oleaginosa"
     LEGUMINOSA = "leguminosa"
     FORRAJERA = "forrajera"
     COBERTURA = "cobertura"
+    HORTALIZA = "hortaliza"
 
 
 class CropFamily(StrEnum):
-    """Familia botánica: se usa para medir diversificación."""
+    """Familia botánica: se usa para medir diversificación y para la rotación de huerta."""
 
     GRAMINEA = "graminea"
     LEGUMINOSA = "leguminosa"
     ASTERACEA = "asteracea"
     BRASICACEA = "brasicacea"
     MEZCLA = "mezcla"
+    SOLANACEA = "solanacea"
+    CUCURBITACEA = "cucurbitacea"
+    AMARANTACEA = "amarantacea"
+    APIACEA = "apiacea"
+    ALIACEA = "aliacea"
 
 
 class CropCycle(StrEnum):

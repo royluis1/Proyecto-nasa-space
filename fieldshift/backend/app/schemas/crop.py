@@ -6,7 +6,7 @@ precisos sin fuente: los únicos números puntuales son los Kc de FAO-56, con su
 
 from pydantic import BaseModel, Field, model_validator
 
-from app.models.enums import Confidence, CropCycle, CropFamily, CropGroup, Level
+from app.models.enums import Confidence, CropCycle, CropFamily, CropGroup, CropScale, Level
 
 
 class Range(BaseModel):
@@ -45,6 +45,7 @@ class RotationCompatibility(BaseModel):
 
 class Crop(BaseModel):
     id: str = Field(examples=["soja"])
+    scale: CropScale = Field(default=CropScale.CAMPO, description="A qué perfil pertenece: huerta (m²) o campo (hectáreas).")
     name: str = Field(description="Nombre común.")
     scientific_name: str
     group: CropGroup

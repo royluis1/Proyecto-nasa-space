@@ -60,7 +60,7 @@ def test_calendario_rechaza_superposiciones(crops):
 
 def test_calendario_rechaza_cultivo_desconocido(crops):
     with pytest.raises(RotationCalendarError, match="desconocido"):
-        build_calendar(rot(("papa", 1, 9, 2)), crops)
+        build_calendar(rot(("cultivo_inexistente", 1, 9, 2)), crops)
 
 
 # --- agua ---
