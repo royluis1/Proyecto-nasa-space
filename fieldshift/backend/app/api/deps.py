@@ -134,8 +134,8 @@ def get_early_warning_service(
 @lru_cache
 def get_soil_provider() -> SoilProvider:
     s = get_settings()
-    fetcher = soilgrids_fetcher(min(30.0, s.request_timeout_s)) if s.soilgrids_enabled else None
-    return SoilProvider(s.cache_dir / "soil", s.nasa_samples_dir / s.soil_sample_file, fetcher, Cooldown(s.power_cooldown_s))
+    fetcher = soilgrids_fetcher(s.soilgrids_timeout_s) if s.soilgrids_enabled else None
+    return SoilProvider(s.cache_dir / "soil", s.nasa_samples_dir / s.soil_sample_file, fetcher, Cooldown(s.soilgrids_cooldown_s))
 
 
 _REGIONS: dict[tuple, RegionRepository] = {}

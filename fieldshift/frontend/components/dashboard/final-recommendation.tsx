@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CalendarDays, CircleCheck, FileText, ThumbsDown, ThumbsUp, Trophy } from "lucide-react";
+import { ArrowRight, CalendarDays, CircleCheck, ThumbsDown, ThumbsUp, Trophy } from "lucide-react";
 import { ConfidenceBadge, RiskLevelBadge } from "@/components/provenance/badges";
 import { Term } from "@/components/glossary/term";
 import { Badge } from "@/components/ui/badge";
@@ -72,7 +72,6 @@ export function FinalRecommendation({ best, actual, weights, fieldId, scenarioTe
         <div className="flex flex-wrap gap-2">
           <Button asChild><Link href={`/campo/${fieldId}/rotacion/${best.rotation.id}`}>Ver el detalle completo <ArrowRight aria-hidden /></Link></Button>
           <Button variant="outline" asChild><Link href={`/campo/${fieldId}/calendario?rotacion=${encodeURIComponent(best.rotation.id)}`}><CalendarDays aria-hidden /> Calendario de siembra</Link></Button>
-          <Button variant="outline" asChild><Link href={`/campo/${fieldId}/reporte`}><FileText aria-hidden /> Exportar reporte</Link></Button>
         </div>
       </CardContent>
     </Card>

@@ -25,6 +25,7 @@ import type {
   ResponseMeta,
   ScenarioInput,
   ScenarioResult,
+  PointSoilEstimate,
   SoilMoistureRequest,
   SoilMoistureSummary,
   TerrainRequest,
@@ -39,7 +40,7 @@ import { API_URL, DEMO_FALLBACK, REQUEST_TIMEOUT_MS } from "./config";
 import * as demo from "./demo";
 import { enrichAlerts, enrichHuerta, withBrowserForecast } from "./live-forecast";
 import { toRequest } from "./scenarios";
-import { getLocalField, isLocalId, listLocalFields, newLocalId, saveLocalField } from "./local-fields";
+import { deleteLocalField, getLocalField, isLocalId, listLocalFields, newLocalId, saveLocalField } from "./local-fields";
 import { DEMO_NOTICE } from "./content";
 import { ORIGIN_LABELS } from "./format";
 
@@ -71,7 +72,7 @@ export const retryConfig = { retries: 2, backoffMs: 500 };
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 interface RequestOptions {
-  method?: "GET" | "POST" | "PUT";
+  method?: "GET" | "POST" | "PUT" | "DELETE";
   body?: unknown;
   signal?: AbortSignal;
   retries?: number;
@@ -240,6 +241,18 @@ export const api = {
     return call(() => request<FieldOut>(`/fields/${encodeURIComponent(id)}`, { method: "PUT", body, retries: 1 }), null);
   },
 
+  /**
+   * Borra un campo. Los guardados en este navegador se borran acá; los del servidor, en el servidor.
+   * Los de ejemplo no se borran (el servidor responde 409): la pantalla los oculta solo en este navegador.
+   */
+  async deleteField(id: string): Promise<void> {
+    if (isLocalId(id)) {
+      deleteLocalField(id);
+      return;
+    }
+    await request<{ id: string; deleted: boolean }>(`/fields/${encodeURIComponent(id)}`, { method: "DELETE", retries: 0 });
+  },
+
   async compare(req: CompareRequest, o: Opts = {}): Promise<ApiResult<CompareResult>> {
     const id = fieldIdOf(req);
     if (isLocalId(id)) return viaDemo(() => demo.demoCompare(id, req.scenario));
@@ -296,6 +309,14 @@ export const api = {
   async zoneAt(fieldId: string, lat: number, lon: number, o: Opts = {}): Promise<ApiResult<ZoneAt>> {
     if (isLocalId(fieldId)) return viaDemo(() => demo.demoZoneAt(fieldId));
     return call(() => request<ZoneAt>(`/zones/at?lat=${lat}&lon=${lon}`, o), () => demo.demoZoneAt(fieldId));
+  },
+
+  /**
+   * Suelo ESTIMADO de un punto (SoilGrids), para completar el formulario antes de guardar.
+   * Sin backend lanza error: el formulario sigue funcionando y el suelo queda para cargar a mano.
+   */
+  async soilEstimate(lat: number, lon: number, o: Opts = {}): Promise<ApiEnvelope<PointSoilEstimate>> {
+    return request<PointSoilEstimate>(`/soil/estimate?lat=${lat}&lon=${lon}`, { ...o, retries: 0, timeoutMs: 100_000 }); // SoilGrids tarda de 5 a 45 s por consulta, y puede hacer falta una segunda (alrededores)
   },
 
   /** Busca ciudades y pueblos por nombre (IGN). Sin backend lanza error: el buscador lo muestra. */

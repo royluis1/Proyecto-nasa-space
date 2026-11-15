@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { OriginBadge } from "@/components/provenance/badges";
 import { num } from "@/lib/format";
 import { FieldNav } from "./field-nav";
+import { FieldToolsMenu } from "./field-tools-menu";
 import { useCampo } from "./campo-provider";
 
 /** Encabezado del campo (nombre, ubicación, origen de los datos) y navegación por pasos. */
@@ -52,6 +53,7 @@ export function CampoShell({ children }: { children: React.ReactNode }) {
           {isExample && <Badge variant="tierra" title={field.sample_note ?? undefined}>Campo de ejemplo: datos ilustrativos</Badge>}
           {compare.originLabel && !compare.demo && compare.result && <OriginBadge status={compare.result.inputs.climate.origin} label={`Clima: ${compare.originLabel}`} />}
           {compare.demo && <OriginBadge status="demo" />}
+          <FieldToolsMenu fieldId={fieldId} fieldName={field.name} />
         </div>
         <FieldNav fieldId={fieldId} />
       </div>

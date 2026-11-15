@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, ArrowUp, CalendarDays, FileDown, FlaskConical, Minus, Play, ShieldCheck, Trophy } from "lucide-react";
+import { ArrowDown, ArrowUp, CalendarDays, FlaskConical, Minus, Play, ShieldCheck, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AsyncBlock } from "@/components/async-block";
@@ -273,7 +273,6 @@ export default function EscenariosPage() {
         description="Elegí un escenario y mirá al instante cómo cambian el puntaje, el ranking, los riesgos y la recomendación. Sirve para ver qué rotaciones aguantan mejor, no para predecir el clima."
       >
         <Button asChild variant="outline"><Link href={`/campo/${fieldId}/calendario?escenario=${encodeURIComponent(selectedId)}`}><CalendarDays aria-hidden /> Ver en el calendario</Link></Button>
-        <Button asChild variant="outline"><Link href={`/campo/${fieldId}/reporte`}><FileDown aria-hidden /> Descargar el plan</Link></Button>
       </PageHeader>
       <Alert tone="info" title="Son pruebas de sensibilidad, no pronósticos">
         <p>Cada escenario cambia la lluvia, la temperatura o el riego del clima de referencia (NASA POWER, últimos 10 años) con supuestos simples. Para saber cómo viene la campaña, consultá el pronóstico oficial.</p>

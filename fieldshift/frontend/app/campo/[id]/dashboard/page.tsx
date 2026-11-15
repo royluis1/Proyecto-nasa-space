@@ -1,7 +1,6 @@
 "use client";
 
-import { Download, FileJson, FileText, Printer, RefreshCw, SlidersHorizontal } from "lucide-react";
-import Link from "next/link";
+import { Download, FileJson, Printer, RefreshCw, SlidersHorizontal } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AsyncBlock } from "@/components/async-block";
 import { useCampo } from "@/components/campo/campo-provider";
@@ -163,7 +162,6 @@ export default function DashboardPage() {
 
               <CollapsibleSection title="Exportar el reporte" summary="PDF, CSV o JSON para llevarle a tu ingeniero agrónomo." className="print:hidden">
                   <div className="flex flex-wrap gap-2">
-                    <Button asChild><Link href={`/campo/${fieldId}/reporte`}><FileText aria-hidden /> Ver el reporte completo</Link></Button>
                     <Button variant="outline" onClick={() => downloadText(`fieldshift_${safeFilename(field?.name ?? "campo")}.csv`, buildCsv(field?.name ?? "", origin, d.result!, evals), "text/csv")}><Download aria-hidden /> Descargar CSV</Button>
                     <Button variant="outline" onClick={() => downloadText(`fieldshift_${safeFilename(field?.name ?? "campo")}.json`, buildJson(field?.name ?? "", origin, d.result!, evals), "application/json")}><FileJson aria-hidden /> Descargar JSON</Button>
                     <Button variant="outline" onClick={() => window.print()}><Printer aria-hidden /> Imprimir o guardar en PDF</Button>

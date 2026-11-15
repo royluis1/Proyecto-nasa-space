@@ -16,6 +16,8 @@ interface DisclosureProps {
   contentClassName?: string;
   /** "card" lo encierra en un recuadro; "plain" solo el botón y el texto. */
   variant?: "card" | "plain";
+  /** Ancla: si la dirección termina en #id, se abre solo y se muestra. */
+  id?: string;
 }
 
 /**
@@ -31,14 +33,29 @@ export function Disclosure({
   className,
   contentClassName,
   variant = "plain",
+  id: anchor,
 }: DisclosureProps) {
   const [open, setOpen] = React.useState(defaultOpen);
   const id = React.useId();
   const regionId = `${id}-region`;
   const buttonId = `${id}-button`;
 
+  // Un enlace a #ancla abre el desplegable y lleva hasta él.
+  React.useEffect(() => {
+    if (!anchor) return;
+    const check = () => {
+      if (window.location.hash === `#${anchor}`) {
+        setOpen(true);
+        document.getElementById(buttonId)?.focus();
+      }
+    };
+    check();
+    window.addEventListener("hashchange", check);
+    return () => window.removeEventListener("hashchange", check);
+  }, [anchor, buttonId]);
+
   return (
-    <div className={cn(variant === "card" && "rounded-lg border bg-card", className)}>
+    <div id={anchor} className={cn("scroll-mt-24", variant === "card" && "rounded-lg border bg-card", className)}>
       <button
         id={buttonId}
         type="button"

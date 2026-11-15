@@ -593,6 +593,80 @@
     }
    }
   },
+  "/soil/estimate": {
+   "get": {
+    "tags": [
+     "zonas y suelo"
+    ],
+    "summary": "Suelo estimado de un punto",
+    "description": "Textura y materia orgánica **estimadas** de un punto (SoilGrids de ISRIC, 0-30 cm, 250 m), para completar el\nformulario del campo antes de guardarlo. No es un análisis de laboratorio: lo que cargue el productor siempre gana.\n\nEn el centro de un pueblo SoilGrids no tiene suelo (es zona urbana). Si pasa eso y `alrededores` es verdadero,\nse prueba a 3 km y la respuesta lo dice (`distance_km` y `note`). Orden de siempre: caché → SoilGrids en vivo →\nmuestra rotulada (`origin = sample`) → sin dato con aviso. El frontend nunca completa el formulario con la muestra.",
+    "operationId": "soil_estimate_soil_estimate_get",
+    "parameters": [
+     {
+      "name": "lat",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "number",
+       "maximum": 90,
+       "minimum": -90,
+       "examples": [
+        -33.85
+       ],
+       "title": "Lat"
+      }
+     },
+     {
+      "name": "lon",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "number",
+       "maximum": 180,
+       "minimum": -180,
+       "examples": [
+        -65.2
+       ],
+       "title": "Lon"
+      }
+     },
+     {
+      "name": "alrededores",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "description": "Si en el punto no hay suelo agrícola, probar a 3 km.",
+       "default": true,
+       "title": "Alrededores"
+      },
+      "description": "Si en el punto no hay suelo agrícola, probar a 3 km."
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_PointSoilEstimate_"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/crops": {
    "get": {
     "tags": [
@@ -2589,6 +2663,22 @@
      "meta"
     ],
     "title": "ApiResponse[NearestLocality]"
+   },
+   "ApiResponse_PointSoilEstimate_": {
+    "properties": {
+     "data": {
+      "$ref": "#/components/schemas/PointSoilEstimate"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[PointSoilEstimate]"
    },
    "ApiResponse_ProvincesOut_": {
     "properties": {
@@ -6847,6 +6937,55 @@
     },
     "type": "object",
     "title": "PlaceRequest"
+   },
+   "PointSoilEstimate": {
+    "properties": {
+     "estimate": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/SoilEstimate"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "lat": {
+      "type": "number",
+      "title": "Lat",
+      "description": "Punto donde se estimó el suelo."
+     },
+     "lon": {
+      "type": "number",
+      "title": "Lon"
+     },
+     "distance_km": {
+      "type": "number",
+      "title": "Distance Km",
+      "description": "Distancia al punto pedido. 0 si es el mismo punto."
+     },
+     "note": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Note",
+      "description": "Aclaración para mostrar si se usaron los alrededores."
+     }
+    },
+    "type": "object",
+    "required": [
+     "estimate",
+     "lat",
+     "lon",
+     "distance_km"
+    ],
+    "title": "PointSoilEstimate",
+    "description": "Suelo estimado para un punto. Si en el punto no hay suelo agrícola (pueblo, agua o roca), puede venir de los\nalrededores: `distance_km` dice a qué distancia se estimó, para no presentarlo como el suelo exacto del punto."
    },
    "PowerParameter": {
     "type": "string",

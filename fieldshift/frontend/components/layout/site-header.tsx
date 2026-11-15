@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { useState } from "react";
+import { Menu } from "lucide-react";
 import { AccountChip } from "@/components/auth/account-chip";
 import { useAuth } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { Logo } from "./logo";
 import { ProfileChip, StartLink } from "./profile-chip";
@@ -42,16 +43,6 @@ function MainAction({ className }: { className?: string }) {
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const menuId = useId();
-
-  // Cerrar el menú del celular al cambiar de página o con Escape.
-  useEffect(() => setOpen(false), [pathname]);
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-md print:static print:hidden">
@@ -79,41 +70,37 @@ export function SiteHeader() {
           <AccountChip />
           <MainAction />
           <ThemeToggle />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
-            aria-label={open ? "Cerrar menú" : "Abrir menú"}
-            aria-expanded={open}
-            aria-controls={menuId}
-            onClick={() => setOpen((v) => !v)}
-          >
-            {open ? <X aria-hidden /> : <Menu aria-hidden />}
-          </Button>
+          {/* Menú del celular y la tablet: panel que se abre desde la derecha */}
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button type="button" variant="ghost" size="icon" className="lg:hidden" aria-label="Abrir menú">
+                <Menu aria-hidden />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-72">
+              <SheetTitle className="sr-only">Menú</SheetTitle>
+              <nav className="mt-8 flex flex-col gap-1" aria-label="Menú">
+                {links.map(({ href, label }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setOpen(false)}
+                    aria-current={isActive(pathname, href) ? "page" : undefined}
+                    className={cn(
+                      "flex min-h-11 items-center rounded-lg px-3 text-base font-medium",
+                      isActive(pathname, href) ? "bg-secondary text-foreground" : "text-foreground hover:bg-muted",
+                    )}
+                  >
+                    {label}
+                  </Link>
+                ))}
+                <div className="mt-3 border-t pt-4">
+                  <ProfileChip />
+                </div>
+              </nav>
+            </SheetContent>
+          </Sheet>
         </div>
-      </div>
-
-      {/* Menú del celular */}
-      <div id={menuId} hidden={!open} className="border-t border-border/60 bg-background lg:hidden">
-        <nav className="container flex flex-col gap-1 py-4" aria-label="Menú">
-          {links.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              aria-current={isActive(pathname, href) ? "page" : undefined}
-              className={cn(
-                "flex min-h-11 items-center rounded-lg px-3 text-base font-medium",
-                isActive(pathname, href) ? "bg-secondary text-foreground" : "text-foreground hover:bg-muted",
-              )}
-            >
-              {label}
-            </Link>
-          ))}
-          <div className="mt-2 border-t pt-3">
-            <ProfileChip />
-          </div>
-        </nav>
       </div>
     </header>
   );

@@ -18,11 +18,14 @@ export function LocalitySearch({
   help = "Escribí el nombre y elegí de la lista. Con eso ubicamos tu huerta.",
   onSelect,
   id = "localidad",
+  clearSignal = 0,
 }: {
   label?: string;
   help?: string;
   onSelect: (loc: LocalityOut) => void;
   id?: string;
+  /** Cada vez que cambia, el buscador se vacía (por ejemplo, si el punto se movió desde el mapa). */
+  clearSignal?: number;
 }) {
   const [query, setQuery] = React.useState("");
   const [results, setResults] = React.useState<LocalityOut[]>([]);
@@ -35,6 +38,16 @@ export function LocalitySearch({
   const justChose = React.useRef(false);
   const listId = `${id}-lista`;
   const listOpen = open && results.length > 0;
+
+  // Si el punto cambió por otro lado (mapa o coordenadas), el nombre que quedó escrito ya no corresponde.
+  React.useEffect(() => {
+    if (clearSignal === 0) return;
+    justChose.current = true;
+    setQuery("");
+    setResults([]);
+    setOpen(false);
+    setError(null);
+  }, [clearSignal]);
 
   // Busca mientras se escribe, esperando a que la persona frene (y cancelando lo anterior).
   React.useEffect(() => {

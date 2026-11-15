@@ -75,13 +75,15 @@ class LocalityIndex:
         ]
         return cls(rows, doc.get("source"))
 
-    def search(self, query: str, limit: int = 10, provincia: str | None = None) -> list[Locality]:
-        """Busca por nombre. Primero las que empiezan igual, después las que lo contienen."""
+    def search(self, query: str, limit: int = 10, provincia: str | None = None, prefer: str | None = None) -> list[Locality]:
+        """Busca por nombre. Primero las que empiezan igual, después las que lo contienen.
+        En los empates van primero las de la provincia preferida (la región de la app), sin esconder las demás."""
         q = normalize(query.strip())
         if not q:
             return []
         prov = normalize(provincia) if provincia else None
-        hits: list[tuple[int, int, str, Locality]] = []
+        pref = normalize(prefer) if prefer else None
+        hits: list[tuple[int, int, int, str, Locality]] = []
         for loc in self.localities:
             if prov and normalize(loc.provincia) != prov:
                 continue
@@ -94,9 +96,10 @@ class LocalityIndex:
                 rank = 2
             else:
                 continue
-            hits.append((rank, loc.orden, name, loc))
-        hits.sort(key=lambda h: (h[0], h[1], h[2]))
-        return [h[3] for h in hits[:limit]]
+            preferred = 0 if pref and normalize(loc.provincia) == pref else 1
+            hits.append((rank, preferred, loc.orden, name, loc))
+        hits.sort(key=lambda h: (h[0], h[1], h[2], h[3]))
+        return [h[4] for h in hits[:limit]]
 
     def nearest(self, lat: float, lon: float, max_km: float = MAX_NEAR_KM) -> tuple[Locality, float] | None:
         """Localidad más cercana al punto, o None si no hay ninguna dentro de max_km."""

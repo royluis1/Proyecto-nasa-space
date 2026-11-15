@@ -13,6 +13,7 @@ from app.models.provenance import Provenance
 from app.schemas.field import FieldOut, SoilProfile
 from app.schemas.regions import AutoProfile
 from app.services.regions.repository import RegionRepository
+from app.services.soil.nearby import estimate_nearby
 from app.services.soil.soilgrids import SoilProvider
 from app.utils.exceptions import FieldShiftError
 
@@ -21,8 +22,9 @@ def build_auto_profile(field: FieldOut, regions: RegionRepository, soil: SoilPro
     lat, lon = field.location.lat, field.location.lon
     warnings: list[str] = []
 
-    estimate, w = soil.estimate(lat, lon)
-    warnings += w
+    nearby = estimate_nearby(soil, lat, lon)
+    estimate = nearby.estimate
+    warnings += nearby.warnings
 
     zone = None
     try:
@@ -45,7 +47,8 @@ def build_auto_profile(field: FieldOut, regions: RegionRepository, soil: SoilPro
             updates["organic_matter"] = estimate.organic_matter
             applied.append("materia orgánica")
         if updates:
-            note = f"Estimado ({', '.join(applied)}) con {estimate.source}, 0-30 cm, 250 m. {estimate.note}"
+            where = f" Tomado de los alrededores, a unos {nearby.distance_km:.0f} km del punto (en el punto no hay suelo agrícola)." if nearby.distance_km else ""
+            note = f"Estimado ({', '.join(applied)}) con {estimate.source}, 0-30 cm, 250 m.{where} {estimate.note}"
             if profile is None:
                 prov = Provenance(label=DataLabel.ESTIMADO, retrieved_at=estimate.retrieved_at, resolution="250 m",
                                   method=estimate.source, confidence=Confidence.BAJA, note=note)

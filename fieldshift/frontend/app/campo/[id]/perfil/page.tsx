@@ -18,34 +18,65 @@ import { STRATEGY_LABELS, num, rotationTitle } from "@/lib/format";
 function LivePreview() {
   const { compare, fieldId } = useCampo();
   const best = compare.evaluations[0];
+  const actual = compare.evaluations.find((e) => e.rotation.strategy === "actual");
+  const bestTotal = best?.score.total ?? null;
+  const actualTotal = actual?.score.total ?? null;
   return (
-    <Card className="border-primary/50 bg-primary/5" aria-live="polite">
+    <Card className="border-primary/40 bg-gradient-to-b from-primary/10 to-card" aria-live="polite">
       <CardHeader>
-        <CardTitle as="h2" className="flex items-center gap-2 text-lg">
-          <Trophy aria-hidden className="size-5 text-primary" /> Con estas prioridades
+        <CardTitle as="h2" className="flex items-center gap-2 text-xl">
+          <Trophy aria-hidden className="size-6 text-primary" /> Con estas prioridades
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="space-y-5">
         {best ? (
           <>
-            <p className="text-lg">
-              Hoy la mejor opción es <strong>{rotationTitle(best.rotation)}</strong> ({STRATEGY_LABELS[best.rotation.strategy]}), con <strong>{num(best.score.total, 0)} puntos</strong> de 100.
-            </p>
-            <Button asChild>
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-widest text-primary-glow">Mejor opción para la campaña</p>
+              <p className="text-2xl font-bold leading-tight">{rotationTitle(best.rotation)}</p>
+              <p className="text-muted-foreground">{STRATEGY_LABELS[best.rotation.strategy]}</p>
+            </div>
+            <div>
+              <p className="flex items-baseline gap-2">
+                <span className="font-display text-6xl font-bold tabular-nums leading-none">{num(bestTotal, 0)}</span>
+                <span className="text-lg text-muted-foreground">de 100 puntos</span>
+              </p>
+              <div className="mt-3 h-3 overflow-hidden rounded-full bg-secondary" aria-hidden>
+                <div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(0, Math.min(100, bestTotal ?? 0))}%` }} />
+              </div>
+            </div>
+            {actual && actual.rotation.id !== best.rotation.id && bestTotal != null && actualTotal != null && (
+              <p className="rounded-xl bg-secondary px-3 py-2 text-sm">
+                Tu rotación actual saca <strong>{num(actualTotal, 0)} puntos</strong>: la mejor opción suma{" "}
+                <strong>{num(bestTotal - actualTotal, 0)}</strong> más.
+              </p>
+            )}
+            {actual && actual.rotation.id === best.rotation.id && (
+              <p className="rounded-xl bg-secondary px-3 py-2 text-sm">Tu rotación actual es la mejor con estas prioridades.</p>
+            )}
+            <Button asChild size="lg" className="w-full">
               <Link href={`/campo/${fieldId}/comparador`}>
                 Ver el comparador completo <ArrowRight aria-hidden />
               </Link>
             </Button>
           </>
+        ) : compare.error && /current_crop|rotación actual/i.test(compare.error) ? (
+          <Alert tone="info" title="Falta el cultivo actual">
+            <p>Para comparar rotaciones necesitamos saber qué tiene sembrado el lote (o qué sembraste la última campaña).</p>
+            <Button size="sm" asChild>
+              <a href="#editar-campo">Cargar el cultivo actual</a>
+            </Button>
+          </Alert>
         ) : compare.error ? (
           <Alert tone="error">
             <p>{compare.error}</p>
             <Button size="sm" variant="outline" onClick={compare.reload}>Reintentar</Button>
           </Alert>
         ) : (
-          <div role="status" aria-busy="true">
+          <div role="status" aria-busy="true" className="space-y-3">
             <span className="sr-only">Calculando el ranking…</span>
-            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-8 w-3/4" />
+            <Skeleton className="h-16 w-1/2" />
           </div>
         )}
       </CardContent>
@@ -58,10 +89,9 @@ export default function PerfilPage() {
   if (!field) return null;
   return (
     <div className="max-w-5xl space-y-8">
-      <PageHeader title="Tu campo y tus prioridades" description="Mové los controles y el ranking se actualiza al instante." />
-      <AutoProfileCard field={field} />
+      <PageHeader title="Tus prioridades para la campaña" description="Mové los controles y el ranking se actualiza al instante." />
 
-      <section aria-labelledby="prioridades" className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+      <section aria-labelledby="prioridades" className="grid gap-6 lg:grid-cols-[1.35fr_1fr]">
         <Card>
           <CardHeader>
             <CardTitle as="h2" id="prioridades">¿Qué te importa más?</CardTitle>
@@ -76,7 +106,11 @@ export default function PerfilPage() {
         </div>
       </section>
 
-      <Disclosure variant="card" label="Editar los datos del campo (suelo, riego, rotación actual)">
+      <Disclosure variant="card" label="Perfil automático del campo: zona climática, transición y cultivos más aptos">
+        <AutoProfileCard field={field} />
+      </Disclosure>
+
+      <Disclosure id="editar-campo" variant="card" label="Editar los datos del campo (suelo, riego, rotación actual)">
         <FieldForm key={`${field.id}-${field.name}-${field.area_ha}`} mode="edit" initial={field} onSaved={() => { reloadField(); compare.reload(); }} />
       </Disclosure>
 

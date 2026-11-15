@@ -74,20 +74,20 @@ export function PriorityControls({ value, onChange, disabled }: Props) {
         })}
       </ul>
 
-      <section aria-labelledby="reparto-titulo" className="rounded-lg border bg-muted/40 p-4">
-        <h3 id="reparto-titulo" className="mb-2 font-semibold">
+      <section aria-labelledby="reparto-titulo" className="rounded-xl border bg-muted/40 p-5">
+        <h3 id="reparto-titulo" className="mb-3 text-lg font-semibold">
           Cómo se reparte el puntaje
         </h3>
-        <ul className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
+        <ul className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
           {COMPONENT_ORDER.map((c) => (
             <li key={c} className="space-y-1">
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between text-base">
                 <span>
                   <strong>{c}</strong> · {COMPONENTS[c].name}
                 </span>
-                <span className="tabular-nums">{num(weights[c] * 100)} %</span>
+                <span className="font-semibold tabular-nums">{num(weights[c] * 100)} %</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-secondary" aria-hidden>
+              <div className="h-2.5 overflow-hidden rounded-full bg-secondary" aria-hidden>
                 <div className="h-full bg-primary" style={{ width: `${weights[c] * 100}%` }} />
               </div>
             </li>

@@ -64,6 +64,9 @@ class Settings(BaseSettings):
     open_meteo_api_key: SecretStr | None = None
     # Suelo estimado (SoilGrids de ISRIC). Sin red: muestra simulada rotulada; si no hay, queda vacío con aviso.
     soilgrids_enabled: bool = True
+    # SoilGrids tarda mucho y de forma variable (medido: de 5 a 38 s por consulta). Si falla, pausa corta antes de reintentar.
+    soilgrids_timeout_s: float = Field(default=45.0, gt=0, le=120)
+    soilgrids_cooldown_s: float = Field(default=60.0, ge=0, le=3600)
     soil_sample_file: str = "soil_sample_san_luis.json"
     srtm_product: Literal["SRTMGL1", "SRTMGL3"] = "SRTMGL1"
     srtm_sample_file: str = "srtm_sample_san_luis.json"

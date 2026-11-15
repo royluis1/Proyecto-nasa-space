@@ -13,6 +13,8 @@ ROWS = [
      "lat": -33.86, "lon": -65.22, "orden": 1},
     {"nombre": "Villa Mercedes", "provincia": "San Luis", "departamento": "General Pedernera", "tipo": "Localidad compuesta",
      "lat": -33.67, "lon": -65.46, "orden": 0},
+    {"nombre": "Villa Mercedes", "provincia": "San Juan", "departamento": "Angaco", "tipo": "Localidad compuesta",
+     "lat": -30.1, "lon": -68.7, "orden": 0},
     {"nombre": "Córdoba", "provincia": "Córdoba", "departamento": "Capital", "tipo": "Localidad compuesta",
      "lat": -31.42, "lon": -64.18, "orden": 0},
 ]
@@ -34,8 +36,14 @@ def test_busca_sin_tildes(index):
 
 
 def test_primero_las_que_empiezan_igual(index):
-    # "villa" coincide con dos; ordena por tamaño (Localidad compuesta primero).
-    assert [l.nombre for l in index.search("villa")] == ["Villa Mercedes", "Villa Salles"]
+    # "villa" coincide con tres; sin preferencia ordena por tamaño (Localidad compuesta primero).
+    found = [l.nombre for l in index.search("villa", prefer=None)]
+    assert found[:2] == ["Villa Mercedes", "Villa Mercedes"] and found[2] == "Villa Salles"
+
+
+def test_en_los_empates_primero_la_provincia_de_la_app(index):
+    found = index.search("villa merc", prefer="San Luis")
+    assert [l.provincia for l in found] == ["San Luis", "San Juan"]  # la otra sigue apareciendo
 
 
 def test_busca_por_el_medio_del_nombre(index):
@@ -66,6 +74,12 @@ def test_respeta_el_radio(index):
 
 def test_archivo_que_no_existe_no_rompe(tmp_path):
     assert load_index(tmp_path / "no_esta.json").localities == []
+
+
+def test_endpoint_prioriza_san_luis_en_los_empates(client):
+    res = client.get("/localidades", params={"q": "villa merc"}).json()["data"]["results"]
+    assert res[0]["provincia"] == "San Luis"
+    assert any(r["provincia"] != "San Luis" for r in res)
 
 
 def test_endpoint_busqueda(client):

@@ -137,6 +137,17 @@ class SoilEstimate(BaseModel):
     note: str
 
 
+class PointSoilEstimate(BaseModel):
+    """Suelo estimado para un punto. Si en el punto no hay suelo agrícola (pueblo, agua o roca), puede venir de los
+    alrededores: `distance_km` dice a qué distancia se estimó, para no presentarlo como el suelo exacto del punto."""
+
+    estimate: SoilEstimate | None
+    lat: float = Field(description="Punto donde se estimó el suelo.")
+    lon: float
+    distance_km: float = Field(description="Distancia al punto pedido. 0 si es el mismo punto.")
+    note: str | None = Field(default=None, description="Aclaración para mostrar si se usaron los alrededores.")
+
+
 class AutoProfile(BaseModel):
     """Lo que AgroOrbit completa solo al cargar el campo. Lo que carga el productor siempre pisa esto."""
 

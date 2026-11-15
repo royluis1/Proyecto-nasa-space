@@ -125,6 +125,9 @@ def build_estimate(values: dict, origin: DataStatus, source: str, retrieved_at: 
     )
 
 
+#: Aviso cuando SoilGrids no tiene suelo en el punto (agua, zona urbana o roca).
+NO_SOIL = "SoilGrids no tiene datos de suelo en este punto (agua, zona urbana o roca): se deja vacío."
+
 NOTE = ("Suelo ESTIMADO con un mapa global de 250 m: puede no coincidir con tu lote. Si tenés análisis de laboratorio o "
         "conocés tu suelo, cargalo: siempre tiene prioridad.")
 
@@ -145,6 +148,8 @@ class SoilProvider:
         path = self._path(lat, lon)
         try:
             cached = json.loads(path.read_text(encoding="utf-8"))
+            if cached.get("empty"):  # ya se sabe que acá no hay suelo: no se vuelve a preguntar (SoilGrids tarda)
+                return None, [NO_SOIL]
             return build_estimate(cached["values"], DataStatus.CACHED, SOURCE, datetime.fromisoformat(cached["at"]), NOTE), []
         except (OSError, json.JSONDecodeError, KeyError):
             pass
@@ -158,13 +163,14 @@ class SoilProvider:
                 values = parse_soilgrids(self.fetcher(lat, lon))
                 if self.cooldown:
                     self.cooldown.reset()
-                if all(values.get(k) is None for k in PROPS):
-                    return None, ["SoilGrids no tiene datos de suelo en este punto (agua, zona urbana o roca): se deja vacío."]
+                empty = all(values.get(k) is None for k in PROPS)
                 try:
                     self.cache_dir.mkdir(parents=True, exist_ok=True)
-                    path.write_text(json.dumps({"values": values, "at": self.now().isoformat()}), encoding="utf-8")
+                    path.write_text(json.dumps({"values": values, "at": self.now().isoformat(), "empty": empty}), encoding="utf-8")
                 except OSError as exc:
                     logger.warning("No se pudo guardar el suelo en caché: %s", exc)
+                if empty:
+                    return None, [NO_SOIL]
                 return build_estimate(values, DataStatus.LIVE, SOURCE, self.now(), NOTE), []
             except UpstreamError as exc:
                 reason = exc.message

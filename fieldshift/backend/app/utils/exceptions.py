@@ -29,6 +29,11 @@ class InvalidInputError(FieldShiftError):
     code = "INVALID_INPUT"
 
 
+class ConflictError(FieldShiftError):
+    status_code = 409
+    code = "CONFLICT"
+
+
 class UpstreamError(FieldShiftError):
     """Una fuente externa (p. ej. NASA POWER) falló y no hay caché ni muestra."""
 

@@ -1,7 +1,6 @@
 "use client";
 
-import { CheckCircle2, Droplet, FileDown, Info, Layers, OctagonAlert, Satellite, Sprout, Thermometer, TriangleAlert, Trophy } from "lucide-react";
-import Link from "next/link";
+import { CheckCircle2, Droplet, Info, Layers, OctagonAlert, Satellite, Sprout, Thermometer, TriangleAlert, Trophy } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { AsyncBlock } from "@/components/async-block";
@@ -167,7 +166,6 @@ function CalendarioContent() {
         title="Calendario agrícola"
         description="Cuándo se siembra y se cosecha, y en qué meses hay riesgo."
       >
-        <Button asChild variant="outline"><Link href={`/campo/${fieldId}/reporte`}><FileDown aria-hidden /> Descargar el plan</Link></Button>
       </PageHeader>
       {!selected ? (
         compare.error ? (

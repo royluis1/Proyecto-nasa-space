@@ -101,3 +101,30 @@ Sin conexión con el servidor, todo esto funciona con los datos de ejemplo de `f
 - prioridad de lo cargado por el productor;
 - respaldo sin red de suelo, zonas y SMAP;
 - los endpoints.
+
+## Suelo estimado al cargar el campo (antes de guardar)
+
+El formulario de carga tiene el **análisis de suelo como paso 2**, justo después de la ubicación, y se completa solo:
+
+- Apenas se elige la ciudad o se marca el punto, se consulta `GET /soil/estimate?lat=&lon=` (SoilGrids de ISRIC,
+  0-30 cm, 250 m) y se completan **textura y materia orgánica**, marcadas "Estimado automáticamente".
+- **Lo del productor siempre gana:** la estimación solo completa casillas vacías; si el productor elige otro valor, deja
+  de ser automático. Con "Tengo análisis de laboratorio" la estimación no se usa y se puede adjuntar el archivo
+  (queda a mano en la página; todavía no se guarda en el servidor).
+- **Nunca con datos de muestra:** si SoilGrids no responde y el backend cae en la muestra simulada, el formulario no la
+  usa y lo dice.
+- **Alrededores:** en el centro de un pueblo SoilGrids no tiene suelo (zona urbana). Si pasa eso, se prueba a 3 km
+  (norte, sur, este, oeste; se corta en el primero con datos) y se aclara siempre que es el suelo de los alrededores.
+  El perfil automático al guardar usa la misma regla, así lo que se ve es lo que se guarda, con la aclaración en la
+  procedencia.
+- **Procedencia al guardar:** lo autocompletado que nadie tocó se manda vacío y el backend lo completa rotulado como
+  "Estimado (SoilGrids)". Lo que eligió el productor queda como "Declarado por el productor".
+- **Tiempos:** SoilGrids tarda de 5 a 45 s por consulta (medido). El backend espera hasta 45 s
+  (`FIELDSHIFT_SOILGRIDS_TIMEOUT_S`) y, si falla, hace una pausa de 60 s (`FIELDSHIFT_SOILGRIDS_COOLDOWN_S`). Los puntos
+  sin suelo también quedan en caché. El formulario no se bloquea mientras busca.
+
+## Borrar campos
+
+La papelera de "Mis campos" borra los campos cargados (`DELETE /fields/{id}`). Los **campos de ejemplo no se borran
+del servidor** (responde 409): la página es pública y desaparecerían para todos, incluido el jurado. La papelera los
+oculta solo en ese navegador, con un botón para volver a mostrarlos.

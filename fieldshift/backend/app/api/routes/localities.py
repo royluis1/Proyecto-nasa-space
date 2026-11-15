@@ -29,11 +29,12 @@ def search(
     q: str = Query(min_length=2, description="Nombre o parte del nombre.", examples=["daract"]),
     provincia: str | None = Query(default=None, description="Limitar a una provincia.", examples=["San Luis"]),
     limit: int = Query(default=10, ge=1, le=50),
+    preferir: str | None = Query(default="San Luis", description="En los empates, primero las de esta provincia (la región de la app)."),
     index: LocalityIndex = Depends(get_locality_index),
 ) -> ApiResponse[LocalitySearch]:
     """Busca localidades por nombre, sin importar tildes ni mayúsculas. Primero las que empiezan igual
     y las más grandes. Fuente: IGN, capa Localidad BAHRA."""
-    results = [_out(loc) for loc in index.search(q, limit=limit, provincia=provincia)]
+    results = [_out(loc) for loc in index.search(q, limit=limit, provincia=provincia, prefer=preferir)]
     return ApiResponse(data=LocalitySearch(query=q, results=results, source=SOURCE), meta=_meta(index))
 
 

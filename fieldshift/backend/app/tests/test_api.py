@@ -237,3 +237,28 @@ def test_actualizar_lote(client):
 def test_cors_permite_put(client):
     r = client.options("/fields/campo-este", headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "PUT"})
     assert r.status_code == 200 and "PUT" in r.headers["access-control-allow-methods"]
+
+
+def test_borrar_un_lote_cargado(client):
+    body = {"name": "Para borrar", "location": {"lat": -33.85, "lon": -65.2}, "area_ha": 10, "current_crop": "soja"}
+    fid = client.post("/fields", json=body).json()["data"]["id"]
+    r = client.delete(f"/fields/{fid}")
+    assert r.status_code == 200 and r.json()["data"] == {"id": fid, "deleted": True}
+    assert client.get(f"/fields/{fid}").status_code == 404
+
+
+def test_los_campos_de_ejemplo_no_se_borran_del_servidor(client):
+    r = client.delete("/fields/campo-este")
+    assert r.status_code == 409
+    assert "ejemplo" in r.json()["error"]["message"]
+    assert client.get("/fields/campo-este").status_code == 200
+
+
+def test_borrar_un_lote_que_no_existe(client):
+    assert client.delete("/fields/no-existe").status_code == 404
+
+
+def test_cors_permite_borrar_desde_el_navegador(client):
+    r = client.options("/fields/x", headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "DELETE"})
+    assert r.status_code == 200
+    assert "DELETE" in r.headers["access-control-allow-methods"]

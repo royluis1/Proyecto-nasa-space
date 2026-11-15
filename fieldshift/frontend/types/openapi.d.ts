@@ -215,6 +215,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/soil/estimate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Suelo estimado de un punto
+         * @description Textura y materia orgánica **estimadas** de un punto (SoilGrids de ISRIC, 0-30 cm, 250 m), para completar el
+         *     formulario del campo antes de guardarlo. No es un análisis de laboratorio: lo que cargue el productor siempre gana.
+         *
+         *     En el centro de un pueblo SoilGrids no tiene suelo (es zona urbana). Si pasa eso y `alrededores` es verdadero,
+         *     se prueba a 3 km y la respuesta lo dice (`distance_km` y `note`). Orden de siempre: caché → SoilGrids en vivo →
+         *     muestra rotulada (`origin = sample`) → sin dato con aviso. El frontend nunca completa el formulario con la muestra.
+         */
+        get: operations["soil_estimate_soil_estimate_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/crops": {
         parameters: {
             query?: never;
@@ -784,6 +809,11 @@ export interface components {
         /** ApiResponse[NearestLocality] */
         ApiResponse_NearestLocality_: {
             data: components["schemas"]["NearestLocality"];
+            meta: components["schemas"]["ResponseMeta"];
+        };
+        /** ApiResponse[PointSoilEstimate] */
+        ApiResponse_PointSoilEstimate_: {
+            data: components["schemas"]["PointSoilEstimate"];
             meta: components["schemas"]["ResponseMeta"];
         };
         /** ApiResponse[ProvincesOut] */
@@ -2278,6 +2308,31 @@ export interface components {
             latitude?: number | null;
             /** Longitude */
             longitude?: number | null;
+        };
+        /**
+         * PointSoilEstimate
+         * @description Suelo estimado para un punto. Si en el punto no hay suelo agrícola (pueblo, agua o roca), puede venir de los
+         *     alrededores: `distance_km` dice a qué distancia se estimó, para no presentarlo como el suelo exacto del punto.
+         */
+        PointSoilEstimate: {
+            estimate: components["schemas"]["SoilEstimate"] | null;
+            /**
+             * Lat
+             * @description Punto donde se estimó el suelo.
+             */
+            lat: number;
+            /** Lon */
+            lon: number;
+            /**
+             * Distance Km
+             * @description Distancia al punto pedido. 0 si es el mismo punto.
+             */
+            distance_km: number;
+            /**
+             * Note
+             * @description Aclaración para mostrar si se usaron los alrededores.
+             */
+            note?: string | null;
         };
         /**
          * PowerParameter
@@ -4367,6 +4422,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_NearestLocality_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    soil_estimate_soil_estimate_get: {
+        parameters: {
+            query: {
+                lat: number;
+                lon: number;
+                /** @description Si en el punto no hay suelo agrícola, probar a 3 km. */
+                alrededores?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_PointSoilEstimate_"];
                 };
             };
             /** @description Validation Error */

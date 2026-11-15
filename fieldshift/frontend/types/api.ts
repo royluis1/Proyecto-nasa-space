@@ -78,6 +78,7 @@ export type ZoneSuitability = S["ZoneSuitability"];
 export type CropSuitability = S["CropSuitability"];
 export type Transition = S["Transition"];
 export type SoilEstimate = S["SoilEstimate"];
+export type PointSoilEstimate = S["PointSoilEstimate"];
 export type AutoProfile = S["AutoProfile"];
 export type FieldSoilMoisture = S["FieldSoilMoisture"];
 export type FieldSectors = S["FieldSectors"];

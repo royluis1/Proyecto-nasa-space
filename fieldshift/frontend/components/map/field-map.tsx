@@ -42,6 +42,8 @@ interface FieldMapProps {
   heightClass?: string;
   /** Zoom inicial (por defecto, según el modo). */
   initialZoom?: number;
+  /** Mostrar el buscador de lugares propio del mapa. Se apaga cuando la página ya tiene su buscador de ciudades. */
+  showPlaceSearch?: boolean;
 }
 
 const SAN_LUIS: [number, number] = [-33.7, -65.8];
@@ -106,7 +108,7 @@ function SizeFix() {
 
 export default function FieldMap({
   mode = "edit", point = null, polygon = null, onPointChange, onPolygonChange, others = [], selectedId = null, onSelectOther, className,
-  initialBase = "mapa", heightClass = "h-[420px] sm:h-[480px]", initialZoom,
+  initialBase = "mapa", heightClass = "h-[420px] sm:h-[480px]", initialZoom, showPlaceSearch = true,
 }: FieldMapProps) {
   const uid = useId();
   const [base, setBase] = useState<Base>(initialBase);
@@ -134,7 +136,27 @@ export default function FieldMap({
 
   const fly = (lat: number, lon: number) => setMove({ kind: "fly", lat, lon, nonce: ++nonce.current });
   const fit = (ring: LngLat[]) => setMove({ kind: "fit", ring, nonce: ++nonce.current });
-  const setPoint = (p: MapPoint) => onPointChange?.({ lat: Math.round(p.lat * 1e4) / 1e4, lon: Math.round(p.lon * 1e4) / 1e4 });
+  // Último punto que puso el propio mapa (clic, arrastre, coordenadas o buscador). Si el punto cambia y no es este,
+  // vino de afuera (por ejemplo, el buscador de ciudades): el mapa vuela hasta ahí.
+  const emitted = useRef<MapPoint | null>(point);
+  const setPoint = (p: MapPoint) => {
+    const rounded = { lat: Math.round(p.lat * 1e4) / 1e4, lon: Math.round(p.lon * 1e4) / 1e4 };
+    emitted.current = rounded;
+    onPointChange?.(rounded);
+  };
+
+  // Sincronización: la casilla de coordenadas siempre muestra el punto actual.
+  useEffect(() => {
+    if (!point) return;
+    setCoords(`${point.lat}, ${point.lon}`);
+    setCoordsMsg(null);
+    const external = !emitted.current || emitted.current.lat !== point.lat || emitted.current.lon !== point.lon;
+    if (external) {
+      emitted.current = point;
+      fly(point.lat, point.lon);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [point?.lat, point?.lon]);
 
   function applyPolygon(ring: LngLat[]) {
     const closed = closeRing(ring);
@@ -254,8 +276,9 @@ export default function FieldMap({
       </div>
 
       {editing && (
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className={cn("grid gap-3", showPlaceSearch && "md:grid-cols-2")}>
           {/* Sin <form>: este mapa vive dentro del formulario del campo y los formularios no se pueden anidar. */}
+          {showPlaceSearch && (
           <div className="space-y-1.5" role="search">
             <Label htmlFor={`${uid}-q`}>Buscar un lugar por nombre</Label>
             <div className="flex gap-2">
@@ -277,8 +300,9 @@ export default function FieldMap({
               </ul>
             )}
           </div>
+          )}
           <div className="space-y-1.5">
-            <Label htmlFor={`${uid}-c`}>Ingresar coordenadas</Label>
+            <Label htmlFor={`${uid}-c`}>Coordenadas (latitud, longitud)</Label>
             <div className="flex gap-2">
               <Input id={`${uid}-c`} value={coords} onChange={(e) => setCoords(e.target.value)} onKeyDown={onEnter(goToCoords)} placeholder="-33.85, -65.20" inputMode="decimal" autoComplete="off" />
               <Button type="button" variant="secondary" onClick={goToCoords} disabled={!coords.trim()}>

@@ -12,7 +12,7 @@ from app.schemas.crop import Crop
 from app.schemas.field import FieldCreate, FieldOut
 from app.schemas.priority import FarmerPriority, Priorities
 from app.schemas.rotation import Rotation, RotationTemplate
-from app.utils.exceptions import FieldNotFoundError, InvalidInputError, RotationNotFoundError
+from app.utils.exceptions import ConflictError, FieldNotFoundError, InvalidInputError, RotationNotFoundError
 
 
 def _load(path: Path) -> list[dict]:
@@ -76,6 +76,15 @@ class Repository:
         field = FieldOut(id=f"lote-{uuid.uuid4().hex[:8]}", **data.model_dump())
         self.fields[field.id] = field
         return field
+
+    def delete_field(self, field_id: str) -> None:
+        """Borra un lote cargado por un usuario. Los de ejemplo no se borran del servidor: la página es pública y
+        desaparecerían para todos (el frontend los oculta solo en el navegador de quien los quiere sacar)."""
+        field = self.get_field(field_id)
+        if field.sample_note:
+            raise ConflictError("Los campos de ejemplo no se borran del servidor: se pueden ocultar en tu navegador.")
+        del self.fields[field_id]
+        self.priorities.pop(field_id, None)
 
     def save_field(self, field: FieldOut) -> FieldOut:
         self.fields[field.id] = field

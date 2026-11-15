@@ -161,6 +161,16 @@
   .animate-rise {
     animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   }
+
+  .animate-orbit {
+    animation: orbit 2.4s linear infinite;
+  }
+}
+
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes rise {

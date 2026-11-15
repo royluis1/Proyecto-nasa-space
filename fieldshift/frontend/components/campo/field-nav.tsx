@@ -2,26 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, BellRing, CalendarDays, CloudSun, FileText, History, Layers, LayoutDashboard, Sprout, UserRound } from "lucide-react";
+import { BarChart3, CalendarDays, History, Layers, LayoutDashboard, Sprout, UserRound } from "lucide-react";
 import { useProfile } from "@/hooks/use-profile";
 import { cn } from "@/lib/utils";
 
 const huertaSteps = [
   { slug: "huerta", label: "Mi huerta", icon: Sprout },
-  { slug: "alertas", label: "Alertas", icon: BellRing },
-  { slug: "diagnostico", label: "Clima y satélites", icon: CloudSun },
   { slug: "historial", label: "Mi historial", icon: History },
 ];
 
 const steps = [
   { slug: "perfil", label: "Perfil y prioridades", icon: UserRound },
-  { slug: "diagnostico", label: "Diagnóstico", icon: CloudSun },
-  { slug: "alertas", label: "Alertas", icon: BellRing },
   { slug: "comparador", label: "Comparador", icon: BarChart3 },
   { slug: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { slug: "calendario", label: "Calendario", icon: CalendarDays },
   { slug: "escenarios", label: "Escenarios", icon: Layers },
-  { slug: "reporte", label: "Reporte", icon: FileText },
   { slug: "historial", label: "Historial", icon: History },
 ];
 

@@ -73,6 +73,19 @@ def update_field(
     return ApiResponse(data=field, meta=ResponseMeta(data_status=DataStatus.SAMPLE, warnings=warnings))
 
 
+@router.delete(
+    "/fields/{field_id}",
+    response_model=ApiResponse[dict[str, str | bool]],
+    summary="Borrar un lote",
+    responses={**NOT_FOUND, 409: {"model": ErrorResponse}},
+)
+def delete_field(field_id: str, repo: Repository = Depends(get_repository)) -> ApiResponse[dict[str, str | bool]]:
+    """Borra un lote cargado por un usuario. Los campos de ejemplo responden 409: no se borran del servidor porque la
+    página es pública y desaparecerían para todos; el frontend los oculta solo en ese navegador."""
+    repo.delete_field(field_id)
+    return ApiResponse(data={"id": field_id, "deleted": True}, meta=ResponseMeta(data_status=DataStatus.SAMPLE))
+
+
 @router.get("/fields/{field_id}", response_model=ApiResponse[FieldOut], summary="Obtener un lote", responses=NOT_FOUND)
 def get_field(field_id: str, repo: Repository = Depends(get_repository)) -> ApiResponse[FieldOut]:
     """Devuelve el lote con su ubicación, perfil de suelo y rotación actual."""
