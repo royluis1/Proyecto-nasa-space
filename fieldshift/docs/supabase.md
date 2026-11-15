@@ -52,9 +52,17 @@ Por defecto Supabase manda un correo para confirmar la cuenta al registrarse. Pa
 demo es más cómodo desactivarlo: **Authentication → Providers → Email → Confirm email = off**.
 Así el registro entra directo, sin esperar el correo.
 
+## Por qué no ves el login en la página publicada
+
+El botón **Entrar**, el formulario **Creá tu cuenta** de la portada y la pestaña **Historial** que guarda
+en la cuenta **solo aparecen cuando Vercel tiene las dos variables** (`NEXT_PUBLIC_SUPABASE_URL` y
+`NEXT_PUBLIC_SUPABASE_ANON_KEY`). Sin ellas se esconden a propósito: mostrar un login que no puede
+funcionar sería peor. Cargalas y hacé **Redeploy** (se graban al compilar).
+
 ## Qué queda andando
 - En el encabezado aparece **Entrar**. Lleva a `/cuenta`, con **iniciar sesión** y **crear cuenta**.
-- Con sesión iniciada, los lotes y su historial se guardan en la cuenta del usuario (tablas con RLS).
+- Con sesión iniciada, en cada campo la pestaña **Historial** permite guardar el campo en la cuenta y cargar
+  siembras, cosechas, riegos, observaciones y notas, que se ven como una línea de tiempo por año.
 - Sin Supabase configurado, no se muestra el login y todo sigue como antes.
 
 ## Seguridad

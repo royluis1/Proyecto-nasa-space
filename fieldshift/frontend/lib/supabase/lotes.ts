@@ -111,3 +111,19 @@ export async function addHistorial(registro: NuevoHistorial): Promise<HistorialR
   if (error) throw new Error(error.message);
   return data as HistorialRow;
 }
+
+/**
+ * El lote de la cuenta que corresponde a un campo de FieldShift (se guarda su id en datos.field_id).
+ * Devuelve null si todavía no se guardó.
+ */
+export async function findLoteByFieldId(fieldId: string): Promise<LoteRow | null> {
+  const { data, error } = await db().from("lotes").select("*").eq("datos->>field_id", fieldId).limit(1);
+  if (error) throw new Error(error.message);
+  return ((data as LoteRow[]) ?? [])[0] ?? null;
+}
+
+/** Borra un registro propio del historial. */
+export async function deleteHistorial(id: string): Promise<void> {
+  const { error } = await db().from("lote_historial").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}

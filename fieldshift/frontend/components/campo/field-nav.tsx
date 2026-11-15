@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, BellRing, CalendarDays, CloudSun, FileText, Layers, LayoutDashboard, Sprout, UserRound } from "lucide-react";
+import { BarChart3, BellRing, CalendarDays, CloudSun, FileText, History, Layers, LayoutDashboard, Sprout, UserRound } from "lucide-react";
 import { useProfile } from "@/hooks/use-profile";
 import { cn } from "@/lib/utils";
 
@@ -10,6 +10,7 @@ const huertaSteps = [
   { slug: "huerta", label: "Mi huerta", icon: Sprout },
   { slug: "alertas", label: "Alertas", icon: BellRing },
   { slug: "diagnostico", label: "Clima y satélites", icon: CloudSun },
+  { slug: "historial", label: "Mi historial", icon: History },
 ];
 
 const steps = [
@@ -21,6 +22,7 @@ const steps = [
   { slug: "calendario", label: "Calendario", icon: CalendarDays },
   { slug: "escenarios", label: "Escenarios", icon: Layers },
   { slug: "reporte", label: "Reporte", icon: FileText },
+  { slug: "historial", label: "Historial", icon: History },
 ];
 
 export function FieldNav({ fieldId }: { fieldId: string }) {

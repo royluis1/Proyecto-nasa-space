@@ -15,7 +15,7 @@ export function AccountChip() {
     <Link
       href="/cuenta"
       className="inline-flex min-h-11 items-center gap-2 rounded-full border px-3 text-sm font-semibold hover:bg-accent"
-      aria-label={user ? `Tu cuenta: ${name}` : "Iniciar sesión"}
+      aria-label={user ? `Tu cuenta: ${name}` : undefined}
     >
       {user ? <UserRound aria-hidden className="size-4" /> : <LogIn aria-hidden className="size-4" />}
       {loading ? "…" : user ? <span className="max-w-[9rem] truncate">{name}</span> : "Entrar"}

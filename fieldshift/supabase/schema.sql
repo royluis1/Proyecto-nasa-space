@@ -23,6 +23,8 @@ create table if not exists public.lotes (
 );
 
 create index if not exists lotes_user_id_idx on public.lotes (user_id);
+-- Para encontrar el lote que corresponde a un campo de FieldShift (se guarda en datos.field_id).
+create index if not exists lotes_field_id_idx on public.lotes ((datos ->> 'field_id'));
 
 -- 2) Historial de cada lote: siembra, cosecha, riego, observación o nota.
 --    Es lo que permite llevar la historia del lote para después decidir.
