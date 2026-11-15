@@ -8,6 +8,7 @@ import { TodaySatellite } from "@/components/map/today-satellite";
 import { HeatStressCard } from "@/components/satellite/heat-stress-card";
 import { PageHeader } from "@/components/page-header";
 import { PageNotes } from "@/components/layout/page-notes";
+import { WeatherAnimation } from "@/components/map/weather-animation-loader";
 import { LocalityLine } from "@/components/field/locality-line";
 import { Disclosure } from "@/components/ui/disclosure";
 import { SourceLine } from "@/components/provenance/source-line";
@@ -87,6 +88,10 @@ function Panel({ r }: { r: ApiResult<HuertaPanel> }) {
           )}
         </CardContent>
       </Card>
+
+      <Disclosure variant="card" label="Ver el mapa de lluvia de la NASA (animado)">
+        <WeatherAnimation lat={h.latitude} lon={h.longitude} />
+      </Disclosure>
 
       <Disclosure variant="card" label="Ver más sobre mi zona: verdor, calor e imagen satelital" contentClassName="space-y-6">
         {h.vegetation && (

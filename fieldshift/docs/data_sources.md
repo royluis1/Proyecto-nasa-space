@@ -64,3 +64,15 @@ Pendiente: texto de atribución oficial de cada fuente NASA ⚠️.
 | **Para qué** | Que el usuario elija su localidad por nombre en vez de marcarla en el mapa, y mostrar "tu huerta está en X". |
 | **Cómo se obtuvo** | `python scripts/build_localities.py` → `data/samples/localidades_ar.json`. No es una consulta en vivo: es un archivo del repositorio. |
 | **Límites** | BAHRA da **un punto** por asentamiento (su centro), no el límite del ejido. La distancia que mostramos es al centro de la localidad, así que "a 2 km" puede ser dentro del pueblo. Más allá de 60 km no se asigna ninguna localidad. |
+
+## Lluvia satelital animada (GPM / IMERG, vía GIBS)
+
+| | |
+|---|---|
+| **Qué es** | Estimación de cuánta lluvia cae, vista desde el satélite, cada media hora. |
+| **Fuente** | NASA GIBS, capa `IMERG_Precipitation_Rate_30min`. IMERG combina varios satélites de la misión **GPM** (NASA y JAXA). |
+| **Acceso** | GIBS es público: no necesita cuenta de Earthdata. Se piden las teselas desde el navegador. |
+| **Para qué** | Mapa animado de las últimas 12 horas en Alertas y en Mi huerta: ver por dónde viene la lluvia. |
+| **Límites** | Píxeles de unos 10 km y varias horas de demora (es el producto "Early"). **No es un radar** ni reemplaza al pluviómetro del campo. No se usa para calcular el puntaje de las rotaciones: para eso la lluvia sale de NASA POWER. |
+
+La capa de nubes del mismo mapa es `MODIS_Terra_CorrectedReflectance_TrueColor` (satélite Terra), una imagen por día.

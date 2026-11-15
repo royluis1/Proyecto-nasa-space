@@ -23,7 +23,7 @@ Esta tabla sigue los bloques de la descripción oficial. Estado: **Hecho**, **Pa
 |---|---|---|
 | SMAP (humedad del suelo) | L4 zona de raíces (historia y anomalía) y L3 superficie (última observación) | Hecho |
 | ECOSTRESS (temperatura de superficie) | Temperatura de verano y estrés hídrico del lote | Hecho (muestra rotulada hasta tener tareas en vivo de AppEEARS) |
-| GPM (precipitación) | La lluvia sale de NASA POWER. GPM/IMERG tiene la app autorizada en Earthdata pero no está integrado | No hecho |
+| GPM (precipitación) | Mapa animado de lluvia satelital (IMERG cada 30 min, vía GIBS) en Alertas y Mi huerta. El puntaje sigue usando la lluvia de NASA POWER | Hecho |
 | Landsat/MODIS (índices de vegetación) | MODIS NDVI por campaña y HLS por 9 sectores del lote | Hecho |
 | GEDI (biomasa) | No se usa: la biomasa se infiere del NDVI (indirecto) | No hecho |
 | Datos de suelo | SoilGrids estimado + análisis del productor con prioridad | Hecho |
@@ -41,7 +41,7 @@ Esta tabla sigue los bloques de la descripción oficial. Estado: **Hecho**, **Pa
 
 | Pide el desafío | Cómo lo cubre FieldShift | Estado |
 |---|---|---|
-| Mapas interactivos de tendencias | Mapa de zonas climáticas de San Luis; lluvia año por año y anomalía de humedad del suelo de 10 años | Parcial: las tendencias son gráficos, no capas de mapa animadas |
+| Mapas interactivos de tendencias | Mapa de zonas climáticas de San Luis; mapa animado de lluvia (GPM) y nubes (MODIS); lluvia año por año y anomalía de humedad del suelo de 10 años | Hecho |
 | Vulnerabilidades dentro del lote | Verdor por 9 sectores del lote (HLS) que señala el sector más débil; además pendiente del lote (SRTM), calor de superficie (ECOSTRESS) y alertas de helada | Parcial: solo el verdor se ve por sector |
 | Líneas de tiempo, capas comparadas, sliders de escenario | Calendario por campañas interactivo, escenarios de lluvia, temperatura y riego, imagen del día de GIBS | Hecho |
 
@@ -56,8 +56,7 @@ Esta tabla sigue los bloques de la descripción oficial. Estado: **Hecho**, **Pa
 
 ## Pendiente, por prioridad
 
-1. GPM/IMERG para la lluvia satelital.
-2. Tareas en vivo de AppEEARS (HLS y ECOSTRESS) en producción.
-3. Historial de lotes por usuario (código listo en Supabase, falta configurarlo).
-4. Validar el catálogo de cultivos con INTA y con más productores.
-5. GEDI y restricciones de maquinaria.
+1. Tareas en vivo de AppEEARS (HLS y ECOSTRESS) en producción.
+2. Historial de lotes por usuario (código listo en Supabase, falta configurarlo).
+3. Validar el catálogo de cultivos con INTA y con más productores.
+4. GEDI y restricciones de maquinaria.

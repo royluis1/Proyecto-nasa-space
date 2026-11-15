@@ -6,6 +6,7 @@ import { ForecastTable } from "@/components/alerts/forecast-table";
 import { useCampo } from "@/components/campo/campo-provider";
 import { PageHeader } from "@/components/page-header";
 import { PageNotes } from "@/components/layout/page-notes";
+import { WeatherAnimation } from "@/components/map/weather-animation-loader";
 import { Disclosure } from "@/components/ui/disclosure";
 import { SourceLine } from "@/components/provenance/source-line";
 import { WarningsList } from "@/components/provenance/warnings";
@@ -42,6 +43,10 @@ function Content({ r }: { r: ApiResult<AlertsResult> }) {
           )}
         </CardContent>
       </Card>
+      <Disclosure variant="card" label="Ver el mapa de lluvia de la NASA (animado)">
+        <WeatherAnimation lat={a.latitude} lon={a.longitude} />
+      </Disclosure>
+
       <PageNotes>
         <WarningsList warnings={friendlyWarnings(r.meta.warnings)} />
         <Disclosure label="De dónde salen los datos" contentClassName="space-y-4">

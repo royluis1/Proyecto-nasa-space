@@ -24,7 +24,8 @@ Los datos para decidir mejor existen (satélites y modelos de la NASA), pero est
 4. **Prueba escenarios**: año seco, olas de calor, lluvias intensas, más temperatura o riego limitado.
 5. **Arma el calendario** campaña por campaña: cuándo sembrar, cuándo el suelo queda desnudo y en qué meses hay riesgo.
 6. **Explica qué le hace cada cultivo al suelo**: fija nitrógeno, cubre el suelo, raíz profunda o tolera la sequía.
-7. **Avisa** heladas, calor, tormentas y falta de agua de los próximos días, y tiene un modo simple para **huertas**.
+7. **Avisa** heladas, calor, tormentas y falta de agua de los próximos días, con un **mapa animado de lluvia** de la NASA.
+8. Tiene un **modo simple para huertas**, que se ubica por el nombre de la ciudad o pueblo.
 
 Ejemplo real (Campo Este, datos de NASA POWER): la rotación actual saca **57 puntos** y deja el suelo desnudo **6 meses por año**.
 La alternativa mixta (cobertura – soja – vicia – sorgo) saca **73 puntos** y baja a **2 meses**, a cambio de un 6 % más de demanda de
@@ -40,6 +41,7 @@ agua y de secar la cobertura a tiempo. FieldShift muestra las dos caras.
 | Landsat/Sentinel (HLS) | Verdor por sectores dentro del lote (30 m) |
 | ECOSTRESS | Temperatura de la superficie y estrés hídrico |
 | SRTM | Pendiente del lote y riesgo de erosión |
+| GPM / IMERG | Mapa animado de la lluvia satelital de las últimas horas |
 | GIBS | Imagen satelital del día |
 
 Se combinan con SoilGrids (suelo estimado), los límites del IGN y el pronóstico de Open-Meteo. Cada dato muestra su fuente, su
