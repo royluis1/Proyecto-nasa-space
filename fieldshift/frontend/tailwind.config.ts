@@ -29,6 +29,11 @@ const config: Config = {
         critical: { DEFAULT: c("critical"), soft: c("critical-soft") },
         sky: { DEFAULT: c("sky"), soft: c("sky-soft") },
         map: { DEFAULT: c("map"), hover: c("map-hover"), stroke: c("map-stroke") },
+        // Portada AgroOrbit: iconos de objetivos y texto del hero
+        "icon-leaf": { DEFAULT: c("icon-leaf"), foreground: c("icon-leaf-foreground") },
+        "icon-cycle": { DEFAULT: c("icon-cycle"), foreground: c("icon-cycle-foreground") },
+        "icon-water": { DEFAULT: c("icon-water"), foreground: c("icon-water-foreground") },
+        "hero-foreground": c("hero-foreground"),
         // Nombres cortos que ya usaban los gráficos
         good: c("success"),
         warn: c("warning"),
@@ -52,6 +57,9 @@ const config: Config = {
       boxShadow: {
         soft: "0 1px 2px color-mix(in oklab, oklch(var(--foreground)) 4%, transparent), 0 8px 24px -12px color-mix(in oklab, oklch(var(--primary)) 18%, transparent)",
         lift: "0 2px 4px color-mix(in oklab, oklch(var(--foreground)) 5%, transparent), 0 24px 48px -20px color-mix(in oklab, oklch(var(--primary)) 35%, transparent)",
+        // Portada AgroOrbit (del diseño del equipo)
+        card: "0 1px 2px oklch(0.2 0.03 155 / 0.04), 0 8px 24px -12px oklch(0.2 0.03 155 / 0.12)",
+        button: "0 10px 30px -10px oklch(0.3 0.08 155 / 0.6)",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"],

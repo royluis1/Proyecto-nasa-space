@@ -38,6 +38,15 @@
     --input: 0.86 0.018 150;
     --ring: 0.5 0.11 152;
 
+    /* Portada AgroOrbit: iconos de objetivos y texto del hero (del diseño del equipo) */
+    --icon-leaf: 0.93 0.04 150;
+    --icon-leaf-foreground: 0.38 0.08 155;
+    --icon-cycle: 0.93 0.08 135;
+    --icon-cycle-foreground: 0.38 0.09 145;
+    --icon-water: 0.93 0.04 230;
+    --icon-water-foreground: 0.45 0.12 240;
+    --hero-foreground: 0.99 0.005 90;
+
     /* Semáforo (barras, aros y avisos) */
     --success: 0.48 0.13 150;
     --success-soft: 0.95 0.04 150;
@@ -87,6 +96,15 @@
     --border: 0.34 0.025 155;
     --input: 0.42 0.03 155;
     --ring: 0.82 0.13 150;
+
+    /* Portada AgroOrbit en oscuro: fondos de icono oscuros con texto claro; el hero siempre sobre foto oscura */
+    --icon-leaf: 0.33 0.05 150;
+    --icon-leaf-foreground: 0.88 0.08 150;
+    --icon-cycle: 0.33 0.07 140;
+    --icon-cycle-foreground: 0.9 0.1 140;
+    --icon-water: 0.33 0.06 235;
+    --icon-water-foreground: 0.88 0.1 235;
+    --hero-foreground: 0.99 0.005 90;
 
     --success: 0.78 0.15 150;
     --success-soft: 0.3 0.05 150;
@@ -147,6 +165,20 @@
 }
 
 @layer utilities {
+  /* Portada AgroOrbit: overlay oscuro sobre la foto y sombra del texto del hero (del diseño del equipo) */
+  .hero-overlay {
+    background-image: linear-gradient(
+      180deg,
+      oklch(0.15 0.03 155 / 0.35) 0%,
+      oklch(0.15 0.03 155 / 0.45) 45%,
+      oklch(0.12 0.03 155 / 0.7) 100%
+    );
+  }
+
+  .hero-text-shadow {
+    text-shadow: 0 2px 24px oklch(0.1 0.02 155 / 0.55);
+  }
+
   /* Fondo degradado suave de la portada y las cabeceras */
   .bg-hero {
     background-image:
