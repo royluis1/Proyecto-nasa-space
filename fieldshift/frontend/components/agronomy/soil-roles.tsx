@@ -29,7 +29,7 @@ function RoleWhy({ role }: { role: SoilRole }) {
 
 /** Qué aporta cada cultivo de la rotación a la salud del suelo a largo plazo. */
 export function SoilRoles({ cropIds }: { cropIds: string[] }) {
-  const catalog = useAsync<Crop[]>(async (signal) => (await api.crops({ signal })).data, []);
+  const catalog = useAsync<Crop[]>(async (signal) => (await api.crops("campo", { signal })).data, []);
   const crops = (catalog.data ?? []).filter((c) => cropIds.includes(c.id));
   if (!catalog.data) return null;
   const present = rolesInRotation(crops);

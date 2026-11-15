@@ -53,7 +53,7 @@ export default function DashboardPage() {
   }, [scenarioId, irrigation]);
 
   const d = useDashboardCompare(scenario);
-  const crops = useAsync<Crop[]>(async (signal) => (await api.crops({ signal })).data, []);
+  const crops = useAsync<Crop[]>(async (signal) => (await api.crops("campo", { signal })).data, []);
   const cropMap = useMemo(() => Object.fromEntries((crops.data ?? []).map((c) => [c.id, c])), [crops.data]);
   const evals = d.evaluations;
   const actual = evals.find((e) => e.rotation.strategy === "actual");

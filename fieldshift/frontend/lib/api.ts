@@ -202,8 +202,9 @@ const fieldIdOf = (req: { field_id?: string | null }) => req.field_id ?? "";
 export const api = {
   health: (o: Opts = {}) => request<{ status: string }>("/health", { ...o, retries: 0, timeoutMs: 5000 }),
 
-  async crops(o: Opts = {}): Promise<ApiResult<Crop[]>> {
-    return call(() => request<Crop[]>("/crops", o), demo.demoCrops);
+  async crops(scale?: "huerta" | "campo", o: Opts = {}): Promise<ApiResult<Crop[]>> {
+    const path = scale ? `/crops?scale=${scale}` : "/crops";
+    return call(() => request<Crop[]>(path, o), () => demo.demoCrops(scale));
   },
 
   async fields(o: Opts = {}): Promise<ApiResult<FieldOut[]>> {

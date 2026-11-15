@@ -4,6 +4,7 @@ from pathlib import Path
 from fastapi import Depends
 
 from app.config import get_settings
+from app.models.enums import CropScale
 from app.services.engine.service import RotationService
 from app.services.power.cache import PowerCache
 from app.services.power.sample import SampleProvider
@@ -142,10 +143,14 @@ _REGIONS: dict[tuple, RegionRepository] = {}
 
 
 def get_region_repository(repo: Repository = Depends(get_repository)) -> RegionRepository:
-    """Una por carpeta de datos y catálogo: los GeoJSON se leen una sola vez."""
+    """Una por carpeta de datos y catálogo: los GeoJSON se leen una sola vez.
+
+    Las zonas son de escala hectárea: solo cultivos de campo (las hortalizas no entran en la aptitud por zona).
+    """
+    campo = {k: c for k, c in repo.crops.items() if c.scale == CropScale.CAMPO}
     key = (get_settings().nasa_samples_dir, id(repo.crops))
     if key not in _REGIONS:
-        _REGIONS[key] = RegionRepository(get_settings().nasa_samples_dir, repo.crops)
+        _REGIONS[key] = RegionRepository(get_settings().nasa_samples_dir, campo)
     return _REGIONS[key]
 
 

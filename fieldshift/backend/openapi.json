@@ -491,6 +491,25 @@
        "default": 10,
        "title": "Limit"
       }
+     },
+     {
+      "name": "preferir",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "En los empates, primero las de esta provincia (la región de la app).",
+       "default": "San Luis",
+       "title": "Preferir"
+      },
+      "description": "En los empates, primero las de esta provincia (la región de la app)."
      }
     ],
     "responses": {
@@ -599,7 +618,7 @@
      "zonas y suelo"
     ],
     "summary": "Suelo estimado de un punto",
-    "description": "Textura y materia orgánica **estimadas** de un punto (SoilGrids de ISRIC, 0-30 cm, 250 m), para completar el\nformulario del campo antes de guardarlo. No es un análisis de laboratorio: lo que cargue el productor siempre gana.\n\nEn el centro de un pueblo SoilGrids no tiene suelo (es zona urbana). Si pasa eso y `alrededores` es verdadero,\nse prueba a 3 km y la respuesta lo dice (`distance_km` y `note`). Orden de siempre: caché → SoilGrids en vivo →\nmuestra rotulada (`origin = sample`) → sin dato con aviso. El frontend nunca completa el formulario con la muestra.",
+    "description": "Textura y materia orgánica **estimadas** de un punto (SoilGrids de ISRIC, 0-30 cm, 250 m), para completar el\nformulario del campo antes de guardarlo. No es un análisis de laboratorio: lo que cargue el productor siempre gana.\n\nEn el centro de un pueblo SoilGrids no tiene suelo (es zona urbana). Si pasa eso y `alrededores` es verdadero,\nse prueba a 3 km y la respuesta lo dice (`distance_km` y `note`); al guardar el campo se usa la misma regla.\nOrden de siempre: caché → SoilGrids en vivo → muestra rotulada (`origin = sample`) → sin dato con aviso.\nEl frontend nunca completa el formulario con la muestra.",
     "operationId": "soil_estimate_soil_estimate_get",
     "parameters": [
      {
@@ -673,8 +692,50 @@
      "cultivos"
     ],
     "summary": "Catálogo de cultivos",
-    "description": "Cultivos y coberturas con atributos cualitativos, fuente y nivel de confianza.",
+    "description": "Cultivos del perfil pedido (huerta = hortalizas, agricultor = los 16 de campo), con atributos cualitativos, fuente y confianza.",
     "operationId": "list_crops_crops_get",
+    "parameters": [
+     {
+      "name": "scale",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "$ref": "#/components/schemas/CropScale"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filtrar por escala: huerta o campo.",
+       "title": "Scale"
+      },
+      "description": "Filtrar por escala: huerta o campo."
+     },
+     {
+      "name": "profile",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "enum": [
+          "huerta",
+          "agricultor"
+         ],
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Perfil del usuario: define la escala si no se pasa scale.",
+       "title": "Profile"
+      },
+      "description": "Perfil del usuario: define la escala si no se pasa scale."
+     }
+    ],
     "responses": {
      "200": {
       "description": "Successful Response",
@@ -682,6 +743,16 @@
        "application/json": {
         "schema": {
          "$ref": "#/components/schemas/ApiResponse_list_Crop__"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
         }
        }
       }
@@ -855,6 +926,67 @@
        }
       },
       "description": "Unprocessable Content"
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "lotes"
+    ],
+    "summary": "Borrar un lote",
+    "description": "Borra un lote cargado por un usuario. Los campos de ejemplo responden 409: no se borran del servidor porque la\npágina es pública y desaparecerían para todos; el frontend los oculta solo en ese navegador.",
+    "operationId": "delete_field_fields__field_id__delete",
+    "parameters": [
+     {
+      "name": "field_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Field Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiResponse_dict_str__Union_str__bool___"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "El lote no existe.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      },
+      "description": "Conflict"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
      }
     }
    },
@@ -2824,6 +2956,33 @@
     ],
     "title": "ApiResponse[ZonesOut]"
    },
+   "ApiResponse_dict_str__Union_str__bool___": {
+    "properties": {
+     "data": {
+      "additionalProperties": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "boolean"
+        }
+       ]
+      },
+      "type": "object",
+      "title": "Data"
+     },
+     "meta": {
+      "$ref": "#/components/schemas/ResponseMeta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data",
+     "meta"
+    ],
+    "title": "ApiResponse[dict[str, Union[str, bool]]]"
+   },
    "ApiResponse_list_Crop__": {
     "properties": {
      "data": {
@@ -3978,8 +4137,7 @@
      },
      "disclaimer": {
       "type": "string",
-      "title": "Disclaimer",
-      "default": "AgroOrbit es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor."
+      "title": "Disclaimer"
      }
     },
     "type": "object",
@@ -4017,6 +4175,11 @@
       "examples": [
        "soja"
       ]
+     },
+     "scale": {
+      "$ref": "#/components/schemas/CropScale",
+      "description": "A qué perfil pertenece: huerta (m²) o campo (hectáreas).",
+      "default": "campo"
      },
      "name": {
       "type": "string",
@@ -4291,10 +4454,15 @@
      "leguminosa",
      "asteracea",
      "brasicacea",
-     "mezcla"
+     "mezcla",
+     "solanacea",
+     "cucurbitacea",
+     "amarantacea",
+     "apiacea",
+     "aliacea"
     ],
     "title": "CropFamily",
-    "description": "Familia botánica: se usa para medir diversificación."
+    "description": "Familia botánica: se usa para medir diversificación y para la rotación de huerta."
    },
    "CropGroup": {
     "type": "string",
@@ -4303,9 +4471,19 @@
      "oleaginosa",
      "leguminosa",
      "forrajera",
-     "cobertura"
+     "cobertura",
+     "hortaliza"
     ],
     "title": "CropGroup"
+   },
+   "CropScale": {
+    "type": "string",
+    "enum": [
+     "huerta",
+     "campo"
+    ],
+    "title": "CropScale",
+    "description": "A qué perfil pertenece el cultivo según la escala del dato NASA que le sirve."
    },
    "CropSuitability": {
     "properties": {
@@ -7450,8 +7628,7 @@
      },
      "disclaimer": {
       "type": "string",
-      "title": "Disclaimer",
-      "default": "AgroOrbit es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor."
+      "title": "Disclaimer"
      },
      "generated_by": {
       "type": "string",
@@ -7683,8 +7860,7 @@
      },
      "disclaimer": {
       "type": "string",
-      "title": "Disclaimer",
-      "default": "AgroOrbit es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor."
+      "title": "Disclaimer"
      }
     },
     "type": "object",

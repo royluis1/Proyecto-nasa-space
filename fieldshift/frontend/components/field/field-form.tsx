@@ -330,7 +330,7 @@ interface Props {
 export function FieldForm({ mode, initial = null, onSaved }: Props) {
   const router = useRouter();
   const uid = useId();
-  const crops = useAsync<Crop[]>(async (signal) => (await api.crops({ signal })).data, []);
+  const crops = useAsync<Crop[]>(async (signal) => (await api.crops("campo", { signal })).data, []);
   const [s, setS] = useState<FormState>(() => toFormState(initial));
   // true mientras la superficie sea la calculada con el lote dibujado (si se escribe otra, deja de serlo)
   const [areaFromDrawing, setAreaFromDrawing] = useState(false);

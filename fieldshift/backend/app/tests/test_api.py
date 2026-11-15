@@ -33,6 +33,25 @@ def test_crops_con_advertencia(client):
     assert body["meta"]["data_status"] == "sample"
 
 
+def test_crops_filtra_por_perfil(client):
+    # Campo (agricultor): los 16 de campo, ninguna hortaliza.
+    campo = client.get("/crops", params={"profile": "agricultor"}).json()["data"]
+    assert len(campo) == 16
+    assert all(c["scale"] == "campo" for c in campo)
+    # Huerta: solo hortalizas, ningún cultivo de campo.
+    huerta = client.get("/crops", params={"scale": "huerta"}).json()["data"]
+    assert huerta and all(c["scale"] == "huerta" for c in huerta)
+    ids_campo, ids_huerta = {c["id"] for c in campo}, {c["id"] for c in huerta}
+    assert ids_campo.isdisjoint(ids_huerta)
+    assert "tomate" in ids_huerta and "soja" in ids_campo
+
+
+def test_suitability_solo_cultivos_de_campo(client):
+    data = client.get("/crops/suitability", params={"zone_id": "san-luis-semiarido"}).json()["data"]
+    assert data["crops"] and all(not s["crop_name"].lower().startswith(("tomate", "lechuga")) for s in data["crops"])
+    assert "tomate" not in {s["crop_id"] for s in data["crops"]}
+
+
 def test_obtener_lote(client):
     body = client.get("/fields/campo-este").json()
     assert body["data"]["location"]["lat"] == -33.85

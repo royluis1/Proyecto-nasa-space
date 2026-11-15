@@ -228,8 +228,9 @@ export interface paths {
          *     formulario del campo antes de guardarlo. No es un análisis de laboratorio: lo que cargue el productor siempre gana.
          *
          *     En el centro de un pueblo SoilGrids no tiene suelo (es zona urbana). Si pasa eso y `alrededores` es verdadero,
-         *     se prueba a 3 km y la respuesta lo dice (`distance_km` y `note`). Orden de siempre: caché → SoilGrids en vivo →
-         *     muestra rotulada (`origin = sample`) → sin dato con aviso. El frontend nunca completa el formulario con la muestra.
+         *     se prueba a 3 km y la respuesta lo dice (`distance_km` y `note`); al guardar el campo se usa la misma regla.
+         *     Orden de siempre: caché → SoilGrids en vivo → muestra rotulada (`origin = sample`) → sin dato con aviso.
+         *     El frontend nunca completa el formulario con la muestra.
          */
         get: operations["soil_estimate_soil_estimate_get"];
         put?: never;
@@ -249,7 +250,7 @@ export interface paths {
         };
         /**
          * Catálogo de cultivos
-         * @description Cultivos y coberturas con atributos cualitativos, fuente y nivel de confianza.
+         * @description Cultivos del perfil pedido (huerta = hortalizas, agricultor = los 16 de campo), con atributos cualitativos, fuente y confianza.
          */
         get: operations["list_crops_crops_get"];
         put?: never;
@@ -307,7 +308,12 @@ export interface paths {
          */
         put: operations["update_field_fields__field_id__put"];
         post?: never;
-        delete?: never;
+        /**
+         * Borrar un lote
+         * @description Borra un lote cargado por un usuario. Los campos de ejemplo responden 409: no se borran del servidor porque la
+         *     página es pública y desaparecerían para todos; el frontend los oculta solo en ese navegador.
+         */
+        delete: operations["delete_field_fields__field_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -861,6 +867,14 @@ export interface components {
             data: components["schemas"]["ZonesOut"];
             meta: components["schemas"]["ResponseMeta"];
         };
+        /** ApiResponse[dict[str, Union[str, bool]]] */
+        ApiResponse_dict_str__Union_str__bool___: {
+            /** Data */
+            data: {
+                [key: string]: string | boolean;
+            };
+            meta: components["schemas"]["ResponseMeta"];
+        };
         /** ApiResponse[list[Crop]] */
         ApiResponse_list_Crop__: {
             /** Data */
@@ -1264,11 +1278,8 @@ export interface components {
             sources: components["schemas"]["DataSource"][];
             /** Warnings */
             warnings: string[];
-            /**
-             * Disclaimer
-             * @default AgroOrbit es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
-             */
-            disclaimer: string;
+            /** Disclaimer */
+            disclaimer?: string;
         };
         /**
          * Confidence
@@ -1282,6 +1293,11 @@ export interface components {
              * @example soja
              */
             id: string;
+            /**
+             * @description A qué perfil pertenece: huerta (m²) o campo (hectáreas).
+             * @default campo
+             */
+            scale: components["schemas"]["CropScale"];
             /**
              * Name
              * @description Nombre común.
@@ -1374,15 +1390,21 @@ export interface components {
         CropCycle: "estival" | "invernal" | "perenne";
         /**
          * CropFamily
-         * @description Familia botánica: se usa para medir diversificación.
+         * @description Familia botánica: se usa para medir diversificación y para la rotación de huerta.
          * @enum {string}
          */
-        CropFamily: "graminea" | "leguminosa" | "asteracea" | "brasicacea" | "mezcla";
+        CropFamily: "graminea" | "leguminosa" | "asteracea" | "brasicacea" | "mezcla" | "solanacea" | "cucurbitacea" | "amarantacea" | "apiacea" | "aliacea";
         /**
          * CropGroup
          * @enum {string}
          */
-        CropGroup: "cereal" | "oleaginosa" | "leguminosa" | "forrajera" | "cobertura";
+        CropGroup: "cereal" | "oleaginosa" | "leguminosa" | "forrajera" | "cobertura" | "hortaliza";
+        /**
+         * CropScale
+         * @description A qué perfil pertenece el cultivo según la escala del dato NASA que le sirve.
+         * @enum {string}
+         */
+        CropScale: "huerta" | "campo";
         /** CropSuitability */
         CropSuitability: {
             /** Crop Id */
@@ -2514,11 +2536,8 @@ export interface components {
              * @default true
              */
             requires_agronomist: boolean;
-            /**
-             * Disclaimer
-             * @default AgroOrbit es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
-             */
-            disclaimer: string;
+            /** Disclaimer */
+            disclaimer?: string;
             /**
              * Generated By
              * @default plantilla
@@ -2603,11 +2622,8 @@ export interface components {
              * @default []
              */
             warnings: string[];
-            /**
-             * Disclaimer
-             * @default AgroOrbit es una herramienta de apoyo a decisiones. No reemplaza el asesoramiento de un ingeniero agrónomo, análisis de suelo de laboratorio, conocimiento local ni decisiones comerciales del productor.
-             */
-            disclaimer: string;
+            /** Disclaimer */
+            disclaimer?: string;
         };
         /**
          * RiskFlag
@@ -4374,6 +4390,8 @@ export interface operations {
                 /** @description Limitar a una provincia. */
                 provincia?: string | null;
                 limit?: number;
+                /** @description En los empates, primero las de esta provincia (la región de la app). */
+                preferir?: string | null;
             };
             header?: never;
             path?: never;
@@ -4471,7 +4489,12 @@ export interface operations {
     };
     list_crops_crops_get: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Filtrar por escala: huerta o campo. */
+                scale?: components["schemas"]["CropScale"] | null;
+                /** @description Perfil del usuario: define la escala si no se pasa scale. */
+                profile?: ("huerta" | "agricultor") | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -4485,6 +4508,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_list_Crop__"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -4631,6 +4663,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_field_fields__field_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                field_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_dict_str__Union_str__bool___"];
+                };
+            };
+            /** @description El lote no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -127,7 +127,7 @@ function CalendarioContent() {
   const { fieldId, compare, backendPriorities } = useCampo();
   const router = useRouter();
   const params = useSearchParams();
-  const crops = useAsync<Crop[]>(async (signal) => (await api.crops({ signal })).data, []);
+  const crops = useAsync<Crop[]>(async (signal) => (await api.crops("campo", { signal })).data, []);
   const evals = compare.evaluations;
   const wanted = params.get("rotacion");
   const selected = evals.find((e) => e.rotation.id === wanted) ?? evals[0];

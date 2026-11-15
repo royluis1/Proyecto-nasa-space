@@ -28,7 +28,7 @@ const today = () => {
 const EMPTY: NuevoRegistroForm = { fecha: "", tipo: "siembra", cultivo: "", nota: "" };
 
 function NewRecordForm({ lote, onAdded }: { lote: LoteRow; onAdded: (r: HistorialRow) => void }) {
-  const crops = useAsync<Crop[]>(async (signal) => (await api.crops({ signal })).data, []);
+  const crops = useAsync<Crop[]>(async (signal) => (await api.crops("campo", { signal })).data, []);
   const [form, setForm] = useState<NuevoRegistroForm>(() => ({ ...EMPTY, fecha: today() }));
   const [errors, setErrors] = useState<ReturnType<typeof validateRegistro>>({});
   const [busy, setBusy] = useState(false);

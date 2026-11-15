@@ -86,7 +86,7 @@ function ZonasContent() {
 
   const provinces = useAsync<ApiResult<ProvincesOut>>((signal) => api.provinces({ signal }), []);
   const zones = useAsync<ApiResult<ZonesOut>>((signal) => api.zones(province, { signal }), [province]);
-  const crops = useAsync<Crop[]>(async (signal) => (await api.crops({ signal })).data, []);
+  const crops = useAsync<Crop[]>(async (signal) => (await api.crops("campo", { signal })).data, []);
   const cropName = crops.data?.find((c) => c.id === cropId)?.name ?? null;
   const provFeatures = useMemo(() => (provinces.data?.data.features ?? []) as unknown as Feature[], [provinces.data]);
   const provList = useMemo(() => provFeatures.map((f) => f.properties as ProvinceProps).sort((a, b) => a.name.localeCompare(b.name, "es")), [provFeatures]);

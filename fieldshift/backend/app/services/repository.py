@@ -9,6 +9,7 @@ import json
 import uuid
 from pathlib import Path
 
+from app.models.enums import CropScale
 from app.schemas.crop import Crop
 from app.schemas.field import FieldCreate, FieldOut
 from app.schemas.priority import FarmerPriority, Priorities
@@ -107,8 +108,11 @@ class Repository:
             raise ValueError(f"Cultivos inexistentes referenciados en los datos: {sorted(missing)}")
 
     # --- cultivos ---
-    def list_crops(self) -> list[Crop]:
-        return list(self.crops.values())
+    def list_crops(self, scale: "CropScale | None" = None) -> list[Crop]:
+        crops = self.crops.values()
+        if scale is not None:
+            crops = [c for c in crops if c.scale == scale]
+        return list(crops)
 
     # --- lotes ---
     def get_field(self, field_id: str) -> FieldOut:

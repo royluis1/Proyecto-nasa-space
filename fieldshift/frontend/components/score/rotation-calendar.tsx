@@ -11,6 +11,7 @@ export const GROUP_INFO: Record<CropGroup, { label: string; icon: LucideIcon; cl
   leguminosa: { label: L("Leguminosa", "Legume"), icon: Sprout, cls: "bg-cultivo-100 text-cultivo-900 dark:bg-cultivo-900/60 dark:text-cultivo-50" },
   forrajera: { label: L("Forrajera", "Forage"), icon: Leaf, cls: "bg-agua-100 text-agua-900 dark:bg-agua-900/60 dark:text-agua-50" },
   cobertura: { label: L("Cobertura", "Cover crop"), icon: Layers, cls: "bg-emerald-100 text-emerald-950 dark:bg-emerald-900/50 dark:text-emerald-50" },
+  hortaliza: { label: L("Hortaliza", "Vegetable"), icon: Sprout, cls: "bg-lime-100 text-lime-950 dark:bg-lime-900/50 dark:text-lime-50" },
 });
 
 const FALLOW_STYLE = { backgroundImage: "repeating-linear-gradient(45deg, transparent 0 6px, oklch(var(--border)) 6px 8px)" };

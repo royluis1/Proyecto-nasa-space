@@ -63,8 +63,9 @@ export async function demoField(id: string): Promise<ApiEnvelope<FieldOut> | nul
   return field ? env(field, field.sample_note ? [field.sample_note] : []) : null;
 }
 
-export async function demoCrops(): Promise<ApiEnvelope<Crop[]>> {
-  return env(await load<Crop[]>("crops"));
+export async function demoCrops(scale?: "huerta" | "campo"): Promise<ApiEnvelope<Crop[]>> {
+  const all = await load<Crop[]>("crops");
+  return env(scale ? all.filter((c) => c.scale === scale) : all);
 }
 
 /** Escenario predefinido que coincide con lo pedido (por id o por su efecto). */
