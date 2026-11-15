@@ -66,4 +66,4 @@ Así el registro entra directo, sin esperar el correo.
 - `frontend/components/auth/account-chip.tsx` — acceso a la cuenta en el encabezado.
 - `frontend/app/cuenta/page.tsx` — pantalla de login y registro.
 - `frontend/lib/supabase/lotes.ts` — guardar/listar lotes e historial.
-- `supabase/schema.sql` — las tablas y las reglas RLS.
+- `supabase/schema.sql` — las tablas de lotes e historial y sus reglas RLS.
