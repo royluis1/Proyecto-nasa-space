@@ -5,7 +5,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from app.models.enums import DataStatus, Severity
+from app.models.enums import DataStatus, Level, Severity
 
 Profile = Literal["huerta", "agricultor"]
 
@@ -112,6 +112,20 @@ class HeatInfo(BaseModel):
     source: SourceInfo
 
 
+class PlantingOption(BaseModel):
+    """Hortaliza cuya época de siembra incluye este mes, con la evidencia para que decida la persona.
+
+    No es una recomendación: ordena el dato NASA (heladas/calor del mes) frente al parámetro del cultivo.
+    """
+
+    crop_id: str
+    crop_name: str
+    frost_tolerance: Level
+    heat_tolerance: Level
+    evidence: list[str] = Field(description="Qué dato NASA y qué parámetro del cultivo sostienen esta opción.")
+    cautions: list[str] = Field(default=[], description="Riesgos del mes para este cultivo (helada, calor).")
+
+
 class HuertaPanel(BaseModel):
     """Panel de huerta: escala de pocos m². Solo NASA POWER + pronóstico (Open-Meteo).
 
@@ -127,6 +141,7 @@ class HuertaPanel(BaseModel):
     heat: HeatInfo
     past_rain: RainSummary | None
     forecast: Forecast | None
+    sowing_now: list[PlantingOption] = Field(description="Qué sembrar este mes según el catálogo, con evidencia; sin 'recomendado'.")
     alerts: list[Alert]
     tips: list[str]
     sources: list[SourceInfo]

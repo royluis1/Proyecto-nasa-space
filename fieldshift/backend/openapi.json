@@ -6327,6 +6327,14 @@
        }
       ]
      },
+     "sowing_now": {
+      "items": {
+       "$ref": "#/components/schemas/PlantingOption"
+      },
+      "type": "array",
+      "title": "Sowing Now",
+      "description": "Qué sembrar este mes según el catálogo, con evidencia; sin 'recomendado'."
+     },
      "alerts": {
       "items": {
        "$ref": "#/components/schemas/Alert"
@@ -6367,6 +6375,7 @@
      "heat",
      "past_rain",
      "forecast",
+     "sowing_now",
      "alerts",
      "tips",
      "sources",
@@ -7105,6 +7114,51 @@
     },
     "type": "object",
     "title": "PlaceRequest"
+   },
+   "PlantingOption": {
+    "properties": {
+     "crop_id": {
+      "type": "string",
+      "title": "Crop Id"
+     },
+     "crop_name": {
+      "type": "string",
+      "title": "Crop Name"
+     },
+     "frost_tolerance": {
+      "$ref": "#/components/schemas/Level"
+     },
+     "heat_tolerance": {
+      "$ref": "#/components/schemas/Level"
+     },
+     "evidence": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Evidence",
+      "description": "Qué dato NASA y qué parámetro del cultivo sostienen esta opción."
+     },
+     "cautions": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Cautions",
+      "description": "Riesgos del mes para este cultivo (helada, calor).",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "crop_id",
+     "crop_name",
+     "frost_tolerance",
+     "heat_tolerance",
+     "evidence"
+    ],
+    "title": "PlantingOption",
+    "description": "Hortaliza cuya época de siembra incluye este mes, con la evidencia para que decida la persona.\n\nNo es una recomendación: ordena el dato NASA (heladas/calor del mes) frente al parámetro del cultivo."
    },
    "PointSoilEstimate": {
     "properties": {

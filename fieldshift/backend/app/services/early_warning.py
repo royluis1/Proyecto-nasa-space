@@ -27,6 +27,7 @@ from app.schemas.forecast import (
     HeatInfo,
     HuertaPanel,
     IrrigationInfo,
+    PlantingOption,
     Profile,
     RainSummary,
     SourceInfo,
@@ -357,8 +358,11 @@ class EarlyWarningService:
         warnings += w
         fc, w = self._forecast(lat, lon)
         warnings += w
-        anomaly, smap_src, w = self._smap(field.id if field else None, lat, lon)
-        warnings += w
+        # SMAP (9 km) solo en el perfil agricultor: a escala de huerta su resolución no aplica.
+        anomaly, smap_src = None, None
+        if profile == "agricultor":
+            anomaly, smap_src, w = self._smap(field.id if field else None, lat, lon)
+            warnings += w
         sources = [power_source(hist.status, hist.retrieved_at, tr("Clima de los últimos 10 años y lluvia reciente", "Weather of the last 10 years and recent rain"))]
         if fc:
             sources.append(fc.source)
@@ -425,10 +429,11 @@ class EarlyWarningService:
         # Escala huerta (pocos m²): solo NASA POWER y el pronóstico (Open-Meteo). Nada de SMAP (9 km) ni MODIS (250 m):
         # su resolución no puede hablar de una huerta. Ver docs/PERFILES.md.
         tips = huerta_tips(frost, heat, irrigation, month, lat)
+        sowing = sowing_options(list(self.repo.crops.values()), frost, heat, month)
         sources = [src] + ([fc.source] if fc else [])
         return HuertaPanel(
             field_id=field.id if field else None, name=field.name if field else None, latitude=lat, longitude=lon,
-            frost=frost, irrigation=irrigation, heat=heat, past_rain=past, forecast=fc,
+            frost=frost, irrigation=irrigation, heat=heat, past_rain=past, forecast=fc, sowing_now=sowing,
             alerts=build_alerts("huerta", fc, past, None), tips=tips, sources=sources, warnings=list(dict.fromkeys(warnings)),
         )
 
@@ -437,16 +442,53 @@ MONTHS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agost
 MONTHS_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
 
+_LEVEL_EN = {"bajo": "low", "medio": "medium", "alto": "high"}
+
+
+def sowing_options(crops, frost: FrostInfo, heat: HeatInfo, month: int) -> list[PlantingOption]:
+    """Hortalizas cuya época de siembra incluye este mes, con la evidencia (dato NASA vs parámetro del cultivo).
+
+    No decide: ordena primero las de menor riesgo climático este mes y deja la decisión a la persona.
+    """
+    frosty = month in frost.frost_months
+    hot = month in heat.hot_months
+    mes_es, mes_en = MONTHS[month - 1], MONTHS_EN[month - 1]
+    out: list[PlantingOption] = []
+    for c in crops:
+        if c.scale != "huerta" or month not in c.sowing_months:
+            continue
+        ft, ht = c.frost_tolerance.value, c.heat_tolerance.value
+        evidence = [tr(f"Catálogo: {c.name} se puede sembrar en {mes_es} (calendario de huerta de INTA Pro-Huerta).",
+                       f"Catalog: {c.name} can be sown in {mes_en} (INTA Pro-Huerta garden calendar).")]
+        cautions: list[str] = []
+        if frosty:
+            evidence.append(tr(f"NASA POWER: en {mes_es} suele helar en esta zona. Tolerancia a heladas de {c.name}: {ft}.",
+                               f"NASA POWER: {mes_en} usually has frost in this area. {c.name}'s frost tolerance: {_LEVEL_EN[ft]}."))
+            if ft == "bajo":
+                cautions.append(tr("Riesgo de helada este mes y poca tolerancia: protegé con manta o esperá a que pasen las heladas.",
+                                   "Frost risk this month and low tolerance: protect with frost cloth or wait until frosts pass."))
+        if hot:
+            evidence.append(tr(f"NASA POWER: en {mes_es} hay días de más de 35 °C. Tolerancia al calor de {c.name}: {ht}.",
+                               f"NASA POWER: {mes_en} has days above 35 °C. {c.name}'s heat tolerance: {_LEVEL_EN[ht]}."))
+            if ht == "bajo":
+                cautions.append(tr("Calor fuerte este mes y poca tolerancia: sembrá a media sombra, regá temprano y cubrí el suelo.",
+                                   "Strong heat this month and low tolerance: sow in partial shade, water early and mulch the soil."))
+        out.append(PlantingOption(crop_id=c.id, crop_name=c.name, frost_tolerance=c.frost_tolerance,
+                                  heat_tolerance=c.heat_tolerance, evidence=evidence, cautions=cautions))
+    out.sort(key=lambda o: (len(o.cautions), o.crop_name))
+    return out
+
+
 def huerta_tips(frost: FrostInfo, heat: HeatInfo, irr: IrrigationInfo, month: int, lat: float) -> list[str]:
     tips = []
     if month in frost.frost_months:
-        tips.append(tr("En este mes suele helar: tené a mano manta antihelada y sembrá verduras de hoja resistentes (acelga, lechuga, espinaca, haba).", "Frost is common this month: keep frost cloth handy and plant hardy leafy greens (chard, lettuce, spinach, broad beans)."))
+        tips.append(tr("En este mes suele helar (NASA POWER): tené a mano manta antihelada para las plantas sensibles.", "Frost is common this month (NASA POWER): keep frost cloth handy for sensitive plants."))
     elif frost.last_frost_typical:
-        tips.append(tr(f"Las heladas suelen terminar hacia el {frost.last_frost_typical}: después de esa fecha es seguro trasplantar tomate, pimiento y zapallo.", f"Frost usually ends around {frost.last_frost_typical}: after that date it is safe to transplant tomato, pepper and squash."))
+        tips.append(tr(f"Las heladas suelen terminar hacia el {frost.last_frost_typical} (NASA POWER): después de esa fecha baja el riesgo para las plantas sensibles al frío.", f"Frost usually ends around {frost.last_frost_typical} (NASA POWER): after that date the risk drops for cold-sensitive plants."))
     if month in heat.hot_months:
-        tips.append(tr("Es época de calor fuerte: regá temprano o al atardecer y cubrí el suelo con paja o pasto seco.", "It is the season of strong heat: water early or at dusk and mulch the soil with straw or dry grass."))
+        tips.append(tr("Es época de calor fuerte (NASA POWER): regá temprano o al atardecer y cubrí el suelo con paja o pasto seco.", "It is the season of strong heat (NASA POWER): water early or at dusk and mulch the soil with straw or dry grass."))
     if irr.weekly_l_per_m2 >= 25:
-        tips.append(tr("La demanda de agua es alta: el riego por goteo y la cobertura del suelo ahorran hasta la mitad del agua.", "Water demand is high: drip irrigation and mulching save up to half the water."))
+        tips.append(tr("La demanda de agua es alta: el riego por goteo aplica el agua en la raíz y la cobertura del suelo reduce la evaporación (INTA Pro-Huerta).", "Water demand is high: drip irrigation delivers water at the root and mulching reduces evaporation (INTA Pro-Huerta)."))
     elif irr.weekly_l_per_m2 <= 5:
         tips.append(tr("En esta época la lluvia y el rocío cubren casi todo: regá solo si la tierra está seca a 5 cm de profundidad.", "At this time of year rain and dew cover almost everything: water only if the soil is dry 5 cm down."))
     tips.append(tr("Rotá las familias de cultivos entre canteros cada temporada (hojas, frutos, raíces, legumbres) para cuidar el suelo.", "Rotate crop families between beds each season (leaves, fruits, roots, legumes) to care for the soil."))

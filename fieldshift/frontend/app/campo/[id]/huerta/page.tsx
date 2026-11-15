@@ -34,6 +34,9 @@ function Big({ icon, title, value, children }: { icon: string; title: string; va
 
 const monthList = (ms: number[]) => (ms.length ? ms.map((m) => MONTHS_LONG[m - 1]).join(", ") : tr("ninguno", "none"));
 
+const tol = (level: string) =>
+  level === "alto" ? tr("alta", "high") : level === "medio" ? tr("media", "medium") : tr("baja", "low");
+
 function Panel({ r }: { r: ApiResult<HuertaPanel> }) {
   const { field } = useCampo();
   const h = r.data;
@@ -68,6 +71,38 @@ function Panel({ r }: { r: ApiResult<HuertaPanel> }) {
       <Card>
         <CardHeader><CardTitle as="h2">{tr("Alertas de los próximos días", "Alerts for the coming days")}</CardTitle><CardDescription>{tr("Qué viene y qué hacer.", "What's coming and what to do.")}</CardDescription></CardHeader>
         <CardContent><AlertList alerts={h.alerts} empty={tr("No hay alertas para los próximos días.", "No alerts for the coming days.")} /></CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle as="h2">{tr("Qué se puede sembrar este mes", "What can be sown this month")}</CardTitle>
+          <CardDescription>{tr("Del catálogo de huerta, cruzando el mes con las heladas y el calor de NASA POWER. No es una recomendación: la decisión es tuya.", "From the garden catalog, crossing the month with NASA POWER frost and heat. It is not a recommendation: the decision is yours.")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {h.sowing_now.length === 0 ? (
+            <p className="text-muted-foreground">{tr("Ninguna hortaliza del catálogo tiene su época de siembra este mes.", "No vegetable in the catalog has its sowing season this month.")}</p>
+          ) : (
+            <ul className="space-y-4">
+              {h.sowing_now.map((o) => (
+                <li key={o.crop_id} className="rounded-lg border border-border p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-lg font-semibold">{o.crop_name}</span>
+                    <span className="rounded bg-muted px-2 py-0.5 text-xs">{tr("Heladas", "Frost")}: {tol(o.frost_tolerance)}</span>
+                    <span className="rounded bg-muted px-2 py-0.5 text-xs">{tr("Calor", "Heat")}: {tol(o.heat_tolerance)}</span>
+                  </div>
+                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                    {o.evidence.map((e) => <li key={e}>{e}</li>)}
+                  </ul>
+                  {o.cautions.length > 0 && (
+                    <ul className="mt-2 space-y-1 pl-0 text-sm font-medium text-amber-700 dark:text-amber-400">
+                      {o.cautions.map((c) => <li key={c}>⚠️ {c}</li>)}
+                    </ul>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
       </Card>
 
       <Card>

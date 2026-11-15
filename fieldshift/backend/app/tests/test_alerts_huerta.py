@@ -205,6 +205,11 @@ def test_panel_de_huerta_con_power_del_csv_y_pronostico(ews):
     assert not hasattr(p, "vegetation")
     assert all(a.kind != "suelo_seco" for a in p.alerts)
     assert p.tips and any("campo1.csv" in w for w in p.warnings)
+    # "Qué sembrar este mes" sale del catálogo: en noviembre entran zapallito y poroto, con evidencia y sin "recomendado".
+    sow_ids = {o.crop_id for o in p.sowing_now}
+    assert {"zapallito", "poroto"} <= sow_ids
+    assert all(o.evidence for o in p.sowing_now)
+    assert any("NASA POWER" in e or "Catálogo" in e for o in p.sowing_now for e in o.evidence)
     src_names = {s.name for s in p.sources}
     assert "NASA POWER" in src_names
     assert not any(n in src_names for n in ("NASA SMAP", "NASA MODIS (NDVI)"))

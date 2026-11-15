@@ -37,7 +37,10 @@ from app.services.satellite.sectors import field_sectors  # noqa: E402
 from app.services.satellite.ecostress import field_heat_stress  # noqa: E402
 from app.utils.exceptions import UpstreamError  # noqa: E402
 
-OUT = ROOT / "frontend" / "lib" / "demo" / "data"
+from app.i18n import reset_lang, set_lang  # noqa: E402
+
+BASE = ROOT / "frontend" / "lib" / "demo" / "data"
+OUT = BASE
 def dump(obj) -> dict | list:
     if isinstance(obj, list):
         return [dump(x) for x in obj]
@@ -133,4 +136,12 @@ def bundle_period(bundle):
 
 
 if __name__ == "__main__":
-    main()
+    # Español (data/) e inglés (data/en/): los textos salen del backend según el idioma.
+    for lang, sub in (("es", ""), ("en", "en")):
+        OUT = BASE / sub if sub else BASE
+        token = set_lang(lang)
+        try:
+            print(f"== idioma {lang} -> {OUT.relative_to(ROOT)} ==")
+            main()
+        finally:
+            reset_lang(token)

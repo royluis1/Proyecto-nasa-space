@@ -2061,6 +2061,11 @@ export interface components {
             heat: components["schemas"]["HeatInfo"];
             past_rain: components["schemas"]["RainSummary"] | null;
             forecast: components["schemas"]["Forecast"] | null;
+            /**
+             * Sowing Now
+             * @description Qué sembrar este mes según el catálogo, con evidencia; sin 'recomendado'.
+             */
+            sowing_now: components["schemas"]["PlantingOption"][];
             /** Alerts */
             alerts: components["schemas"]["Alert"][];
             /** Tips */
@@ -2334,6 +2339,31 @@ export interface components {
             latitude?: number | null;
             /** Longitude */
             longitude?: number | null;
+        };
+        /**
+         * PlantingOption
+         * @description Hortaliza cuya época de siembra incluye este mes, con la evidencia para que decida la persona.
+         *
+         *     No es una recomendación: ordena el dato NASA (heladas/calor del mes) frente al parámetro del cultivo.
+         */
+        PlantingOption: {
+            /** Crop Id */
+            crop_id: string;
+            /** Crop Name */
+            crop_name: string;
+            frost_tolerance: components["schemas"]["Level"];
+            heat_tolerance: components["schemas"]["Level"];
+            /**
+             * Evidence
+             * @description Qué dato NASA y qué parámetro del cultivo sostienen esta opción.
+             */
+            evidence: string[];
+            /**
+             * Cautions
+             * @description Riesgos del mes para este cultivo (helada, calor).
+             * @default []
+             */
+            cautions: string[];
         };
         /**
          * PointSoilEstimate
