@@ -10,60 +10,19 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   PROFILE_MENU_EVENT,
+  buildProfileMenu,
   readProfileMenuState,
   resolveActiveProfileMenuId,
   saveProfileMenuState,
   submenuForActiveProfileMenuId,
+  type ProfileMenuEntry,
   type ProfileMenuState,
+  type ProfileMenuSubmenu,
+  type ProfileMenuSubmenuEntry,
 } from "@/lib/profile-menu";
 
-type LeafItem = {
-  id: string;
-  label: string;
-  href?: string; // relative to /campo/[id] or absolute hash on perfil
-  placeholder?: boolean;
-};
-
-type SubmenuItem = {
-  id: "profile" | "tools";
-  label: string;
-  children: LeafItem[];
-};
-
-type TopItem = { id: "information"; label: string; href?: string; placeholder?: boolean };
-
-type MenuEntry = SubmenuItem | TopItem;
-
-function buildMenu(fieldId: string): MenuEntry[] {
-  const base = `/campo/${fieldId}`;
-  return [
-    {
-      id: "profile",
-      label: "Profile",
-      children: [
-        { id: "priority-editor", label: "Priority editor", href: `${base}/perfil#prioridades` },
-        { id: "view-rotation-plan", label: "View my rotation plan", href: `${base}/comparador` },
-      ],
-    },
-    {
-      id: "tools",
-      label: "Tools",
-      children: [
-        { id: "compare", label: "Compare current vs. another", href: `${base}/comparador` },
-        { id: "alerts", label: "Alerts", href: `${base}/alertas` },
-        { id: "calendar", label: "Calendar", href: `${base}/calendario` },
-        { id: "history", label: "History", href: `${base}/historial` },
-        { id: "scenarios", label: "Scenarios", href: `${base}/escenarios` },
-        { id: "comparative-dashboard", label: "Comparative dashboard", href: `${base}/dashboard` },
-        { id: "campaigns", label: "Campaigns", placeholder: true },
-      ],
-    },
-    { id: "information", label: "Information", href: `/metodologia` },
-  ];
-}
-
-function isSubmenu(item: MenuEntry): item is SubmenuItem {
-  return item.id === "profile" || item.id === "tools";
+function isSubmenu(item: ProfileMenuEntry): item is ProfileMenuSubmenuEntry {
+  return "children" in item && Array.isArray(item.children);
 }
 
 // resolution helpers imported from lib/profile-menu for testability
@@ -76,7 +35,7 @@ function MenuTree({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
-  const menu = useMemo(() => buildMenu(fieldId), [fieldId]);
+  const menu = useMemo(() => buildProfileMenu(fieldId), [fieldId]);
   const [hash, setHash] = useState<string>("");
   const [state, setState] = useState<ProfileMenuState>(() => readProfileMenuState());
 
@@ -113,7 +72,7 @@ function MenuTree({
     });
   }, [activeId, menu]);
 
-  const toggleSubmenu = (id: "profile" | "tools") => {
+  const toggleSubmenu = (id: ProfileMenuSubmenu) => {
     setState((prev) => {
       const next: ProfileMenuState = {
         ...prev,

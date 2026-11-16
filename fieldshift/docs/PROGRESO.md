@@ -18,3 +18,8 @@
 - Integrado en `components/campo/campo-shell.tsx` (solo perfil `agricultor`, sin tocar huerta): sidebar fija/sticky en desktop y drawer en móvil.
 - Secciones/rutas: Priority editor (`/perfil#prioridades`), View my rotation plan/Compare (`/comparador`), Alerts, Calendar, History, Scenarios, Comparative dashboard (`/dashboard`), Information (`/metodologia`). Placeholder "Coming soon" (sin ruta): Campaigns. (Nota: "View my rotation plan" y "Compare current vs. another" apuntan a comparador; la sección activa se marca como Compare en esa ruta.)
 - Tests: `tests/profile-menu.test.ts` (sección activa por ruta y persistencia de submenús en localStorage).
+
+## Sesión — Acceso unificado (/cuenta + header) (Prompt 2)
+- `/cuenta` ahora es una sola pantalla con cambio entre "Already have an account? Sign in" y "New here? Sign up" sin cambiar de URL: login pide email+contraseña; signup agrega nombre opcional. Lógica Supabase intacta; textos de esta pantalla en inglés.
+- Header público: se quitó el botón separado "Sign up" (`MainAction`); queda un único acceso (`AccountChip`) que muestra "Sign in" sin sesión y la cuenta cuando ya está logueado. No se tocó el menú de `/campo/[id]/perfil` ni la landing.
+- Tests: `tests/cuenta.test.ts` (cambio de modo en el mismo URL y textos), `tests/portada.test.ts` actualizado (acceso único en el header).

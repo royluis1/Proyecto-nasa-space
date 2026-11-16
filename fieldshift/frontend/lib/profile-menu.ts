@@ -43,10 +43,49 @@ export function updateProfileMenuState(patch: Partial<ProfileMenuState>): Profil
 
 export type ProfileMenuSubmenu = "profile" | "tools";
 
+export type ProfileMenuItem = {
+  id: string;
+  label: string;
+  href?: string;
+  placeholder?: boolean;
+};
+
+export type ProfileMenuSubmenuEntry = { id: ProfileMenuSubmenu; label: string; children: ProfileMenuItem[] };
+export type ProfileMenuLinkEntry = { id: "information"; label: string; href?: string; placeholder?: boolean };
+export type ProfileMenuEntry = ProfileMenuSubmenuEntry | ProfileMenuLinkEntry;
+
 export const PROFILE_MENU_CHILDREN: Record<ProfileMenuSubmenu, string[]> = {
   profile: ["priority-editor", "view-rotation-plan"],
   tools: ["compare", "alerts", "calendar", "history", "scenarios", "comparative-dashboard", "campaigns"],
 };
+
+export function buildProfileMenu(fieldId: string): ProfileMenuEntry[] {
+  const base = `/campo/${fieldId}`;
+  return [
+    {
+      id: "profile",
+      label: "Profile",
+      children: [
+        { id: "priority-editor", label: "Priority editor", href: `${base}/perfil#prioridades` },
+        { id: "view-rotation-plan", label: "View my rotation plan", href: `${base}/comparador` },
+      ],
+    },
+    {
+      id: "tools",
+      label: "Tools",
+      children: [
+        { id: "compare", label: "Compare current vs. another", href: `${base}/comparador` },
+        { id: "alerts", label: "Alerts", href: `${base}/alertas` },
+        { id: "calendar", label: "Calendar", href: `${base}/calendario` },
+        { id: "history", label: "History", href: `${base}/historial` },
+        { id: "scenarios", label: "Scenarios", href: `${base}/escenarios` },
+        { id: "comparative-dashboard", label: "Comparative dashboard", href: `${base}/dashboard` },
+        { id: "campaigns", label: "Campaigns", placeholder: true },
+      ],
+    },
+    { id: "information", label: "Information", href: "/metodologia" },
+  ];
+}
 
 /** Resuelve la sección activa según la ruta actual (y hash en perfil). */
 export function resolveActiveProfileMenuId(pathname: string, fieldId: string, hash = ""): string | null {

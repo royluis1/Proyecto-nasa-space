@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu } from "lucide-react";
 import { AccountChip } from "@/components/auth/account-chip";
-import { useAuth } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -26,18 +25,6 @@ const LABELS: Record<(typeof PUBLIC_NAV_HREFS)[number], (t: T) => string> = {
 const links = (t: T) => PUBLIC_NAV_HREFS.map((href) => ({ href, label: LABELS[href](t) }));
 
 const isActive = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`);
-
-/** Botón del header: "Registro" (/cuenta). Si la persona ya tiene sesión, no se muestra (está el AccountChip). */
-function MainAction({ className }: { className?: string }) {
-  const t = useT();
-  const { configured, user } = useAuth();
-  if (configured && user) return null;
-  return (
-    <Button asChild size="sm" className={cn("h-9 px-4", className)}>
-      <Link href="/cuenta">{t("Registro", "Sign up")}</Link>
-    </Button>
-  );
-}
 
 export function SiteHeader() {
   const t = useT();
@@ -69,7 +56,6 @@ export function SiteHeader() {
             <ProfileChip />
           </div>
           <AccountChip />
-          <MainAction />
           <LangToggle className="hidden sm:inline-flex" />
           <ThemeToggle />
           {/* Menú del celular y la tablet: panel que se abre desde la derecha */}
