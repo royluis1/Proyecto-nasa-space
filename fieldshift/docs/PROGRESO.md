@@ -23,3 +23,8 @@
 - `/cuenta` ahora es una sola pantalla con cambio entre "Already have an account? Sign in" y "New here? Sign up" sin cambiar de URL: login pide email+contraseña; signup agrega nombre opcional. Lógica Supabase intacta; textos de esta pantalla en inglés.
 - Header público: se quitó el botón separado "Sign up" (`MainAction`); queda un único acceso (`AccountChip`) que muestra "Sign in" sin sesión y la cuenta cuando ya está logueado. No se tocó el menú de `/campo/[id]/perfil` ni la landing.
 - Tests: `tests/cuenta.test.ts` (cambio de modo en el mismo URL y textos), `tests/portada.test.ts` actualizado (acceso único en el header).
+
+## Sesión — Registro sin bloqueo por correo
+- `/cuenta`: al registrarse (o iniciar sesión con el correo sin confirmar) la persona entra directo a `/campos`; no hace falta tocar "Confirm email" en Supabase. Sin Supabase configurado, el botón también lleva a la app.
+- Arreglados el typecheck de `tests/cuenta.test.ts` y los tests de `tests/profile-menu.test.ts` (localStorage/window en memoria; el entorno de tests es node).
+- Nota: quien entra sin confirmar usa la app sin sesión; sus campos quedan en el navegador.
