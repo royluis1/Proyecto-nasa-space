@@ -10,12 +10,15 @@ import { OriginBadge } from "@/components/provenance/badges";
 import { num } from "@/lib/format";
 import { FieldNav } from "./field-nav";
 import { FieldToolsMenu } from "./field-tools-menu";
+import { ProfileMenuMobile, ProfileMenuSidebar } from "./profile-menu";
 import { useCampo } from "./campo-provider";
 import { useT } from "@/components/i18n/lang-provider";
+import { useProfile } from "@/hooks/use-profile";
 
 /** Encabezado del campo (nombre, ubicación, origen de los datos) y navegación por pasos. */
 export function CampoShell({ children }: { children: React.ReactNode }) {
   const t = useT();
+  const profile = useProfile();
   const { field, fieldLoading, fieldError, reloadField, fieldId, compare } = useCampo();
 
   if (fieldError && !field) {
@@ -44,6 +47,7 @@ export function CampoShell({ children }: { children: React.ReactNode }) {
     );
   }
   const isExample = Boolean(field.sample_note);
+  const showProfileMenu = profile === "agricultor";
   return (
     <div className="space-y-5">
       <div className="space-y-3 print:hidden">
@@ -56,10 +60,22 @@ export function CampoShell({ children }: { children: React.ReactNode }) {
           {compare.originLabel && !compare.demo && compare.result && <OriginBadge status={compare.result.inputs.climate.origin} label={`${t("Clima", "Weather")}: ${compare.originLabel}`} />}
           {compare.demo && <OriginBadge status="demo" />}
           <FieldToolsMenu fieldId={fieldId} fieldName={field.name} />
+          {showProfileMenu && (
+            <div className="lg:hidden ml-auto">
+              <ProfileMenuMobile fieldId={fieldId} />
+            </div>
+          )}
         </div>
         <FieldNav fieldId={fieldId} />
       </div>
-      {children}
+      {showProfileMenu ? (
+        <div className="flex items-start gap-6">
+          <ProfileMenuSidebar fieldId={fieldId} />
+          <div className="min-w-0 flex-1">{children}</div>
+        </div>
+      ) : (
+        children
+      )}
     </div>
   );
 }

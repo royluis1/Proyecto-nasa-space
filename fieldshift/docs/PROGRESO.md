@@ -12,3 +12,9 @@
 - Los menús por perfil (huerta/agricultor) se definen en otros prompts: acá no se tocaron.
 - El suelo estimado (SoilGrids/ISRIC) no es NASA; su muestra queda como estaba (rotulada como estimación), fuera del modo estricto.
 - Confirmar con el mentor si la caché de respuestas reales cuenta como "consumir la API" (acá se dejó permitida).
+
+## Sesión — Menú perfil agricultor (/campo/[id]/perfil) (Prompt 1)
+- Agregado menú de navegación (≡ Menu) para perfil agricultor: `components/campo/profile-menu.tsx` + persistencia en `lib/profile-menu.ts` (localStorage `fieldshift:profile-menu`, evento `fieldshift:profile-menu`), con submenús colapsables (Profile/Tools), flecha animada, estado activo por URL y persistencia de submenú abierto/sección activa.
+- Integrado en `components/campo/campo-shell.tsx` (solo perfil `agricultor`, sin tocar huerta): sidebar fija/sticky en desktop y drawer en móvil.
+- Secciones/rutas: Priority editor (`/perfil#prioridades`), View my rotation plan/Compare (`/comparador`), Alerts, Calendar, History, Scenarios, Comparative dashboard (`/dashboard`), Information (`/metodologia`). Placeholder "Coming soon" (sin ruta): Campaigns. (Nota: "View my rotation plan" y "Compare current vs. another" apuntan a comparador; la sección activa se marca como Compare en esa ruta.)
+- Tests: `tests/profile-menu.test.ts` (sección activa por ruta y persistencia de submenús en localStorage).
