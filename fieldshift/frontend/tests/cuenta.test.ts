@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { ACCESS_MODES, accessModeTitle, isAccessMode, otherAccessMode } from "@/lib/access-mode";
+import { ACCESS_MODES, accessModeTitle, isAccessMode, otherAccessMode, type AccessMode } from "@/lib/access-mode";
 
 describe("unified access screen (/cuenta)", () => {
   it("switches between sign in and sign up in place (same URL)", () => {
     const url = "/cuenta";
-    let mode = ACCESS_MODES[0];
+    let mode: AccessMode = ACCESS_MODES[0];
     expect(mode).toBe("signin");
     mode = otherAccessMode(mode);
     expect(mode).toBe("signup");

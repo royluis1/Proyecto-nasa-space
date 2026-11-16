@@ -77,7 +77,12 @@ export default function CuentaPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!configured) return;
+    // Sin cuentas configuradas, o con el correo todavía sin confirmar, la persona entra igual:
+    // la app funciona sin cuenta y sus campos se guardan en este navegador.
+    if (!configured) {
+      router.push("/campos");
+      return;
+    }
     setError(null);
     setOk(null);
     setBusy(true);
@@ -89,8 +94,6 @@ export default function CuentaPage() {
       } else {
         const r = await signUp(email, password, name || undefined);
         if (r.error) setError(r.error);
-        else if (r.needsEmailConfirm)
-          setOk("We sent you an email to confirm your account. Check your inbox and then sign in.");
         else router.push("/campos");
       }
     } catch {
@@ -158,7 +161,7 @@ export default function CuentaPage() {
             {error && <Alert tone="error">{error}</Alert>}
             {ok && <Alert tone="success">{ok}</Alert>}
 
-            <Button type="submit" size="lg" disabled={busy || !configured} className="w-full">
+            <Button type="submit" size="lg" disabled={busy} className="w-full">
               {busy ? "One moment…" : mode === "signin" ? "Sign in" : "Sign up"}
             </Button>
           </form>

@@ -58,6 +58,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const supabase = getSupabase();
     if (!supabase) return { error: tr("El login todavía no está configurado.", "Sign-in is not configured yet.") };
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    // Correo sin confirmar: no se bloquea a la persona; entra igual y sus campos quedan en este navegador.
+    if (error && error.message.toLowerCase().includes("email not confirmed")) return { needsEmailConfirm: true };
     return error ? { error: friendlyError(error.message) } : {};
   }, []);
 

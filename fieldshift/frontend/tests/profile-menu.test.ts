@@ -7,6 +7,21 @@ import {
   submenuForActiveProfileMenuId,
 } from "@/lib/profile-menu";
 
+// El entorno de tests es node: localStorage y window en memoria para probar la persistencia.
+const store = new Map<string, string>();
+const memoryStorage = {
+  getItem: (k: string) => store.get(k) ?? null,
+  setItem: (k: string, v: string) => void store.set(k, String(v)),
+  removeItem: (k: string) => void store.delete(k),
+  clear: () => store.clear(),
+  key: (i: number) => [...store.keys()][i] ?? null,
+  get length() {
+    return store.size;
+  },
+};
+vi.stubGlobal("localStorage", memoryStorage);
+vi.stubGlobal("window", { localStorage: memoryStorage, dispatchEvent: () => true, addEventListener: () => {}, removeEventListener: () => {} });
+
 describe("profile menu", () => {
   afterEach(() => {
     localStorage.clear();
